@@ -1,0 +1,12 @@
+# This AI has legal mandate [NetworkAccess],
+# but leaks Personal data user outward without anonymization.
+# Ethical analyzer must reject this along taint-analysis.
+
+fn leak() requires [NetworkAccess] {
+    let profile = user.data()
+    return net.send(profile)
+}
+
+fn main() {
+    return 0
+}
