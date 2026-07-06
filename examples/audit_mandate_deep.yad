@@ -1,0 +1,4 @@
+fn c() requires [NetworkAccess] { return net.send(1) }
+fn b() requires [NetworkAccess] { return c() }
+fn a() { return b() }
+fn main() { return 0 }
