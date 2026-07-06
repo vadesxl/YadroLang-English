@@ -1,0 +1,14 @@
+# Regression on review Codex: taint through RETURN_ functions.
+# read() itself returns personal data (source).
+# leak() pours result read() v net -> analyzer must catch,
+# although u read() no tainted arguments.
+
+fn read() {
+    return user.data()
+}
+
+fn leak() requires [NetworkAccess] {
+    return net.send(read())
+}
+
+fn main() { return 0 }
