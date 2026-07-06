@@ -1,0 +1,11 @@
+# New sink: console.log requires LogAccess mandate.
+# Logging PII is a GDPR violation even in debug mode.
+
+fn debug_user() requires [LogAccess] {
+    let data = user.data()
+    return console.log(data)
+}
+
+fn main() {
+    return 0
+}
