@@ -1,0 +1,11 @@
+# Multi-label taint: PII data (user.email) flows to network sink.
+# Error message must specify "PII" label, not just "tainted".
+
+fn export_email() requires [NetworkAccess] {
+    let email = user.email()
+    return net.send(email)
+}
+
+fn main() {
+    return 0
+}
