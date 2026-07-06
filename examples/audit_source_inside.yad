@@ -1,0 +1,3 @@
+fn fetch() { return user.data() }
+fn leak() requires [NetworkAccess] { return net.send(fetch()) }
+fn main() { return 0 }
