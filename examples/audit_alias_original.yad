@@ -1,0 +1,2 @@
+fn leak() requires [NetworkAccess] { let t = user.data()  let a = t  let t = anonymize(t)  return net.send(a) }
+fn main() { return 0 }
