@@ -7,13 +7,13 @@
 
 An experimental systems programming language, English-facade prototype, for building safe and ethical AI. Compiles to native code via LLVM.
 
-This is a translated mirror of [vadesxl/YadroLang](https://github.com/vadesxl/YadroLang) — same architecture and logic, English keywords/identifiers/messages.
+This is a translated mirror of [vadesxl/YadroLang](https://github.com/vadesxl/YadroLang) - same architecture and logic, English keywords/identifiers/messages.
 
 ## Philosophy (Immutable laws)
 
-- **Sovereignty** — native compilation via LLVM. No VM, no GC, no interpreter at runtime.
-- **Safety** — a built-in Ethical Analyzer rejects unethical AI patterns at compile time.
-- **Clarity** — strict, concise syntax.
+- **Sovereignty** - native compilation via LLVM. No VM, no GC, no interpreter at runtime.
+- **Safety** - a built-in Ethical Analyzer rejects unethical AI patterns at compile time.
+- **Clarity** - strict, concise syntax.
 
 ## Compiler pipeline
 
@@ -28,7 +28,7 @@ This is a translated mirror of [vadesxl/YadroLang](https://github.com/vadesxl/Ya
 - Native entry-point autogeneration: the program compiles into an ELF binary and runs
 - String printing: `print("Hello, world")` via %s/printf
 - Ethical Analyzer: capability mandates `requires [...]` + interprocedural flow-based taint analysis
-- Sources of personal data, sanitizers, and sinks — a formal leak model
+- Sources of personal data, sanitizers, and sinks - a formal leak model
 
 ## Example
 
@@ -70,15 +70,15 @@ No mandate → compile error. No data sanitization → compile error (taint erro
 
 ## Three demonstrations of the analyzer
 
-- `examples/no_mandate.yad` — missing `[NetworkAccess]` mandate → mandate error
-- `examples/leak.yad` — mandate present, but personal data leaves without sanitization → taint error
-- `examples/safe.yad` — mandate + sanitizer `anonymize(...)` → compiles
+- `examples/no_mandate.yad` - missing `[NetworkAccess]` mandate → mandate error
+- `examples/leak.yad` - mandate present, but personal data leaves without sanitization → taint error
+- `examples/safe.yad` - mandate + sanitizer `anonymize(...)` → compiles
 
-Sources of personal data (`user.data()`, `file.read()`, ...) taint values. Taint propagates through assignments and operations. A tainted value can only reach a sink (network/disk) after passing through a sanitizer (`anonymize(...)`, `check_consent(...)`, ...). Otherwise — compile error.
+Sources of personal data (`user.data()`, `file.read()`, ...) taint values. Taint propagates through assignments and operations. A tainted value can only reach a sink (network/disk) after passing through a sanitizer (`anonymize(...)`, `check_consent(...)`, ...). Otherwise - compile error.
 
 ## Release
 
-Mirrors upstream **v1.4.0 — Codegen hardening**:
+Mirrors upstream **v1.4.0 - Codegen hardening**:
 
 - 11 fixes (5 security + 6 correctness)
 - ~33 CI checks
