@@ -1,0 +1,6 @@
+fn anonymize(x) { return x }
+fn leak() requires [NetworkAccess] {
+    let secret = user.data()
+    return net.send(anonymize(secret))
+}
+fn main() { return 0 }
