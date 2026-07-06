@@ -1,6 +1,7 @@
-# YadroLang (Kernel) — English Prototype
+# YadroLang (Kernel)
 
 [![CI](https://github.com/vadesxl/YadroLang-English/actions/workflows/run.yml/badge.svg)](https://github.com/vadesxl/YadroLang-English/actions/workflows/run.yml)
+[![Release](https://img.shields.io/github/v/release/vadesxl/YadroLang-English)](https://github.com/vadesxl/YadroLang-English/releases/latest)
 
 > "Code is law. Good is a choice."
 
