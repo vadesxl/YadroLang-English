@@ -1,0 +1,11 @@
+# Multi-label taint: Health data (patient.record) flows to disk.
+# Writing medical records without encryption is a HIPAA violation.
+
+fn dump_records() requires [DiskWrite] {
+    let record = patient.record()
+    return file.write(record)
+}
+
+fn main() {
+    return 0
+}
