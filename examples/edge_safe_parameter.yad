@@ -1,0 +1,6 @@
+fn just_return(x) { return x }
+fn main_cli() {
+    let secret = user.data()
+    return just_return(secret)
+}
+fn main() { return 0 }
