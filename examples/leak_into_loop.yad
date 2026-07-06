@@ -1,0 +1,14 @@
+# Regression on bug Codex: sanitizer Inside loop's, which may not execute.
+# Taint cannot remove - analyzer must catch leak.
+
+fn leak() requires [NetworkAccess] {
+    let data = user.data()
+    let i = 0
+    while i < 0 {
+        data = anonymize(data)
+        i = i + 1
+    }
+    return net.send(data)
+}
+
+fn main() { return 0 }
