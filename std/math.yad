@@ -1,0 +1,19 @@
+# std/math.yad - quick AI-math YadroLang
+# Naive loops intentionally: LLVM -O2 + loop-vectorize will unfold their v SIMD.
+
+fn relu(x) {
+    if x < 0 {
+        return 0
+    }
+    return x
+}
+
+fn scalar(a, b, length) {
+    let sum = 0
+    let i = 0
+    while i < length {
+        sum = sum + a * b
+        i = i + 1
+    }
+    return sum
+}
