@@ -1,0 +1,17 @@
+# Nested implicit flow: double branching on tainted conditions.
+# Both levels must be caught.
+
+fn deep_spy() requires [NetworkAccess] {
+    let age = user.data()
+    if age > 18 {
+        let score = user.data()
+        if score > 100 {
+            net.send(42)
+        }
+    }
+    return 0
+}
+
+fn main() {
+    return deep_spy()
+}
