@@ -1,0 +1,2 @@
+fn f(a){ return a }
+fn main(){ return f(1, 2, 3) }
