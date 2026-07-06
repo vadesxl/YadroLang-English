@@ -1,0 +1,3 @@
+fn pipe(x) { let y = x  return y }
+fn leak() requires [NetworkAccess] { let t = user.data()  return net.send(pipe(t)) }
+fn main() { return 0 }
