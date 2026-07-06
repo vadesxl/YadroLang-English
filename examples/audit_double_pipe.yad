@@ -1,0 +1,4 @@
+fn p(x){ return x }
+fn q(x){ return p(x) }
+fn leak() requires [NetworkAccess] { let t = user.data()  return net.send(q(t)) }
+fn main() { return 0 }
