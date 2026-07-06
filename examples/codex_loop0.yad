@@ -1,0 +1,9 @@
+fn leak(d) requires [NetworkAccess] {
+    while 0 { d = 0 }
+    return net.send(d)
+}
+fn main_cli() requires [NetworkAccess] {
+    let secret = user.data()
+    return leak(secret)
+}
+fn main() { return 0 }
