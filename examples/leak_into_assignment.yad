@@ -1,0 +1,9 @@
+# Regression on bug Codex: sink v In initializer.
+# Personal data leave v net directly v 'let' - analyzer must catch.
+
+fn leak() requires [NetworkAccess] {
+    let answer = net.send(user.data())
+    return answer
+}
+
+fn main() { return 0 }
