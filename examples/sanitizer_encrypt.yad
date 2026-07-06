@@ -1,0 +1,12 @@
+# New sanitizer: encrypt() declassifies financial data.
+# Ethical Analyzer should ALLOW this.
+
+fn secure_payment() requires [NetworkAccess] {
+    let card = payment.card()
+    let safe = encrypt(card)
+    return net.send(safe)
+}
+
+fn main() {
+    return secure_payment()
+}
