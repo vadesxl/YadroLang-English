@@ -1,0 +1,15 @@
+# Safe implicit flow: condition is sanitized before branching.
+# Ethical Analyzer should ALLOW this.
+
+fn safe_check() requires [NetworkAccess] {
+    let profile = user.data()
+    let clean = anonymize(profile)
+    if clean > 0 {
+        net.send(1)
+    }
+    return 0
+}
+
+fn main() {
+    return safe_check()
+}
