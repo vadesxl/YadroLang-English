@@ -1,0 +1,13 @@
+# This AI works s personal data Ethical:
+# has mandate [NetworkAccess] I data are_anonymized before sending.
+# Compiler must this accept.
+
+fn export() requires [NetworkAccess] {
+    let profile = user.data()
+    let clean = anonymize(profile)
+    return net.send(clean)
+}
+
+fn main() {
+    return 0
+}
