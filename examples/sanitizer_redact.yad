@@ -1,0 +1,12 @@
+# New sanitizer: redact() declassifies health data.
+# Ethical Analyzer should ALLOW this.
+
+fn send_report() requires [NetworkAccess] {
+    let record = patient.record()
+    let clean = redact(record)
+    return net.send(clean)
+}
+
+fn main() {
+    return send_report()
+}
