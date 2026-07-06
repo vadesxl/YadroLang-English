@@ -1,0 +1,11 @@
+# Location data flows to network without anonymization.
+# GPS coordinates are sensitive under GDPR.
+
+fn track() requires [NetworkAccess] {
+    let pos = geo.location()
+    return net.send(pos)
+}
+
+fn main() {
+    return track()
+}
