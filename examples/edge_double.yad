@@ -1,0 +1,7 @@
+fn layer2(d) requires [NetworkAccess] { return net.send(d) }
+fn layer1(x) requires [NetworkAccess] { return layer2(x) }
+fn main_cli() requires [NetworkAccess] {
+    let secret = user.data()
+    return layer1(secret)
+}
+fn main() { return 0 }
