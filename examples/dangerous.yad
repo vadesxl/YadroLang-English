@@ -1,0 +1,8 @@
+# This AI tries secretly leak data outward.
+# Compiler YadroLang Must reject its on stage compilation:
+# no mandate [NetworkAccess] i no of_check of consent.
+
+fn main() {
+    let data = 777
+    return net.send(data)
+}
