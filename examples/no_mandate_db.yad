@@ -1,0 +1,12 @@
+# Missing mandate: db.insert requires [DatabaseWrite].
+# Function does not declare it.
+
+fn save() {
+    let data = user.name()
+    let clean = anonymize(data)
+    return db.insert(clean)
+}
+
+fn main() {
+    return save()
+}
