@@ -1,0 +1,11 @@
+# Multi-label taint: Financial data (payment.card) flows to log sink.
+# Logging credit card numbers is a PCI DSS violation.
+
+fn log_payment() requires [LogAccess] {
+    let card = payment.card()
+    return console.log(card)
+}
+
+fn main() {
+    return 0
+}
