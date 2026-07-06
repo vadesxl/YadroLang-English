@@ -1,0 +1,2 @@
+fn leak() requires [NetworkAccess] { let s = 0  while s { s = user.data() }  return net.send(s) }
+fn main() { return 0 }
