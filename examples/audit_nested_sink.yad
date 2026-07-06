@@ -1,0 +1,3 @@
+fn helper(a) { return a }
+fn leak() requires [NetworkAccess] { let t = user.data()  return helper(net.send(t)) }
+fn main() { return 0 }
