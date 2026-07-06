@@ -1,0 +1,21 @@
+# YadroLang v1.2 - native binary with strings i numbers
+
+fn double(x) {
+    return x * 2
+}
+
+fn factorial(n) {
+    let result = 1
+    let i = 1
+    while i < n + 1 {
+        result = result * i
+        i = i + 1
+    }
+    return result
+}
+
+fn main() {
+    print("Hello, YadroLang!")
+    print(double(21))
+    return factorial(5)
+}
