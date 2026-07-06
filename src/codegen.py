@@ -65,7 +65,8 @@ class Codegen:
         self._fmt_string = self._global_string("%s\n")
         for f in prog.functions:
             type = ir.FunctionType(INT, [INT] * len(f.parameters))
-            self.functions[f.name] = ir.Function(self.module, type, name=f.name)
+            symbol = "yadro_main" if f.name == "main" else f.name
+            self.functions[f.name] = ir.Function(self.module, type, name=symbol)
         for f in prog.functions:
             self._function(f)
         if "main" in self.functions:
