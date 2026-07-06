@@ -1,0 +1,125 @@
+name: YADRO CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: LLVM IR
+        run: python -m src.main examples/test.yad --ir
+
+      - name: Native build and run
+        run: |
+          python -m src.main examples/test.yad
+          cc kernel.o -o kernel
+          echo "=== Running the native YadroLang binary ==="
+          ./kernel
+
+      - name: Ethical export compiles
+        run: python -m src.main examples/safe.yad --ir
+
+      - name: Block - no mandate
+        run: |
+          if python -m src.main examples/dangerous.yad; then
+            echo "FAIL: code without mandate compiled (should have failed)!"; exit 1
+          else echo "OK: mandate is required."; fi
+
+      - name: Block - leak personal data
+        run: |
+          if python -m src.main examples/leak.yad; then
+            echo "FAIL: leak compiled (should have failed)!"; exit 1
+          else echo "OK: taint blocked the leak."; fi
+
+      - name: Block - leak through initializer
+        run: |
+          if python -m src.main examples/leak_into_assignment.yad; then
+            echo "FAIL: leak in assignment passed!"; exit 1
+          else echo "OK: taint caught leak in initializer."; fi
+
+      - name: Block - leak through zero-iteration loop
+        run: |
+          if python -m src.main examples/leak_into_loop.yad; then
+            echo "FAIL: leak through loop passed through!"; exit 1
+          else echo "OK: taint persists through a not-taken loop."; fi
+
+      - name: Block - interprocedural leak through parameter
+        run: |
+          if python -m src.main examples/exploit_parameter.yad; then
+            echo "FAIL: leak through parameter passed through!"; exit 1
+          else echo "OK: interprocedural leak caught."; fi
+
+      - name: Block - double indirection
+        run: |
+          if python -m src.main examples/edge_double.yad; then
+            echo "FAIL: leak through two levels passed!"; exit 1
+          else echo "OK: transitive leak caught."; fi
+
+      - name: Block - sink inside if condition
+        run: |
+          if python -m src.main examples/codex_condition.yad; then
+            echo "FAIL: leak in condition passed!"; exit 1
+          else echo "OK: sink in condition caught."; fi
+
+      - name: Block - leak with zero-iteration loop
+        run: |
+          if python -m src.main examples/codex_loop0.yad; then
+            echo "FAIL: leak with zero-iteration loop passed!"; exit 1
+          else echo "OK: taint on parameter preserved."; fi
+
+      - name: Acceptance - tainted but non-leaking parameter compiles
+        run: python -m src.main examples/edge_safe_parameter.yad --ir
+
+      - name: Acceptance - sanitized-through-parameter compiles
+        run: python -m src.main examples/edge_sanitizer.yad --ir
+
+      - name: Block - spoofing a built-in sanitizer (#8)
+        run: |
+          for f in substitution_sanitizer substitution_hash; do
+            if python -m src.main examples/$f.yad; then
+              echo "FAIL: $f compiled (should have failed)!"; exit 1
+            else echo "OK: $f blocked as expected."; fi
+          done
+
+      - name: Audit - 11 vectors must be blocked
+        run: |
+          for f in audit_pipe audit_source_inside audit_binary audit_nested_sink audit_mandate_deep audit_alias_original audit_loop_accumulation audit_sink_into_condition audit_sanitize_overwrite audit_double_pipe audit_parameter_into_sink; do
+            if python -m src.main examples/$f.yad; then
+              echo "FAIL: $f compiled (security hole)!"; exit 1
+            else echo "OK: $f blocked as expected."; fi
+          done
+
+      - name: Audit - honest sanitizer compiles
+        run: python -m src.main examples/audit_safe_sanitize.yad --ir
+
+      - name: Block - entry point validation (3 bugs)
+        run: |
+          for f in without_point_entry main_with_parameter duplicate_main; do
+            if python -m src.main examples/$f.yad; then
+              echo "FAIL: $f compiled (should have failed)!"; exit 1
+            else echo "OK: $f rejected as expected."; fi
+          done
+
+      - name: Block - call semantics (4 bugs)
+        run: |
+          for f in call_unknown arity_few arity_many lexer_unknown_character; do
+            if python -m src.main examples/$f.yad; then
+              echo "FAIL: $f compiled (should have failed)!"; exit 1
+            else echo "OK: $f rejected as expected."; fi
+          done
+
+      - name: Block - division by zero and i64 overflow
+        run: |
+          for f in division_on_zero overflow_i64; do
+            if python -m src.main examples/$f.yad; then
+              echo "FAIL: $f compiled (should have failed)!"; exit 1
+            else echo "OK: $f rejected as expected."; fi
+          done
