@@ -1,0 +1,3 @@
+fn drain(x) requires [NetworkAccess] { return net.send(x) }
+fn main_cli() requires [NetworkAccess] { let t = user.data()  return drain(t) }
+fn main() { return 0 }
