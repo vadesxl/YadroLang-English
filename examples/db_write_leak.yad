@@ -1,0 +1,11 @@
+# New sink: db.write requires DatabaseWrite mandate.
+# PII data written to database without sanitization.
+
+fn store_user() requires [DatabaseWrite] {
+    let name = user.name()
+    return db.write(name)
+}
+
+fn main() {
+    return 0
+}
