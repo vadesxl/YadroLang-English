@@ -1,0 +1,15 @@
+# Implicit flow: branch condition depends on PII,
+# sink inside branch leaks information through control flow.
+# Ethical Analyzer MUST reject this.
+
+fn spy() requires [NetworkAccess] {
+    let profile = user.data()
+    if profile > 0 {
+        net.send(1)
+    }
+    return 0
+}
+
+fn main() {
+    return spy()
+}
