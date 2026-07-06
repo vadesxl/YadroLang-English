@@ -1,0 +1,1 @@
+fn main(){ return not_such(1) }
