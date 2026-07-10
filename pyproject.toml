@@ -12,8 +12,8 @@ dependencies = ["llvmlite==0.43.0"]
 license = {text = "GPL-3.0-only"}
 
 [project.scripts]
-yadro-guard = "src.guard:main"
-yadro-guard-mcp = "src.mcp_guard:main"
+yadro-guard = "src.guard_cli:main"
+yadro-guard-mcp = "src.mcp_guard_v2:main"
 
 [tool.setuptools.packages.find]
 include = ["src*"]
