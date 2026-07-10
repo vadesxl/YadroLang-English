@@ -21,8 +21,9 @@ class CompilerRegressionTests(unittest.TestCase):
             compile("fn main() { return 10 / (3 - 3) }")
 
     def test_signed_division_overflow_is_rejected(self):
+        source = "fn main() { return (0 - 9223372036854775807 - 1) / (0 - 1) }"
         with self.assertRaisesRegex(SemanticError, "division overflow"):
-            compile("fn main() { return -9223372036854775808 / (0 - 1) }")
+            compile(source)
 
     def test_explicit_leak_fails_for_the_right_reason(self):
         source = """
