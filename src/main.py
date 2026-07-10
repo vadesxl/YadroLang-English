@@ -20,15 +20,15 @@ def _check_unique_functions(ast):
   if function.name in seen:raise SemanticError(f"Function '{function.name}' is declared more than once (line {function.string}).")
   if function.name=="printf" or function.name.startswith("yadro_"):raise SemanticError(f"Function '{function.name}' collides with runtime ABI (line {function.string}).")
   seen.add(function.name)
-SYSTEM_API_ARITY={**{name:0 for name in SOURCES},**{name:1 for name in SANITIZERS},**{name:1 for name in SINKS},"print":1};SYSTEM_API=set(SYSTEM_API_ARITY)
-def _collect(node,node_type,output):
- if isinstance(node,node_type):output.append(node)
+SYSTEM_API_ARITY={**{n:0 for n in SOURCES},**{n:1 for n in SANITIZERS},**{n:1 for n in SINKS},"print":1};SYSTEM_API=set(SYSTEM_API_ARITY)
+def _collect(node,kind,out):
+ if isinstance(node,kind):out.append(node)
  values=getattr(node,"__dict__",None)
- if not values:return
- for value in values.values():
-  if isinstance(value,list):
-   for element in value:_collect(element,node_type,output)
-  elif hasattr(value,"__dict__"):_collect(value,node_type,output)
+ if values:
+  for value in values.values():
+   if isinstance(value,list):
+    for item in value:_collect(item,kind,out)
+   elif hasattr(value,"__dict__"):_collect(value,kind,out)
 def _check_calls(ast):
  arity={f.name:len(f.parameters) for f in ast.functions}
  for function in ast.functions:
@@ -61,8 +61,7 @@ def _check_expressions(ast):
    if divisor==0:raise SemanticError(f"Division by zero (line {binary.string}).")
    if dividend==I64_MIN and divisor==-1:raise SemanticError(f"Signed i64 division overflow (line {binary.string}).")
 def compile(source,emit_ir=False):
- ast=Parser(Lexer(source).tokens()).parse();_check_unique_functions(ast);_check_entry_point(ast);_check_calls(ast);_check_expressions(ast)
- TypeChecker(SYSTEM_API).check(ast);EthicalAnalyzer().check(ast);ir_code=Codegen().generate(ast)
+ ast=Parser(Lexer(source).tokens()).parse();_check_unique_functions(ast);_check_entry_point(ast);_check_calls(ast);_check_expressions(ast);TypeChecker(SYSTEM_API).check(ast);EthicalAnalyzer().check(ast);ir_code=Codegen().generate(ast)
  if emit_ir:print(ir_code)
  return ir_code
 def build_native(ir_code,output="kernel.o"):
@@ -70,8 +69,8 @@ def build_native(ir_code,output="kernel.o"):
   if initializer:
    try:initializer()
    except Exception:pass
- module=llvm.parse_assembly(ir_code);module.verify();target=llvm.Target.from_default_triple().create_target_machine()
- with open(output,"wb") as object_file:object_file.write(target.emit_object(module))
+ triple=llvm.get_default_triple();target=llvm.Target.from_triple(triple);machine=target.create_target_machine();module=llvm.parse_assembly(ir_code);module.triple=triple;module.data_layout=str(machine.target_data);module.verify()
+ with open(output,"wb") as object_file:object_file.write(machine.emit_object(module))
  print(f"[YADRO] Native object: {output}")
 def main_cli():
  if len(sys.argv)<2:print("Usage: python -m src.main file.yad [--ir]");raise SystemExit(1)
