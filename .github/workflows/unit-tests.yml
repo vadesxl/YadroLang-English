@@ -23,4 +23,14 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: python -m pip install --disable-pip-version-check -r requirements.txt
-      - run: python -m unittest discover -s tests -v
+      - name: Run unit tests
+        shell: bash
+        run: |
+          set +e
+          python -m unittest discover -s tests -v > test.log 2>&1
+          status=$?
+          printf '### unittest output\n```text\n' >> "$GITHUB_STEP_SUMMARY"
+          cat test.log >> "$GITHUB_STEP_SUMMARY"
+          printf '\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          cat test.log
+          exit $status
