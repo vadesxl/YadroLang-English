@@ -1,194 +1,105 @@
 # -*- coding: utf-8 -*-
-"""Generator LLVM IR for_ YadroLang (through llvmlite).
+"""Verified LLVM IR generator for YadroLang ABI v1."""
+import hashlib,re
+from llvmlite import ir,binding as llvm
+from src.syntax import (Program,Function,Return,Let,Assign,If,While,NumberLit,
+                        BoolLit,StringLit,Ident,Binary,Call)
+INT=ir.IntType(64); BOOL=ir.IntType(1); BYTE=ir.IntType(8); PTR=BYTE.as_pointer(); I32=ir.IntType(32)
+class CodegenError(Exception): pass
 
-Support: functions, if/while, recursion, built_in 'print' (printf),
-autogeneration native point entry main for_ running as_ ELF-binary.
-"""
-from llvmlite import ir, binding as llvm
-from src.syntax import (Program, Function, Return, Let, Assign,
-                           If, While, NumberLit, StringLit, Ident, Binary, Call)
-
-INT = ir.IntType(64)
-BOOL = ir.IntType(1)
-BYTE = ir.IntType(8)
-PTR = BYTE.as_pointer()
-I32 = ir.IntType(32)
-
-
-class CodegenError(Exception):
-    ...
-
+def _symbol(prefix,name):
+    readable=re.sub(r"[^A-Za-z0-9_]","_",name)[:40]
+    digest=hashlib.sha256(name.encode("utf-8")).hexdigest()[:12]
+    return f"yadro_{prefix}_v1_{readable}_{digest}"
 
 class Codegen:
     def __init__(self):
-        self.module = ir.Module(name="kernel")
-        self.module.triple = llvm.get_default_triple()
-        self.functions = {}
-        self.builder = None
-        self.scope = {}
-        self._count = 0
-        printf_ty = ir.FunctionType(I32, [PTR], var_arg=True)
-        self.printf = ir.Function(self.module, printf_ty, name="printf")
-        self.outer = {}   # system API (net.*, file.*, user.* i t.p.)
-
-    def _outer(self, name, arg_count):
-        """Declares (or_ returns) outer system function.
-
-        System API (sources/sinks/sanitizers) are_implemented outside language,
-        as_ libc. Codegen declares their as_ extern s signature i64(i64...).
-        Ethics their usage already checked analyzer to codegen.
-        """
-        key = (name, arg_count)
-        if key not in self.outer:
-            type = ir.FunctionType(INT, [INT] * arg_count)
-            safe = "ext." + name.replace(".", "_")
-            self.outer[key] = ir.Function(self.module, type, name=safe)
-        return self.outer[key]
-
-    def _global_string(self, text):
-        data = bytearray(text.encode("utf-8") + b"\x00")
-        type = ir.ArrayType(BYTE, len(data))
-        g = ir.GlobalVariable(self.module, type, name=f".str.{self._count}")
-        self._count += 1
-        g.linkage = "internal"
-        g.global_constant = True
-        g.initializer = ir.Constant(type, data)
-        return g
-
-    def _ptr(self, b, g):
-        zero = ir.Constant(I32, 0)
-        return b.gep(g, [zero, zero], inbounds=True)
-
-    def generate(self, prog: Program) -> str:
-        self._fmt_number = self._global_string("%lld\n")
-        self._fmt_result = self._global_string("Result main(): %lld\n")
-        self._fmt_string = self._global_string("%s\n")
-        for f in prog.functions:
-            type = ir.FunctionType(INT, [INT] * len(f.parameters))
-            symbol = "yadro_main" if f.name == "main" else f.name
-            self.functions[f.name] = ir.Function(self.module, type, name=symbol)
-        for f in prog.functions:
-            self._function(f)
-        if "main" in self.functions:
-            self._main_cli()
-        return str(self.module)
-
+        self.module=ir.Module(name="yadro"); self.module.triple=llvm.get_default_triple()
+        self.functions={}; self.builder=None; self.scope={}; self.outer={}; self._count=0
+        self.printf=ir.Function(self.module,ir.FunctionType(I32,[PTR],var_arg=True),name="printf")
+    def _outer(self,name,arg_count):
+        if name in self.outer:
+            function,known=self.outer[name]
+            if known!=arg_count: raise CodegenError(f"Extern ABI mismatch for '{name}': {known} versus {arg_count}")
+            return function
+        function=ir.Function(self.module,ir.FunctionType(INT,[INT]*arg_count),name=_symbol("ext",name))
+        self.outer[name]=(function,arg_count); return function
+    def _global_string(self,text):
+        data=bytearray(text.encode("utf-8")+b"\0"); typ=ir.ArrayType(BYTE,len(data))
+        value=ir.GlobalVariable(self.module,typ,name=f".str.{self._count}"); self._count+=1
+        value.linkage="internal"; value.global_constant=True; value.initializer=ir.Constant(typ,data); return value
+    def _ptr(self,builder,value):
+        zero=ir.Constant(I32,0); return builder.gep(value,[zero,zero],inbounds=True)
+    def _i64(self,value): return self.builder.zext(value,INT) if value.type==BOOL else value
+    def generate(self,program:Program):
+        self._fmt_number=self._global_string("%lld\n"); self._fmt_result=self._global_string("Result main(): %lld\n"); self._fmt_string=self._global_string("%s\n")
+        for function in program.functions:
+            symbol=_symbol("entry",function.name) if function.name=="main" else _symbol("fn",function.name)
+            self.functions[function.name]=ir.Function(self.module,ir.FunctionType(INT,[INT]*len(function.parameters)),name=symbol)
+        for function in program.functions: self._function(function)
+        self._main_cli(); text=str(self.module)
+        try: parsed=llvm.parse_assembly(text); parsed.verify()
+        except Exception as error: raise CodegenError(f"LLVM verification failed: {error}") from error
+        return text
     def _main_cli(self):
-        fn = ir.Function(self.module, ir.FunctionType(I32, []), name="main")
-        b = ir.IRBuilder(fn.append_basic_block("entry"))
-        result = b.call(self.functions["main"], [])
-        b.call(self.printf, [self._ptr(b, self._fmt_result), result])
-        b.ret(ir.Constant(I32, 0))
-
-    def _function(self, f: Function):
-        fn = self.functions[f.name]
-        block = fn.append_basic_block("entry")
-        self.builder = ir.IRBuilder(block)
-        self.scope = {}
-        for arg, name in zip(fn.args, f.parameters):
-            arg.name = name
-            cell = self.builder.alloca(INT, name=name)
-            self.builder.store(arg, cell)
-            self.scope[name] = cell
-        for stmt in f.body:
-            self._statement(stmt)
-        if not self.builder.block.is_terminated:
-            self.builder.ret(INT(0))
-
-    def _statement(self, u):
-        if isinstance(u, Return):
-            self.builder.ret(self._expression(u.value))
-        elif isinstance(u, Let):
-            cell = self.builder.alloca(INT, name=u.name)
-            self.builder.store(self._expression(u.value), cell)
-            self.scope[u.name] = cell
-        elif isinstance(u, Assign):
-            if u.name not in self.scope:
-                raise CodegenError(f"Variable '{u.name}' not_ declared (string {u.string})")
-            self.builder.store(self._expression(u.value), self.scope[u.name])
-        elif isinstance(u, If):
-            self._if_branch(u)
-        elif isinstance(u, While):
-            self._while_loop(u)
-        else:
-            self._expression(u)
-
-    def _if_branch(self, u: If):
-        cond = self._to_bool(self._expression(u.condition))
-        has_else = bool(u.else_branch)
-        bb_then_branch = self.builder.append_basic_block("then_branch")
-        bb_else_branch = self.builder.append_basic_block("else_branch") if has_else else None
-        bb_end = self.builder.append_basic_block("end_if")
-        self.builder.cbranch(cond, bb_then_branch, bb_else_branch or bb_end)
-        self.builder.position_at_end(bb_then_branch)
-        for s in u.then_branch:
-            self._statement(s)
-        if not self.builder.block.is_terminated:
-            self.builder.branch(bb_end)
-        if has_else:
-            self.builder.position_at_end(bb_else_branch)
-            for s in u.else_branch:
-                self._statement(s)
-            if not self.builder.block.is_terminated:
-                self.builder.branch(bb_end)
-        self.builder.position_at_end(bb_end)
-
-    def _while_loop(self, u: While):
-        bb_cond = self.builder.append_basic_block("loop_cond")
-        bb_body = self.builder.append_basic_block("loop_body")
-        bb_exit = self.builder.append_basic_block("loop_exit")
-        self.builder.branch(bb_cond)
-        self.builder.position_at_end(bb_cond)
-        self.builder.cbranch(self._to_bool(self._expression(u.condition)), bb_body, bb_exit)
-        self.builder.position_at_end(bb_body)
-        for s in u.body:
-            self._statement(s)
-        if not self.builder.block.is_terminated:
-            self.builder.branch(bb_cond)
-        self.builder.position_at_end(bb_exit)
-
-    def _expression(self, v):
-        if isinstance(v, NumberLit):
-            return INT(v.value)
-        if isinstance(v, Ident):
-            if v.name not in self.scope:
-                raise CodegenError(f"Unknown variable '{v.name}' (string {v.string})")
-            return self.builder.load(self.scope[v.name], name=v.name)
-        if isinstance(v, Binary):
-            l = self._expression(v.left); p = self._expression(v.right)
-            return {
-                "+": lambda: self.builder.add(l, p),
-                "-": lambda: self.builder.sub(l, p),
-                "*": lambda: self.builder.mul(l, p),
-                "/": lambda: self.builder.sdiv(l, p),
-                ">": lambda: self.builder.icmp_signed(">", l, p),
-                "<": lambda: self.builder.icmp_signed("<", l, p),
-                "==": lambda: self.builder.icmp_signed("==", l, p),
-            }[v.op]()
-        if isinstance(v, Call):
-            if v.name == "print":
-                node = v.arguments[0]
-                if isinstance(node, StringLit):
-                    g = self._global_string(node.value)
-                    self.builder.call(self.printf,
-                        [self._ptr(self.builder, self._fmt_string),
-                         self._ptr(self.builder, g)])
-                else:
-                    arg = self._expression(node)
-                    if arg.type == BOOL:                       # i1 -> i64
-                        arg = self.builder.zext(arg, INT)
-                    self.builder.call(self.printf,
-                        [self._ptr(self.builder, self._fmt_number), arg])
+        function=ir.Function(self.module,ir.FunctionType(I32,[]),name="main"); builder=ir.IRBuilder(function.append_basic_block("entry"))
+        result=builder.call(self.functions["main"],[]); builder.call(self.printf,[self._ptr(builder,self._fmt_result),result]); builder.ret(I32(0))
+    def _function(self,node):
+        function=self.functions[node.name]; self.builder=ir.IRBuilder(function.append_basic_block("entry")); self.scope={}
+        for argument,name in zip(function.args,node.parameters):
+            argument.name=name; cell=self.builder.alloca(INT,name=name); self.builder.store(argument,cell); self.scope[name]=cell
+        self._body(node.body)
+        if not self.builder.block.is_terminated: self.builder.ret(INT(0))
+    def _body(self,statements):
+        for statement in statements:
+            if self.builder.block.is_terminated: break
+            self._statement(statement)
+    def _statement(self,node):
+        if isinstance(node,Return): self.builder.ret(self._i64(self._expression(node.value)))
+        elif isinstance(node,Let):
+            cell=self.builder.alloca(INT,name=node.name); self.builder.store(self._i64(self._expression(node.value)),cell); self.scope[node.name]=cell
+        elif isinstance(node,Assign):
+            if node.name not in self.scope: raise CodegenError(f"Unknown variable '{node.name}' (line {node.string})")
+            self.builder.store(self._i64(self._expression(node.value)),self.scope[node.name])
+        elif isinstance(node,If): self._if(node)
+        elif isinstance(node,While): self._while(node)
+        else: self._expression(node)
+    def _if(self,node):
+        condition=self._to_bool(self._expression(node.condition)); function=self.builder.function
+        then_block=function.append_basic_block("if.then"); else_block=function.append_basic_block("if.else") if node.else_branch else None; end_block=function.append_basic_block("if.end")
+        self.builder.cbranch(condition,then_block,else_block or end_block)
+        self.builder.position_at_end(then_block); self._body(node.then_branch)
+        if not self.builder.block.is_terminated: self.builder.branch(end_block)
+        if else_block:
+            self.builder.position_at_end(else_block); self._body(node.else_branch)
+            if not self.builder.block.is_terminated: self.builder.branch(end_block)
+        self.builder.position_at_end(end_block)
+    def _while(self,node):
+        function=self.builder.function; condition_block=function.append_basic_block("loop.cond"); body_block=function.append_basic_block("loop.body"); exit_block=function.append_basic_block("loop.exit")
+        self.builder.branch(condition_block); self.builder.position_at_end(condition_block); self.builder.cbranch(self._to_bool(self._expression(node.condition)),body_block,exit_block)
+        self.builder.position_at_end(body_block); self._body(node.body)
+        if not self.builder.block.is_terminated: self.builder.branch(condition_block)
+        self.builder.position_at_end(exit_block)
+    def _expression(self,node):
+        if isinstance(node,NumberLit): return INT(node.value)
+        if isinstance(node,BoolLit): return BOOL(1 if node.value else 0)
+        if isinstance(node,StringLit): raise CodegenError("String values are only valid as print literals")
+        if isinstance(node,Ident):
+            if node.name not in self.scope: raise CodegenError(f"Unknown variable '{node.name}' (line {node.string})")
+            return self.builder.load(self.scope[node.name],name=node.name)
+        if isinstance(node,Binary):
+            left=self._i64(self._expression(node.left)); right=self._i64(self._expression(node.right))
+            operations={"+":self.builder.add,"-":self.builder.sub,"*":self.builder.mul,"/":self.builder.sdiv}
+            if node.op in operations: return operations[node.op](left,right)
+            return self.builder.icmp_signed(node.op,left,right)
+        if isinstance(node,Call):
+            if node.name=="print":
+                value=node.arguments[0]
+                if isinstance(value,StringLit):
+                    text=self._global_string(value.value); self.builder.call(self.printf,[self._ptr(self.builder,self._fmt_string),self._ptr(self.builder,text)])
+                else: self.builder.call(self.printf,[self._ptr(self.builder,self._fmt_number),self._i64(self._expression(value))])
                 return INT(0)
-            arg = [self._expression(a) for a in v.arguments]
-            if v.name in self.functions:
-                return self.builder.call(self.functions[v.name], arg)
-            # system API: declare as_ outer function (libc-like)
-            outer = self._outer(v.name, len(arg))
-            return self.builder.call(outer, arg)
-        raise CodegenError(f"Not_ can generate node {type(v).__name__}")
-
-    def _to_bool(self, val):
-        if val.type == BOOL:
-            return val
-        return self.builder.icmp_signed("!=", val, INT(0))
+            arguments=[self._i64(self._expression(arg)) for arg in node.arguments]
+            target=self.functions.get(node.name) or self._outer(node.name,len(arguments)); return self.builder.call(target,arguments)
+        raise CodegenError(f"Unsupported AST node {type(node).__name__}")
+    def _to_bool(self,value): return value if value.type==BOOL else self.builder.icmp_signed("!=",value,INT(0))
