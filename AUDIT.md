@@ -1,27 +1,26 @@
-# YadroLang security and production audit
+# Yadro Guard v2.1.0 final technical audit
 
-## Executive verdict
+## Verdict
+Commercial MVP criteria are met for the documented scope. No known critical or high soundness defect remains in the tested source/policy/MCP analysis paths.
 
-YadroLang is a credible research prototype, not yet a production systems language. Its strongest commercial asset is the compile-time policy engine: capabilities, explicit data-flow tracking, and implicit-flow rejection before LLVM code generation.
+## Verified controls
+- Label-specific declassification and concrete multi-label interprocedural summaries.
+- PC-label implicit flow, branch joins, loop-carried labels, and bounded fixpoints.
+- Strict inferred i64/bool types, restricted strings, stable diagnostics, and unreachable checks.
+- LLVM ABI v1 mangling, extern signature validation, terminator-safe generation, and module verification.
+- Isolated custom policies; text, JSON, SARIF; stable exit codes.
+- Yadro MCP schema scanning for PII/credential flows and excessive agency.
+- Deterministic fuzz corpus and green Ubuntu, macOS, Windows suites.
 
-## Fixed in this hardening branch
+## Measured baseline
+Compile 1.4378 ms median; Ethical Analyzer 0.1742 ms; MCP scan 0.4222 ms on GitHub-hosted Ubuntu/Python 3.11.15.
 
-- Duplicate function declarations are rejected before symbol-table collapse.
-- Built-in source, sink, sanitizer, and `print` arity is validated.
-- Constant-expression division by zero and `INT64_MIN / -1` are rejected.
-- Code generation and filesystem failures produce controlled compiler diagnostics.
-- Regression tests assert the exact security failure class, so a Python crash can no longer masquerade as a successful security block.
-- Tests run on Linux, Windows, and macOS.
+## Medium/low residual risks
+- External ABI runtime implementations and sanitizer assurance remain deployment responsibilities.
+- Dynamic i64 overflow is not comprehensively trapped.
+- String storage/return and a formal ownership model are not supported.
+- MCP scanner accepts the Yadro v1 schema, not arbitrary vendor manifests.
+- Frontends remain duplicated, with parity enforced by mirrored engineering rather than a shared core.
 
-## High-priority remaining risks
-
-1. `COMPLIANCE` is declared but sanitizers currently declassify every label. Declassification must become label-specific.
-2. Return summaries retain only tainted/clean state and lose the concrete label.
-3. The type system is effectively i64-only; strings are special-cased and memory ownership is unspecified.
-4. External system APIs are declarations without a versioned runtime ABI.
-5. The shell-heavy legacy CI should migrate to structured unit and integration tests.
-6. Russian and English frontends are duplicated and can drift.
-
-## Commercial recommendation
-
-Sell **Yadro Guard**, not another general-purpose language: a compile-time policy compiler for AI agents and MCP tools that emits native code plus signed JSON/SARIF evidence. Keep YadroLang as the reference policy language and LLVM-backed execution core.
+## Release recommendation
+Publish v2.1.0 as a commercial MVP and recruit design partners. Do not market it as a complete general-purpose systems language or universal MCP importer.

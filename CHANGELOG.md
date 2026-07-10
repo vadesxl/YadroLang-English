@@ -1,26 +1,28 @@
 # Changelog
 
-All notable changes to YadroLang English are documented here.
+## [2.1.0] - 2026-07-10
 
-## [2.0.0] - 2026-07-10
+### Ethical Analyzer v2.1
+- Label-preserving interprocedural return and parameter summaries.
+- Multi-label propagation, PC-label implicit-flow tracking, and bounded fixpoints.
+- Label-specific declassification with SANITIZED audit records.
+- Reserved source/sink/sanitizer spoof protection and stable diagnostic codes.
+- Sound branch joins and zero-iteration loop-carried labels.
 
-### Security
-- Fixed invalid AST line-field access in the Ethical Analyzer.
-- Security regression tests now assert the exact failure reason, preventing Python crashes from masquerading as successful policy blocks.
-- Added explicit and implicit information-flow regression coverage.
-
-### Compiler
-- Reject duplicate function declarations before symbol-table construction.
-- Validate arity for built-in sources, sinks, sanitizers, and `print`.
-- Detect computed constant division by zero.
-- Detect signed i64 division overflow for `INT64_MIN / -1`.
-- Convert filesystem, LLVM, and code-generation failures into controlled diagnostics.
-
-### CI
-- Added deterministic regression tests on Ubuntu, Windows, and macOS.
-- Added timeouts and concurrency cancellation to avoid stale or duplicated runs.
-- Preserved the full legacy YADRO CI suite.
+### Compiler and LLVM
+- Inferred `i64`, `bool`, and restricted `string` semantics.
+- Bool literals, mixed-type rejection, unreachable statement detection, and recursive inference fixpoint.
+- LLVM ABI v1 symbol mangling, extern arity validation, terminator-safe blocks, bool normalization, and verification on every successful compile.
 
 ### Product
-- Added a production-readiness audit.
-- Added the 30-day Yadro Guard commercial roadmap.
+- Installable `yadro-guard` and `yadro-guard-mcp` console commands.
+- Source scan/compile/audit/policy/version commands with isolated custom policies.
+- Text, JSON, and SARIF 2.1.0 with stable exit codes.
+- Yadro MCP tool-graph schema scanner for sensitive flows and excessive agency.
+- Threat model, policy/MCP/ABI/diagnostic specs, feature matrix, bounded fuzz corpus, and measured benchmarks.
+
+### Benchmarks
+GitHub-hosted Ubuntu medians: compile to verified IR 1.4378 ms, Ethical Analyzer 0.1742 ms, MCP scan 0.4222 ms.
+
+## [2.0.0] - 2026-07-10
+Compiler hardening, reason-specific security regression tests, cross-platform CI, production audit, and commercial roadmap.
