@@ -1,14 +1,15 @@
-# YadroLang inferred type system
+# YadroLang type system
 
-YadroLang keeps its concise syntax and infers four internal types: `i64`, `bool`, `string`, and `unknown` during constraint solving.
+The strict semantic layer has three source types: `i64`, `bool`, and `string`.
 
-- Number literals and system APIs are `i64`.
-- `true` / `false` are `bool`.
-- Arithmetic requires `i64`; comparisons return `bool`.
-- `if` and `while` accept `bool`, plus legacy `i64` truthiness (`0` false, non-zero true).
-- String values are currently restricted to direct `print("...")` literals. Storage, return, comparison, and system-API transport are rejected.
-- Function parameter and return types are inferred to a fixpoint. Mixed return types are errors.
-- A function with no explicit return keeps the legacy implicit `return 0` behavior.
-- Statements after an unconditional return, or after an if/else where both branches return, are rejected.
+- Numeric literals and system APIs are `i64`.
+- Arithmetic requires two `i64` operands.
+- Comparisons require `i64` operands and produce `bool`.
+- Conditions accept `bool`; legacy `i64` truthiness remains supported (`0` false, non-zero true).
+- Function parameters use the stable ABI v1 type `i64` until typed parameter syntax is introduced.
+- Function returns are inferred and must agree on every path.
+- `bool` is lowered to `i64` at the ABI boundary.
+- String literals are supported as direct `print` arguments. Storing, returning, or passing strings is rejected with a migration diagnostic until the string ABI is finalized.
+- Statements after a guaranteed return are rejected as unreachable.
 
-LLVM ABI v1 normalizes booleans to `i64` at variable, call, and return boundaries while preserving `i1` for transient comparison results.
+This keeps the language small and clear while preventing LLVM type mismatches.
