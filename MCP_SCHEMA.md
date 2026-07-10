@@ -1,9 +1,16 @@
-# Yadro MCP tool-graph schema v1.0
+# Yadro Guard MCP security manifest v1.0
 
-This is a Yadro-owned analysis schema, not a claim of universal MCP manifest compatibility.
+This is a **Yadro-specific static security schema**, not a universal importer for every MCP server configuration.
 
-```json
-{"version":"1.0","tools":[{"name":"crm.read","labels":["PII"]},{"name":"net.send","capabilities":["NetworkAccess"]}],"flows":[["crm.read","net.send"]]}
-```
+Root fields are exactly `version`, `tools`, and optional `flows`. Unknown fields fail closed.
 
-Each tool may declare `labels`, `sanitizes`, and `capabilities`. `flows` contains directed name pairs. The scanner validates duplicate/unknown tools, computes a bounded finite-label fixpoint across cycles, reports sensitive data reaching privileged capabilities, and flags tools with three or more dangerous capabilities as excessive agency.
+Each tool has:
+- `name`: unique non-empty string
+- `labels`: optional sensitive output labels
+- `sanitizes`: labels removed at this node
+- `capabilities`: one or more known privileged effects
+
+Supported labels: PII, Financial, Health, Credentials, Location.
+Supported capabilities: NetworkAccess, DiskWrite, DatabaseWrite, DatabaseRead, ToolExecution, SecretAccess, LogAccess.
+
+Flows are `[source, target]` edges. Cycles are supported by a bounded finite-lattice fixpoint. Output is deterministic text, JSON, or SARIF 2.1.0. Unknown tools, edges, labels, capabilities, duplicate tools, and unknown fields are rejected.
