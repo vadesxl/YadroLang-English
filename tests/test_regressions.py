@@ -20,6 +20,10 @@ class CompilerRegressionTests(unittest.TestCase):
         with self.assertRaisesRegex(SemanticError, "Division by zero"):
             compile("fn main() { return 10 / (3 - 3) }")
 
+    def test_signed_division_overflow_is_rejected(self):
+        with self.assertRaisesRegex(SemanticError, "division overflow"):
+            compile("fn main() { return -9223372036854775808 / (0 - 1) }")
+
     def test_explicit_leak_fails_for_the_right_reason(self):
         source = """
         fn main() requires [NetworkAccess] {
