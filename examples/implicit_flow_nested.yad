@@ -12,6 +12,6 @@ fn deep_spy() requires [NetworkAccess] {
     return 0
 }
 
-fn main() {
+fn main() requires [NetworkAccess] {
     return deep_spy()
 }

@@ -6,6 +6,6 @@ fn track() requires [NetworkAccess] {
     return net.send(pos)
 }
 
-fn main() {
+fn main() requires [NetworkAccess] {
     return track()
 }

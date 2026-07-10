@@ -223,11 +223,11 @@ class EthicalAnalyzer:
                 if needed and needed not in f.mandates:
                     self.audit_trail.append(AuditEntry(
                         source="N/A", label="MANDATE", path=[f.name],
-                        sink=call.name, line=call.line,
+                        sink=call.name, line=call.string,
                         status="BLOCKED",
                         detail=f"Missing mandate [{needed}]"))
                     raise EthicalError(
-                        f"Function '{f.name}' (line {call.line}) calls "
+                        f"Function '{f.name}' (line {call.string}) calls "
                         f"'{call.name}', requiring mandate [{needed}], "
                         f"but mandate is not declared in signature. "
                         f"Add: fn {f.name}(...) requires [{needed}]")
@@ -237,11 +237,11 @@ class EthicalAnalyzer:
                         if m not in f.mandates:
                             self.audit_trail.append(AuditEntry(
                                 source="N/A", label="MANDATE", path=[f.name, target.name],
-                                sink=call.name, line=call.line,
+                                sink=call.name, line=call.string,
                                 status="BLOCKED",
                                 detail=f"Transitive mandate [{m}] missing"))
                             raise EthicalError(
-                                f"Function '{f.name}' (line {call.line}) "
+                                f"Function '{f.name}' (line {call.string}) "
                                 f"calls '{target.name}', requiring [{m}], "
                                 f"but does not declare [{m}] itself.")
 
@@ -331,12 +331,12 @@ class EthicalAnalyzer:
             self.audit_trail.append(AuditEntry(
                 source="implicit-condition", label=label_str,
                 path=[f"branch-depth-{implicit_depth}"],
-                sink=call.name, line=call.line,
+                sink=call.name, line=call.string,
                 status="IMPLICIT_FLOW",
                 detail=f"Sink '{call.name}' is inside a branch conditioned on "
                        f"sensitive data. Information may leak through control flow."))
             raise EthicalError(
-                f"Implicit information flow (line {call.line}): "
+                f"Implicit information flow (line {call.string}): "
                 f"sink '{call.name}' is called inside a branch whose condition "
                 f"depends on sensitive data ({label_str}). "
                 f"Even though the argument is not directly tainted, the branch "
@@ -385,11 +385,11 @@ class EthicalAnalyzer:
                         label_str = ", ".join(sorted(labels)) if labels else "sensitive"
                         self.audit_trail.append(AuditEntry(
                             source="direct", label=label_str,
-                            path=[], sink=v.name, line=v.line,
+                            path=[], sink=v.name, line=v.string,
                             status="BLOCKED",
                             detail=f"Tainted data ({label_str}) flows to sink"))
                         raise EthicalError(
-                            f"Data leak (line {v.line}): {label_str} data "
+                            f"Data leak (line {v.string}): {label_str} data "
                             f"reaches sink '{v.name}' without sanitization. "
                             f"Wrap data in a sanitizer "
                             f"({' / '.join(sorted(SANITIZERS))}).")
@@ -406,11 +406,11 @@ class EthicalAnalyzer:
                             self.audit_trail.append(AuditEntry(
                                 source="interprocedural", label=label_str,
                                 path=[v.name, target.parameters[i]],
-                                sink="transitive", line=v.line,
+                                sink="transitive", line=v.string,
                                 status="BLOCKED",
                                 detail=f"Tainted arg leaks through param '{target.parameters[i]}'"))
                             raise EthicalError(
-                                f"Data leak (line {v.line}): {label_str} data "
+                                f"Data leak (line {v.string}): {label_str} data "
                                 f"is passed to '{v.name}' through parameter "
                                 f"'{target.parameters[i]}', which leaks to a sink internally. "
                                 f"Wrap data in a sanitizer "

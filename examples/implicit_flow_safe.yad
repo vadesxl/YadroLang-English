@@ -10,6 +10,6 @@ fn safe_check() requires [NetworkAccess] {
     return 0
 }
 
-fn main() {
+fn main() requires [NetworkAccess] {
     return safe_check()
 }
