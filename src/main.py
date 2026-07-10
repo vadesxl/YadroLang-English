@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """YadroLang compiler pipeline: parse, semantics, types, ethics, LLVM."""
-import sys
+import os,shutil,subprocess,sys,tempfile
 from llvmlite import binding as llvm
 from src.lexer import Lexer,LexerError
 from src.syntax import Parser,ParserError,Call,NumberLit,Binary
@@ -64,13 +64,25 @@ def compile(source,emit_ir=False):
  ast=Parser(Lexer(source).tokens()).parse();_check_unique_functions(ast);_check_entry_point(ast);_check_calls(ast);_check_expressions(ast);TypeChecker(SYSTEM_API).check(ast);EthicalAnalyzer().check(ast);ir_code=Codegen().generate(ast)
  if emit_ir:print(ir_code)
  return ir_code
+def _emit_windows_coff(module,output,triple):
+ clang=shutil.which("clang")
+ if not clang:raise RuntimeError("Windows native object emission requires clang from a supported LLVM toolchain")
+ with tempfile.TemporaryDirectory() as tmp:
+  ir_path=os.path.join(tmp,"yadro.ll")
+  with open(ir_path,"w",encoding="utf-8",newline="\n") as ir_file:ir_file.write(str(module))
+  result=subprocess.run([clang,"-target",triple,"-x","ir","-c",ir_path,"-o",output],capture_output=True,text=True)
+  if result.returncode:raise RuntimeError(f"clang COFF emission failed: {result.stderr.strip()}")
+ with open(output,"rb") as object_file:
+  if object_file.read(2)!=b"\x64\x86":raise RuntimeError("clang did not emit an AMD64 COFF object")
 def build_native(ir_code,output="kernel.o"):
  for initializer in (getattr(llvm,"initialize",None),getattr(llvm,"initialize_native_target",None),getattr(llvm,"initialize_native_asmprinter",None)):
   if initializer:
    try:initializer()
    except Exception:pass
  triple=llvm.get_default_triple();target=llvm.Target.from_triple(triple);machine=target.create_target_machine();module=llvm.parse_assembly(ir_code);module.triple=triple;module.data_layout=str(machine.target_data);module.verify()
- with open(output,"wb") as object_file:object_file.write(machine.emit_object(module))
+ if os.name=="nt":_emit_windows_coff(module,output,triple)
+ else:
+  with open(output,"wb") as object_file:object_file.write(machine.emit_object(module))
  print(f"[YADRO] Native object: {output}")
 def main_cli():
  if len(sys.argv)<2:print("Usage: python -m src.main file.yad [--ir]");raise SystemExit(1)
