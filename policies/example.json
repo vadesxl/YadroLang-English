@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "sources": {
+    "crm.customer": "PII"
+  },
+  "sinks": {
+    "agent.execute": "ToolExecution"
+  },
+  "sanitizers": {
+    "crm.redact": ["PII"]
+  }
+}
