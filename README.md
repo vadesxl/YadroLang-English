@@ -15,6 +15,35 @@ This is a translated mirror of [vadesxl/YadroLang](https://github.com/vadesxl/Ya
 - **Safety** - a built-in Ethical Analyzer rejects unethical AI patterns at compile time.
 - **Clarity** - strict, concise syntax.
 
+
+## What's New in v2.0 - Ethical Analyzer
+
+### Implicit Flow Detection
+Catches side-channel leaks through control flow. If a branch condition depends on sensitive data, ANY sink call inside that branch is blocked:
+```
+fn check(secret: i64) {
+  if secret > 100 {
+    print(0)    // BLOCKED - implicit flow from tainted condition
+  }
+}
+```
+
+### Multi-Label Taint Tracking
+Not just "tainted/clean" - tracks WHAT is tainted:
+- **PII** - names, emails, addresses, phone numbers
+- **Financial** - credit cards, bank accounts, transactions
+- **Health** - diagnosis, prescription, medical records
+- **Credentials** - passwords, tokens, API keys, secrets
+- **Location** - GPS coordinates, geolocation data
+
+### Expanded Dictionary
+- 28 taint sources (up from 8)
+- 26 dangerous sinks (up from 6)
+- 9 sanitizers (encrypt, hash, redact, mask, anonymize...)
+
+### Audit Trail
+Structured compliance reports for GDPR, HIPAA, PCI DSS auditing.
+
 ## Compiler pipeline
 
 ```
