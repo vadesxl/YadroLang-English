@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Verified LLVM IR backend with typed storage and stable ABI v1 symbols."""
+"""Verified LLVM IR backend with typed storage and injectable symbols."""
 import hashlib
 from llvmlite import ir,binding as llvm
 from src.syntax import Return,Let,Assign,If,While,NumberLit,StringLit,BoolLit,Ident,Binary,Call
@@ -8,10 +8,11 @@ class CodegenError(Exception):pass
 def llvm_type(name):return {"i64":INT,"bool":BOOL,"string":PTR}[name]
 def symbol(prefix,name):return f"yadro.{prefix}.{hashlib.sha256(name.encode()).hexdigest()[:16]}"
 class Codegen:
- def __init__(self):self.module=ir.Module(name="yadro");self.module.triple=llvm.get_default_triple();self.functions={};self.externs={};self.scope={};self.builder=None;self.count=0;self.printf=ir.Function(self.module,ir.FunctionType(I32,[PTR],var_arg=True),name="printf")
+ def __init__(self,symbol_mangler=None):
+  self.symbol_mangler=symbol if symbol_mangler is None else symbol_mangler;self.module=ir.Module(name="yadro");self.module.triple=llvm.get_default_triple();self.functions={};self.externs={};self.scope={};self.builder=None;self.count=0;self.printf=ir.Function(self.module,ir.FunctionType(I32,[PTR],var_arg=True),name="printf")
  def generate(self,program):
   self.fi=self._global("%lld\n");self.fs=self._global("%s\n");self.fr=self._global("Result main(): %lld\n")
-  for f in program.functions:self.functions[f.name]=ir.Function(self.module,ir.FunctionType(llvm_type(f.inferred_return_type),[llvm_type(x) for x in f.inferred_param_types]),name=symbol("fn",f.name))
+  for f in program.functions:self.functions[f.name]=ir.Function(self.module,ir.FunctionType(llvm_type(f.inferred_return_type),[llvm_type(x) for x in f.inferred_param_types]),name=self.symbol_mangler("fn",f.name))
   for f in program.functions:self._function(f)
   self._entry();text=str(self.module)
   try:module=llvm.parse_assembly(text);module.verify()
@@ -56,8 +57,7 @@ class Codegen:
   if isinstance(node,StringLit):return self._ptr(self.builder,self._global(node.value))
   if isinstance(node,Ident):return self.builder.load(self.scope[node.name][0],name=f"load.{node.name}")
   if isinstance(node,Binary):
-   left,right=self._expr(node.left),self._expr(node.right);ops={"+":self.builder.add,"-":self.builder.sub,"*":self.builder.mul,"/":self.builder.sdiv}
-   return ops[node.op](left,right) if node.op in ops else self.builder.icmp_signed(node.op,left,right)
+   left,right=self._expr(node.left),self._expr(node.right);ops={"+":self.builder.add,"-":self.builder.sub,"*":self.builder.mul,"/":self.builder.sdiv};return ops[node.op](left,right) if node.op in ops else self.builder.icmp_signed(node.op,left,right)
   if isinstance(node,Call):
    if node.name=="print":
     value=self._expr(node.arguments[0])
@@ -70,7 +70,7 @@ class Codegen:
    if node.name in self.functions:return self.builder.call(self.functions[node.name],args)
    signature=tuple(arg.type for arg in args);previous=self.externs.get(node.name)
    if previous and previous[0]!=signature:raise CodegenError(f"extern ABI mismatch for '{node.name}'")
-   if not previous:self.externs[node.name]=(signature,ir.Function(self.module,ir.FunctionType(INT,list(signature)),name=symbol("abi.v1",node.name)))
+   if not previous:self.externs[node.name]=(signature,ir.Function(self.module,ir.FunctionType(INT,list(signature)),name=self.symbol_mangler("abi.v1",node.name)))
    return self.builder.call(self.externs[node.name][1],args)
   raise CodegenError(f"unsupported node {type(node).__name__}")
  def _global(self,text):
