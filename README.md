@@ -1,118 +1,98 @@
-# YadroLang (Kernel)
+# YadroLang English 2.1.0
 
 [![CI](https://github.com/vadesxl/YadroLang-English/actions/workflows/run.yml/badge.svg)](https://github.com/vadesxl/YadroLang-English/actions/workflows/run.yml)
-[![Release](https://img.shields.io/github/v/release/vadesxl/YadroLang-English)](https://github.com/vadesxl/YadroLang-English/releases/latest)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](pyproject.toml)
+[![License](https://img.shields.io/badge/license-GPL--3.0--only-green.svg)](LICENSE)
 
 > "Code is law. Good is a choice."
 
-An experimental systems programming language, English-facade prototype, for building safe and ethical AI. Compiles to native code via LLVM.
+YadroLang English is the experimental English-language implementation lane of YadroLang for policy-checked AI agents and MCP tool graphs. It compiles through LLVM to native object code, with no VM, interpreter, or garbage collector at runtime.
 
-This is a translated mirror of [vadesxl/YadroLang](https://github.com/vadesxl/YadroLang) - same architecture and logic, English keywords/identifiers/messages.
+**Status:** research prototype. Version 2.1.0 is not a production-readiness, formal-completeness, or invulnerability claim.
 
-## Philosophy (Immutable laws)
+## Implemented in 2.1.0
 
-- **Sovereignty** - native compilation via LLVM. No VM, no GC, no interpreter at runtime.
-- **Safety** - a built-in Ethical Analyzer rejects unethical AI patterns at compile time.
-- **Clarity** - strict, concise syntax.
+- functions, variables, recursion, `if/else`, `while`, and `return`;
+- inference for i64, bool, and limited string values;
+- verified LLVM IR and native object files for Linux, macOS, and Windows;
+- compile-time capability mandates for sensitive system APIs;
+- interprocedural multi-label taint analysis, implicit-flow/PC labels, and strict declassification;
+- `scan`, `audit`, and `compile` CLI commands with JSON, SARIF, and versioned custom policies;
+- bounded Yadro MCP tool-graph analysis;
+- external ABI v1 with stable hashed symbols;
+- cross-platform unit, native, wheel, build, and benchmark CI.
 
+This repository shares architecture with the Russian implementation but is an independent development lane. Features and security fixes may land at different commits. Do not assume byte-for-byte or release parity.
 
-## What's New in v2.0 - Ethical Analyzer
+## Pipeline
 
-### Implicit Flow Detection
-Catches side-channel leaks through control flow. If a branch condition depends on sensitive data, ANY sink call inside that branch is blocked:
+```text
+.yad -> Lexer -> Parser/AST -> semantics/types -> Ethical Checker -> LLVM IR verify -> native object
 ```
-fn check(secret: i64) {
-  if secret > 100 {
-    print(0)    // BLOCKED - implicit flow from tainted condition
-  }
-}
-```
-
-### Multi-Label Taint Tracking
-Not just "tainted/clean" - tracks WHAT is tainted:
-- **PII** - names, emails, addresses, phone numbers
-- **Financial** - credit cards, bank accounts, transactions
-- **Health** - diagnosis, prescription, medical records
-- **Credentials** - passwords, tokens, API keys, secrets
-- **Location** - GPS coordinates, geolocation data
-
-### Expanded Dictionary
-- 28 taint sources (up from 8)
-- 26 dangerous sinks (up from 6)
-- 9 sanitizers (encrypt, hash, redact, mask, anonymize...)
-
-### Audit Trail
-Structured compliance reports for GDPR, HIPAA, PCI DSS auditing.
-
-## Compiler pipeline
-
-```
-.yad -> Lexer -> Parser (AST) -> Ethical Analyzer -> CodeGen -> LLVM IR -> native binary
-```
-
-## Features (v1.2)
-
-- Functions, variables, if/else, while, recursion
-- Built-in `print` via printf (real stdout output)
-- Native entry-point autogeneration: the program compiles into an ELF binary and runs
-- String printing: `print("Hello, world")` via %s/printf
-- Ethical Analyzer: capability mandates `requires [...]` + interprocedural flow-based taint analysis
-- Sources of personal data, sanitizers, and sinks - a formal leak model
 
 ## Example
 
-```
+```yadro
+fn double(value) {
+    return value * 2
+}
+
 fn main() {
     print(double(21))
-    return factorial(5)
+    return 0
 }
 ```
 
-## Build & run
+## Quick start
 
-Requirements: Python 3.11+ and llvmlite.
+Requirements: Python 3.11+, `llvmlite==0.43.0`; Windows native object generation requires a supported LLVM/Clang toolchain.
 
 ```bash
-pip install -r requirements.txt
 git clone https://github.com/vadesxl/YadroLang-English.git
 cd YadroLang-English
+python -m pip install -e .
 
-# Build native object file
-python -m src.main examples/test.yad
-
-# Print LLVM IR
-python -m src.main examples/test.yad --ir
+python -m src.guard version
+python -m src.guard scan examples/safe.yad
+python -m src.guard audit examples/safe.yad
+python -m src.guard compile examples/test.yad --ir
+python -m src.guard compile examples/test.yad -o kernel.o
 ```
 
-## Ethical mandates
+See [CLI.md](CLI.md) for the command contract and exit codes, [FEATURE_STATUS.md](FEATURE_STATUS.md) for feature status, and [ABI.md](ABI.md) for the native boundary.
 
-Dangerous system APIs are only reachable from a function whose signature explicitly declares the matching mandate, checked transitively up to the entry point:
+## Ethical Checker model
 
+Sensitive sinks require declared capabilities. Data labels propagate through values, calls, returns, and control flow. A sanitizer removes only its explicitly allowed labels. Unknown or unproved transitions must fail closed.
+
+This is a static, versioned policy model, not a universal proof of ethical behavior. It does not cover arbitrary native/FFI behavior, a malicious compiler, supply-chain compromise, runtime memory corruption, microarchitectural side channels, or mistakes in the policy itself.
+
+## Honest limitations
+
+- current string lowering is a transitional pointer-only `%s` implementation, not a complete memory-safe string model;
+- no GC, VM, full ownership system, dynamic policy, or arbitrary vendor MCP manifest import;
+- no claim of whole-program formal proof or complete attack coverage;
+- the Russian Proof Seal implementation is not yet an English feature;
+- protection is defense in depth, not an absolute boundary;
+- new security claims require reproducible adversarial tests.
+
+Return-path soundness is being reviewed separately and must not be treated as merged until its exact PR head is accepted. Checked arithmetic and the string memory model also require separate implementation and review lanes.
+
+## Testing
+
+Security and native checks must not turn green through `skip`; a missing mandatory toolchain is a failure.
+
+```bash
+python -m unittest discover -s tests -v
+python -m benchmarks.run
 ```
-fn export(data) requires [DiskWrite] {
-    check_safety(data)
-    return file.write(data)
-}
-```
 
-No mandate → compile error. No data sanitization → compile error (taint error).
+## Security
 
-## Three demonstrations of the analyzer
+A bypass is a defect, not "incorrect usage." A useful report includes a minimal reproducible input, expected and actual behavior, version/commit, platform, and threat model. Never put real credentials or personal data in an issue.
 
-- `examples/no_mandate.yad` - missing `[NetworkAccess]` mandate → mandate error
-- `examples/leak.yad` - mandate present, but personal data leaves without sanitization → taint error
-- `examples/safe.yad` - mandate + sanitizer `anonymize(...)` → compiles
-
-Sources of personal data (`user.data()`, `file.read()`, ...) taint values. Taint propagates through assignments and operations. A tainted value can only reach a sink (network/disk) after passing through a sanitizer (`anonymize(...)`, `check_consent(...)`, ...). Otherwise - compile error.
-
-## Release
-
-Mirrors upstream **v1.4.0 - Codegen hardening**:
-
-- 11 fixes (5 security + 6 correctness)
-- ~33 CI checks
-- Ethical Analyzer: capability mandates + personal-data taint analysis
+Priority audit surfaces include parser/AST direct construction, Unicode and canonicalization, integer boundaries, FFI assumptions, LLVM poison/ABI mismatches, evidence omission, resource exhaustion, malformed object formats, and cross-platform semantic drift.
 
 ## License
 
-GPL-3.0 (same as the upstream Russian-language project).
+GPL-3.0-only. See [LICENSE](LICENSE).
