@@ -7,6 +7,7 @@ from src.syntax import Parser,ParserError,Call,NumberLit,Binary
 from src.ethics import EthicalAnalyzer,EthicalError,SINKS,SOURCES,SANITIZERS
 from src.typesys import TypeChecker,TypeCheckError
 from src.codegen import Codegen,CodegenError
+TOOL_TIMEOUT=30
 class EntryPointError(Exception):pass
 class SemanticError(Exception):pass
 def _check_entry_point(ast):
@@ -64,13 +65,16 @@ def compile(source,emit_ir=False):
  ast=Parser(Lexer(source).tokens()).parse();_check_unique_functions(ast);_check_entry_point(ast);_check_calls(ast);_check_expressions(ast);TypeChecker(SYSTEM_API).check(ast);EthicalAnalyzer().check(ast);ir_code=Codegen().generate(ast)
  if emit_ir:print(ir_code)
  return ir_code
+def _run_tool(command,stage):
+ try:return subprocess.run(command,capture_output=True,text=True,timeout=TOOL_TIMEOUT)
+ except subprocess.TimeoutExpired as error:raise RuntimeError(f"{stage} timed out after {TOOL_TIMEOUT}s: {os.path.basename(str(error.cmd[0]))}") from error
 def _emit_windows_coff(module,output,triple):
  clang=shutil.which("clang")
- if not clang:raise RuntimeError("Windows native object emission requires clang from a supported LLVM toolchain")
+ if not clang:raise RuntimeError("Windows native object emission requires clang from a supported LLVM toolchain in PATH")
  with tempfile.TemporaryDirectory() as tmp:
   ir_path=os.path.join(tmp,"yadro.ll")
   with open(ir_path,"w",encoding="utf-8",newline="\n") as ir_file:ir_file.write(str(module))
-  result=subprocess.run([clang,"-target",triple,"-x","ir","-c",ir_path,"-o",output],capture_output=True,text=True)
+  result=_run_tool([clang,"-target",triple,"-x","ir","-c",ir_path,"-o",output],"clang COFF emission")
   if result.returncode:raise RuntimeError(f"clang COFF emission failed: {result.stderr.strip()}")
  with open(output,"rb") as object_file:
   if object_file.read(2)!=b"\x64\x86":raise RuntimeError("clang did not emit an AMD64 COFF object")
