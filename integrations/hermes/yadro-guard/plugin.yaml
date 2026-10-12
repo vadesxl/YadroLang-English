@@ -1,0 +1,8 @@
+# Hermes agent-plugin manifest. Folder MUST be named "yadro-guard".
+name: yadro-guard
+label: Guard
+description: "Yadro Guard stops AI agents from leaking secrets. Every tool call is checked before it runs; secrets are blocked, protected with vault tokens, or quarantined. Offline. Fail-closed."
+version: 0.2.0
+manifest_version: 1
+provides_hooks:
+  - pre_tool_call

@@ -1,0 +1,108 @@
+/* Yadro Guard — styling in the spirit of Hermes Home: monospace font, glassy
+ * cards, "── title ──" headings, colors from the host theme (--color-primary). */
+.yg-root {
+  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));
+  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);
+  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));
+  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);
+  --yg-bad: var(--color-destructive, #e25555);
+  --yg-good: #3ec46d;
+  height: 100%; overflow: auto; padding: 18px;
+  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);
+  font-size: 12px; line-height: 1.55;
+  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));
+}
+.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }
+.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }
+.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }
+.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;
+  padding: 7px 10px; color: inherit; font: inherit; outline: none; }
+.yg-input:focus { border-color: var(--yg-accent); }
+.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;
+  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }
+.yg-btn:disabled { opacity: .35; cursor: default; }
+.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }
+.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }
+.yg-card.wide { grid-column: 1 / -1; }
+.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;
+  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }
+.yg-hd::before { content: "── "; opacity: .5; }
+.yg-hd::after { content: " ─────────────────────────────────────────"; opacity: .3; }
+.yg-dim { color: var(--color-muted-foreground, #7d8496); }
+.yg-err { color: var(--yg-bad); }
+.yg-ok { color: var(--yg-good); }
+.yg-warn { color: #e8a33d; }
+.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }
+.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }
+.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }
+.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }
+.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }
+.yg-chips { margin-top: 8px; }
+.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }
+.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }
+.yg-node.src { border-color: #8a5cf6; }
+.yg-node.sink { border-color: var(--yg-bad); }
+.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }
+.yg-mono { font-weight: 700; margin: 2px 0 4px; }
+.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }
+.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }
+.yg-row:last-child { border-bottom: none; }
+.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }
+.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }
+.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yg-tok { font-size: 10.5px; }
+.yg-note { margin-top: 6px; font-size: 10px; }
+.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }
+.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }
+.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }
+.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.yg-tabs { display: flex; gap: 4px; margin-left: auto; }
+.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;
+  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.yg-tab:hover { color: var(--yg-accent); }
+.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }
+.yg-btn.good { background: var(--yg-good); }
+.yg-btn.bad { background: var(--yg-bad); color: #fff; }
+.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.yg-shield .yg-big { font-size: 22px; font-weight: 700; }
+.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }
+.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }
+.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;
+  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }
+.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }
+.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }
+.yg-inc-id { font-weight: 700; letter-spacing: .08em; }
+.yg-right { margin-left: auto; }
+.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }
+.yg-inc-what { margin: 6px 0; }
+.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }
+.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }
+.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }
+.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }
+.yg-small { font-size: 11px; margin: 4px 0; }
+.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }
+.yg-gap { margin-top: 12px; }
+.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }
+.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);
+  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }
+.yg-code-in:focus { border-color: var(--yg-accent); }
+.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }
+select.yg-input { appearance: auto; }
+.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }
+.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }
+.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }
+.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }
+.yg-report { margin-top: 12px; }
+.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }
+.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;
+  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }
+.yg-kind:hover { border-color: var(--yg-accent); }
+.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }
+.yg-root { color-scheme: dark; }
