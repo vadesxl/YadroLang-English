@@ -55,7 +55,7 @@ class DetectorTests(unittest.TestCase):
     def test_preview_masks_value(self):
         f = d.scan_text(f"x {GH}")[0]
         self.assertNotIn(GH, str(f.public()))
-        self.assertTrue(f.preview.startswith("ghp_") and "…" in f.preview)
+        self.assertTrue(f.preview.startswith("ghp_") and "***" in f.preview)
 
     def test_nested_arguments_and_editing(self):
         args = {"url": "https://api.x", "headers": {"Authorization": f"token {GH}"}, "body": [f"card {CARD}"]}
