@@ -1,9 +1,9 @@
 {
   "name": "yadro-guard",
-  "label": "Guard",
-  "description": "Yadro Guard: proves and fixes sensitive-data leaks in AI-agent code before it runs. Offline.",
+  "label": "mcp-secrets-guard",
+  "description": "mcp-secrets-guard: local Model Context Protocol secret guard. Proves and fixes sensitive-data leaks in AI-agent code before it runs. Local-only, no cloud uploads.",
   "icon": "Shield",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "tab": {
     "path": "/guard",
     "position": "after:home"

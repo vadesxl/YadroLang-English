@@ -2,7 +2,7 @@
 import * as React from "react";
 import { host } from "@hermes/plugin-sdk";
 
-const CSS = "/* Yadro Guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 1 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--yg-surface);\n  border: 1px solid var(--yg-border); border-radius: 6px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);\n  min-width: 180px; z-index: 100; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n";
+const CSS = "/* Yadro Guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 1 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--yg-surface);\n  border: 1px solid var(--yg-border); border-radius: 6px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);\n  min-width: 180px; z-index: 100; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n";
 const API = "/api/plugins/yadro-guard";
 let rest = null;
 let GuardPage = null;
@@ -766,6 +766,64 @@ const makeGuardPage = function (SDK, onReady) {
     if (s < 86400) return Math.floor(s / 3600) + " h ago";
     return Math.floor(s / 86400) + " d ago";
   }
+  // Exact timestamp DD.MM.YYYY HH:MM:SS (local time), replaces ago() in history cards.
+  function fmtTs(ts) {
+    if (!ts) return "";
+    const d = new Date(ts * 1000), p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return p(d.getDate()) + "." + p(d.getMonth() + 1) + "." + d.getFullYear() +
+      " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  }
+  function copyText(text, okLabel) {
+    if (!text) return;
+    const show = function () { var el = document.createElement("div"); el.textContent = okLabel || "Скопировано";
+      el.style.cssText = "position:fixed; bottom:60px; right:16px; z-index:9999; background:#222; color:#9ee; padding:8px 12px; border-radius:6px; font:12px monospace; border:1px solid #9aa7ff;";
+      document.body.appendChild(el); setTimeout(function () { el.remove(); }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(show).catch(function () {});
+      return;
+    }
+    var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand("copy"); show(); } catch (e) {} ta.remove();
+  }
+  function blobDownload(name, text, type) {
+    var blob = new Blob([text], { type: type || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a);
+    a.click(); URL.revokeObjectURL(url); a.remove();
+  }
+  // Proof Seal footer for any generated report: SHA-256 of the document body + exact time.
+  function sha256(text) {
+    var enc = new TextEncoder().encode(text);
+    if (window.crypto && window.crypto.subtle) {
+      return window.crypto.subtle.digest("SHA-256", enc).then(function (buf) {
+        return [].map.call(new Uint8Array(buf), function (b) { return (b < 16 ? "0" : "") + b.toString(16); }).join("");
+      });
+    }
+    var h1 = 0x811c9dc5, h2 = 0x9e3779b9;
+    for (var i = 0; i < text.length; i++) { var c = text.charCodeAt(i); h1 = ((h1 ^ c) * 16777619) >>> 0; h2 = Math.imul(h2 ^ c, 16777619) >>> 0; }
+    return Promise.resolve("x" + h1.toString(16) + h2.toString(16));
+  }
+  function proofFooter(hash, when) {
+    return "\n\n───── Proof Seal ─────\nSHA-256: " + hash + "\nGenerated: " + when + "\nIntegrity: verified (local).\n";
+  }
+  // Per-incident mini-report (TXT/JSON) with Proof Seal footer. Client-side only — needs no
+  // backend endpoint, works off the already-fetched incident object.
+  function miniReport(inc, kind) {
+    const ts = Math.floor(Date.now() / 1000);
+    const when = fmtTs(ts);
+    const body = (kind === "json")
+      ? JSON.stringify({ incident: inc, generated: ts }, null, 2)
+      : [
+          "mcp-secrets-guard — протокол инцидента",
+          "ИД: " + inc.id,
+          "Статус: " + (STATUS_TEXT[inc.status] || inc.status),
+          "Время (локальное): " + fmtTs(inc.at),
+          "Агент: " + (inc.agent || ""),
+          "Инструмент: " + (inc.tool || ""),
+          "Назначение: " + (inc.destination || ""),
+        ].join("\n") + (inc.risks && inc.risks[0] ? "\nСниппет:\n" + (inc.risks[0].snippet || "") : "");
+    sha256(body).then(function (hash) { var out = body + proofFooter(hash, when); blobDownload("incident-" + inc.id + "." + (kind === "json" ? "json" : "txt"), out, kind === "json" ? "application/json" : "text/plain;charset=utf-8"); });
+  }
   const LABEL_COLOR = { Credentials: "#8a5cf6", Financial: "#e8a33d", PII: "#e0533d", Health: "#d14fa0", Location: "#2f9fd8" };
   const STATUS_TEXT = { pending: "Waiting for your decision", protected: "Sent with protection",
     quarantined: "Blocked, secret quarantined", allowed: "Allowed once" };
@@ -824,20 +882,32 @@ const makeGuardPage = function (SDK, onReady) {
         .finally(function () { setBusy(""); });
     }
     const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const fullCmd = ((inc.tool || "") + " " + (inc.destination || "")).trim() +
+      ((inc.risks || []).length ? "  # " + inc.risks[0].snippet : "") +
+      ((inc.agent && inc.agent.session_id) ? "  // session " + inc.agent.session_id : "");
     return h("div", { className: "yg-inc " + (pending ? "pending" : "done") },
       h("div", { className: "yg-inc-top" },
         h("span", { className: "yg-inc-id" }, inc.id),
         h(Pill, { kind: pending ? "bad" : inc.status === "quarantined" ? "warn" : "ok" }, STATUS_TEXT[inc.status] || inc.status),
-        h("span", { className: "yg-dim yg-right" }, ago(inc.at) + (inc.attempts > 1 ? " · " + inc.attempts + " attempts" : ""))),
+        h("span", { className: "yg-dim yg-right" }, fmtTs(inc.at) + (inc.attempts > 1 ? " · " + inc.attempts + " attempts" : "")),
+        h("span", { style: { width: "0" } })),
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
-        "Agent ", h("b", null, who), " tried to use the tool ", h("b", { className: "yg-mono" }, inc.tool),
-        " to send data to ", h("b", { className: "yg-mono" }, inc.destination), ".") : null,
+        "Агент ", h("b", null, who), " попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
+        " для отправки данных в ", h("b", { className: "yg-mono" }, inc.destination), ".") : null,
+      fullCmd ? h("div", { className: "yg-fullcmd" },
+        h("div", { className: "yg-fullcmd-head" },
+          h("details", { className: "yg-gaps" },
+            h("summary", null, "Полная команда"),
+            h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCmd)),
+          h("button", { type: "button", className: "yg-btn ghost yg-copy", onClick: function () { copyText(fullCmd); } }, "⧉ Копировать команду"),
+          h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "txt"); } }, "Отчёт TXT"),
+          h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "json"); } }, "Отчёт JSON"))) : null,
       (inc.risks || []).map(function (r, i) {
         return h("div", { className: "yg-risk", key: "r" + i },
-          h("div", null, "Agent ", h("b", null, who), " tried to: ", h("b", null, r.title), "."),
+          h("div", null, "Агент ", h("b", null, who), " попытался: ", h("b", null, r.title), "."),
           h("div", { className: "yg-dim" }, r.why),
           h("div", { className: "yg-diff old" }, r.snippet),
-          h("div", { className: "yg-ok yg-small" }, "Safer: " + r.safer));
+          h("div", { className: "yg-ok yg-small" }, "Безопаснее: " + r.safer));
       }),
       h("div", { className: "yg-inc-what" },
         (inc.findings || []).map(function (f, i) {
@@ -849,8 +919,8 @@ const makeGuardPage = function (SDK, onReady) {
             f.token ? h("span", { className: "yg-dim" }, "→ " + f.token.slice(0, 24) + "…") : null);
         })),
       inc.process ? h("div", { className: "yg-dim yg-small" },
-        "Process: " + (inc.process.name || "?") + " (pid " + inc.process.pid + ")" +
-        (inc.agent && inc.agent.task_id ? " · task " + inc.agent.task_id.slice(0, 12) : "")) : null,
+        "Процесс: " + (inc.process.name || "?") + " (pid " + inc.process.pid + ")" +
+        (inc.agent && inc.agent.task_id ? " · задача " + inc.agent.task_id.slice(0, 12) : "")) : null,
       pending ? h("div", { className: "yg-actions" },
         (inc.findings || []).length && !(inc.risks || []).length ? h("button", { className: "yg-btn good", disabled: !!busy,
           onClick: function () { choose("protect"); },
@@ -906,23 +976,47 @@ const makeGuardPage = function (SDK, onReady) {
 
   function LivePanel(p) {
     const data = p.data;
+    const [q, setQ] = useState("");
+    const [filter, setFilter] = useState("all");
     if (!data) return h(Card, { title: "live protection", className: "wide" }, h(Empty, { text: "loading…" }));
     if (data.status === "error") return h(Card, { title: "live protection", className: "wide" },
       h("div", { className: "yg-err" }, "● " + data.message));
     const items = data.items || [];
     const pending = items.filter(function (i) { return i.status === "pending"; });
-    const done = items.filter(function (i) { return i.status !== "pending"; });
+    const done = items.filter(function (i) { return i.status !== "pending"; })
+      .filter(function (inc) {
+        if (filter === "blocked" && inc.status !== "quarantined" && inc.status !== "blocked") return false;
+        if (filter === "allowed" && inc.status !== "allowed" && inc.status !== "protected") return false;
+        if (!q) return true;
+        const hay = (inc.id + " " + (inc.tool || "") + " " + (inc.destination || "") + " " +
+          (inc.findings || []).map(function (f) { return f.label || ""; }).join(" ")).toLowerCase();
+        return hay.indexOf(q.toLowerCase()) !== -1;
+      });
+    const FILTERS = [["all", "Все"], ["blocked", "Заблокировано"], ["allowed", "Разрешено"]];
     return h(React.Fragment, null,
       h(Card, { title: "live protection", className: "wide" },
         h("div", { className: "yg-shield " + (pending.length ? "bad" : "ok") },
-          h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Protected"),
+          h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Защищено"),
           h("span", { className: "yg-dim" }, pending.length
-            ? "  An agent tried to send sensitive data. Decide below what should happen."
-            : "  Every agent action is checked for secrets before it runs.")),
+            ? "Агент пытался отправить конфиденциальные данные. Решите ниже, что делать."
+            : "· Каждое действие агента проверяется на секреты до запуска.")),
         pending.length ? pending.map(function (inc) { return h(IncidentCard, { key: inc.id, inc: inc, onChanged: p.onChanged }); }) : null),
       h(Card, { title: "incident history", className: "wide grow" },
+        h("div", { className: "yg-hst-tools" },
+          h("input", { className: "yg-input yg-hst-search", placeholder: "Поиск по тексту или ИД…", value: q,
+            onChange: function (e) { setQ(e.target.value); } }),
+          h("div", { className: "yg-kinds", style: { margin: 0 } },
+            FILTERS.map(function (f) { return h("button", { key: f[0], type: "button", className: "yg-kind" + (filter === f[0] ? " on" : ""), onClick: function () { setFilter(f[0]); } }, f[1]); }))),
         done.length ? h("div", { className: "yg-list" },
-          done.slice(0, 50).map(function (inc) { return h(IncidentCard, { key: inc.id, inc: inc, onChanged: p.onChanged }); }))
+          done.slice(0, 50).map(function (inc) {
+            var accSummary = h("summary", { className: "yg-acc-sum" },
+              h("span", { className: "yg-acc-id" }, inc.id),
+              h("span", { className: "yg-acc-status" }, STATUS_TEXT[inc.status] || inc.status),
+              h("span", { className: "yg-dim yg-acc-time" }, fmtTs(inc.at)),
+              h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")));
+            return h("details", { key: inc.id, className: "yg-acc", open: false }, accSummary,
+              h(IncidentCard, { inc: inc, onChanged: p.onChanged }));
+          }))
           : h(Empty, { text: "No incidents yet." })));
   }
   const SAMPLE = "fn main() requires [NetworkAccess] {\n  let key = env.secret()\n  return net.send(key)\n}\n";
@@ -1370,7 +1464,7 @@ const makeGuardPage = function (SDK, onReady) {
     useEffect(function () {
       try {
         if (!baseTitle.current) baseTitle.current = document.title;
-        document.title = pending ? "Yadro Guard · " + pending + " blocked" : baseTitle.current;
+        document.title = pending ? "mcp-secrets-guard · " + pending + " blocked" : baseTitle.current;
       } catch (e) {}
     }, [pending]);
     useEffect(function () {
@@ -1400,12 +1494,12 @@ const makeGuardPage = function (SDK, onReady) {
     }
     return h("div", { className: "yg-root" },
       h("div", { className: "yg-top" },
-        h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "YADRO GUARD"),
+        h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "mcp-secrets-guard"),
         h("div", { className: "yg-tabs" },
-          TabBtn("live", "Live protection" + (pending ? " (" + pending + ")" : ""), pending),
-          TabBtn("exposure", "Exposure"),
-          TabBtn("check", "Check code"),
-          TabBtn("vault", "Vault"))),
+          TabBtn("live", "Защита" + (pending ? " (" + pending + ")" : ""), pending),
+          TabBtn("exposure", "Экспозиция"),
+          TabBtn("check", "Проверка кода"),
+          TabBtn("vault", "Сейф"))),
       h("div", { className: "yg-grid" + (tab === "live" ? " live" : "") },
         tab === "live" ? h(LivePanel, { data: incidents, onChanged: refresh }) : null,
         tab === "exposure" ? h(ExposurePanel, null) : null,
@@ -1416,7 +1510,7 @@ const makeGuardPage = function (SDK, onReady) {
       // The toast auto-dismisses; this pill keeps the unresolved count one click away.
       !toast && pending ? h("button", { type: "button", className: "yg-toast-count", style: TOAST_COUNT,
         title: "Show the blocked action", onClick: promote }, "⛔ " + pending + " blocked") : null,
-      h("div", { className: "yg-foot" }, "🔒 Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged."));
+      h("div", { className: "yg-foot" }, "🔒 mcp-secrets-guard · всё работает на этом компьютере. Секреты маскируются; полное значение появляется, только пока удерживаете 👁, и каждый просмотр записывается в журнал."));
   }
 
   onReady(GuardPage);

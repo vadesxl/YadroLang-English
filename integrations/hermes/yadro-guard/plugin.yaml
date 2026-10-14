@@ -1,7 +1,8 @@
-# Hermes agent-plugin manifest. Folder MUST be named "yadro-guard".
+# Hermes agent-plugin manifest. Folder MUST be named "yadro-guard" (internal id, kept for
+# backward compatible debugging until release). Display name/brand is mcp-secrets-guard.
 name: yadro-guard
-label: Guard
-description: "Yadro Guard stops AI agents from leaking secrets. Every tool call is checked before it runs; secrets are blocked, protected with vault tokens, or quarantined. Offline. Fail-closed."
+label: mcp-secrets-guard
+description: "mcp-secrets-guard protects secrets over the Model Context Protocol — every tool call is checked locally before it runs; secrets are blocked, protected with vault tokens, or quarantined. Local-only: no data ever leaves this computer. Fail-closed."
 version: 0.2.0
 manifest_version: 1
 provides_hooks:

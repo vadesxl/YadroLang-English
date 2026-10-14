@@ -144,3 +144,31 @@ select.yg-input { appearance: auto; }
 .yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }
 .yg-vault-menu-item.bad { color: var(--yg-bad); }
 .yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }
+
+/* Incident full-command block + per-incident report buttons (Blocks 1-2) */
+.yg-fullcmd { margin: 8px 0 4px; }
+.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;
+  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);
+  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }
+.yg-copy { font-size: 10px; }
+.yg-trash { padding: 3px 7px; }
+
+/* History toolbar: search + filters (Block 2) */
+.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.yg-hst-search { flex: 1 1 220px; }
+
+/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */
+.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;
+  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }
+.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }
+.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px; flex-wrap: wrap; }
+.yg-acc summary::-webkit-details-marker { display: none; }
+.yg-acc summary::before { content: "▶"; opacity: .5; font-size: 9px; }
+.yg-acc[open] summary::before { content: "▼"; }
+.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }
+.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }
+.yg-acc-status { font-size: 10.5px; font-weight: 700; }
+.yg-acc-time { margin-left: auto; white-space: nowrap; }
+.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

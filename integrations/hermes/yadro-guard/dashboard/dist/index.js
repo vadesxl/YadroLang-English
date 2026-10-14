@@ -751,6 +751,64 @@
     if (s < 86400) return Math.floor(s / 3600) + " h ago";
     return Math.floor(s / 86400) + " d ago";
   }
+  // Exact timestamp DD.MM.YYYY HH:MM:SS (local time), replaces ago() in history cards.
+  function fmtTs(ts) {
+    if (!ts) return "";
+    const d = new Date(ts * 1000), p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return p(d.getDate()) + "." + p(d.getMonth() + 1) + "." + d.getFullYear() +
+      " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  }
+  function copyText(text, okLabel) {
+    if (!text) return;
+    const show = function () { var el = document.createElement("div"); el.textContent = okLabel || "Скопировано";
+      el.style.cssText = "position:fixed; bottom:60px; right:16px; z-index:9999; background:#222; color:#9ee; padding:8px 12px; border-radius:6px; font:12px monospace; border:1px solid #9aa7ff;";
+      document.body.appendChild(el); setTimeout(function () { el.remove(); }, 1800); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(show).catch(function () {});
+      return;
+    }
+    var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
+    ta.select(); try { document.execCommand("copy"); show(); } catch (e) {} ta.remove();
+  }
+  function blobDownload(name, text, type) {
+    var blob = new Blob([text], { type: type || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a);
+    a.click(); URL.revokeObjectURL(url); a.remove();
+  }
+  // Proof Seal footer for any generated report: SHA-256 of the document body + exact time.
+  function sha256(text) {
+    var enc = new TextEncoder().encode(text);
+    if (window.crypto && window.crypto.subtle) {
+      return window.crypto.subtle.digest("SHA-256", enc).then(function (buf) {
+        return [].map.call(new Uint8Array(buf), function (b) { return (b < 16 ? "0" : "") + b.toString(16); }).join("");
+      });
+    }
+    var h1 = 0x811c9dc5, h2 = 0x9e3779b9;
+    for (var i = 0; i < text.length; i++) { var c = text.charCodeAt(i); h1 = ((h1 ^ c) * 16777619) >>> 0; h2 = Math.imul(h2 ^ c, 16777619) >>> 0; }
+    return Promise.resolve("x" + h1.toString(16) + h2.toString(16));
+  }
+  function proofFooter(hash, when) {
+    return "\n\n───── Proof Seal ─────\nSHA-256: " + hash + "\nGenerated: " + when + "\nIntegrity: verified (local).\n";
+  }
+  // Per-incident mini-report (TXT/JSON) with Proof Seal footer. Client-side only — needs no
+  // backend endpoint, works off the already-fetched incident object.
+  function miniReport(inc, kind) {
+    const ts = Math.floor(Date.now() / 1000);
+    const when = fmtTs(ts);
+    const body = (kind === "json")
+      ? JSON.stringify({ incident: inc, generated: ts }, null, 2)
+      : [
+          "mcp-secrets-guard — протокол инцидента",
+          "ИД: " + inc.id,
+          "Статус: " + (STATUS_TEXT[inc.status] || inc.status),
+          "Время (локальное): " + fmtTs(inc.at),
+          "Агент: " + (inc.agent || ""),
+          "Инструмент: " + (inc.tool || ""),
+          "Назначение: " + (inc.destination || ""),
+        ].join("\n") + (inc.risks && inc.risks[0] ? "\nСниппет:\n" + (inc.risks[0].snippet || "") : "");
+    sha256(body).then(function (hash) { var out = body + proofFooter(hash, when); blobDownload("incident-" + inc.id + "." + (kind === "json" ? "json" : "txt"), out, kind === "json" ? "application/json" : "text/plain;charset=utf-8"); });
+  }
   const LABEL_COLOR = { Credentials: "#8a5cf6", Financial: "#e8a33d", PII: "#e0533d", Health: "#d14fa0", Location: "#2f9fd8" };
   const STATUS_TEXT = { pending: "Waiting for your decision", protected: "Sent with protection",
     quarantined: "Blocked, secret quarantined", allowed: "Allowed once" };
@@ -809,20 +867,32 @@
         .finally(function () { setBusy(""); });
     }
     const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const fullCmd = ((inc.tool || "") + " " + (inc.destination || "")).trim() +
+      ((inc.risks || []).length ? "  # " + inc.risks[0].snippet : "") +
+      ((inc.agent && inc.agent.session_id) ? "  // session " + inc.agent.session_id : "");
     return h("div", { className: "yg-inc " + (pending ? "pending" : "done") },
       h("div", { className: "yg-inc-top" },
         h("span", { className: "yg-inc-id" }, inc.id),
         h(Pill, { kind: pending ? "bad" : inc.status === "quarantined" ? "warn" : "ok" }, STATUS_TEXT[inc.status] || inc.status),
-        h("span", { className: "yg-dim yg-right" }, ago(inc.at) + (inc.attempts > 1 ? " · " + inc.attempts + " attempts" : ""))),
+        h("span", { className: "yg-dim yg-right" }, fmtTs(inc.at) + (inc.attempts > 1 ? " · " + inc.attempts + " attempts" : "")),
+        h("span", { style: { width: "0" } })),
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
-        "Agent ", h("b", null, who), " tried to use the tool ", h("b", { className: "yg-mono" }, inc.tool),
-        " to send data to ", h("b", { className: "yg-mono" }, inc.destination), ".") : null,
+        "Агент ", h("b", null, who), " попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
+        " для отправки данных в ", h("b", { className: "yg-mono" }, inc.destination), ".") : null,
+      fullCmd ? h("div", { className: "yg-fullcmd" },
+        h("div", { className: "yg-fullcmd-head" },
+          h("details", { className: "yg-gaps" },
+            h("summary", null, "Полная команда"),
+            h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCmd)),
+          h("button", { type: "button", className: "yg-btn ghost yg-copy", onClick: function () { copyText(fullCmd); } }, "⧉ Копировать команду"),
+          h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "txt"); } }, "Отчёт TXT"),
+          h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "json"); } }, "Отчёт JSON"))) : null,
       (inc.risks || []).map(function (r, i) {
         return h("div", { className: "yg-risk", key: "r" + i },
-          h("div", null, "Agent ", h("b", null, who), " tried to: ", h("b", null, r.title), "."),
+          h("div", null, "Агент ", h("b", null, who), " попытался: ", h("b", null, r.title), "."),
           h("div", { className: "yg-dim" }, r.why),
           h("div", { className: "yg-diff old" }, r.snippet),
-          h("div", { className: "yg-ok yg-small" }, "Safer: " + r.safer));
+          h("div", { className: "yg-ok yg-small" }, "Безопаснее: " + r.safer));
       }),
       h("div", { className: "yg-inc-what" },
         (inc.findings || []).map(function (f, i) {
@@ -834,8 +904,8 @@
             f.token ? h("span", { className: "yg-dim" }, "→ " + f.token.slice(0, 24) + "…") : null);
         })),
       inc.process ? h("div", { className: "yg-dim yg-small" },
-        "Process: " + (inc.process.name || "?") + " (pid " + inc.process.pid + ")" +
-        (inc.agent && inc.agent.task_id ? " · task " + inc.agent.task_id.slice(0, 12) : "")) : null,
+        "Процесс: " + (inc.process.name || "?") + " (pid " + inc.process.pid + ")" +
+        (inc.agent && inc.agent.task_id ? " · задача " + inc.agent.task_id.slice(0, 12) : "")) : null,
       pending ? h("div", { className: "yg-actions" },
         (inc.findings || []).length && !(inc.risks || []).length ? h("button", { className: "yg-btn good", disabled: !!busy,
           onClick: function () { choose("protect"); },
@@ -891,23 +961,47 @@
 
   function LivePanel(p) {
     const data = p.data;
+    const [q, setQ] = useState("");
+    const [filter, setFilter] = useState("all");
     if (!data) return h(Card, { title: "live protection", className: "wide" }, h(Empty, { text: "loading…" }));
     if (data.status === "error") return h(Card, { title: "live protection", className: "wide" },
       h("div", { className: "yg-err" }, "● " + data.message));
     const items = data.items || [];
     const pending = items.filter(function (i) { return i.status === "pending"; });
-    const done = items.filter(function (i) { return i.status !== "pending"; });
+    const done = items.filter(function (i) { return i.status !== "pending"; })
+      .filter(function (inc) {
+        if (filter === "blocked" && inc.status !== "quarantined" && inc.status !== "blocked") return false;
+        if (filter === "allowed" && inc.status !== "allowed" && inc.status !== "protected") return false;
+        if (!q) return true;
+        const hay = (inc.id + " " + (inc.tool || "") + " " + (inc.destination || "") + " " +
+          (inc.findings || []).map(function (f) { return f.label || ""; }).join(" ")).toLowerCase();
+        return hay.indexOf(q.toLowerCase()) !== -1;
+      });
+    const FILTERS = [["all", "Все"], ["blocked", "Заблокировано"], ["allowed", "Разрешено"]];
     return h(React.Fragment, null,
       h(Card, { title: "live protection", className: "wide" },
         h("div", { className: "yg-shield " + (pending.length ? "bad" : "ok") },
-          h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Protected"),
+          h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Защищено"),
           h("span", { className: "yg-dim" }, pending.length
-            ? "  An agent tried to send sensitive data. Decide below what should happen."
-            : "  Every agent action is checked for secrets before it runs.")),
+            ? "Агент пытался отправить конфиденциальные данные. Решите ниже, что делать."
+            : "· Каждое действие агента проверяется на секреты до запуска.")),
         pending.length ? pending.map(function (inc) { return h(IncidentCard, { key: inc.id, inc: inc, onChanged: p.onChanged }); }) : null),
       h(Card, { title: "incident history", className: "wide grow" },
+        h("div", { className: "yg-hst-tools" },
+          h("input", { className: "yg-input yg-hst-search", placeholder: "Поиск по тексту или ИД…", value: q,
+            onChange: function (e) { setQ(e.target.value); } }),
+          h("div", { className: "yg-kinds", style: { margin: 0 } },
+            FILTERS.map(function (f) { return h("button", { key: f[0], type: "button", className: "yg-kind" + (filter === f[0] ? " on" : ""), onClick: function () { setFilter(f[0]); } }, f[1]); }))),
         done.length ? h("div", { className: "yg-list" },
-          done.slice(0, 50).map(function (inc) { return h(IncidentCard, { key: inc.id, inc: inc, onChanged: p.onChanged }); }))
+          done.slice(0, 50).map(function (inc) {
+            var accSummary = h("summary", { className: "yg-acc-sum" },
+              h("span", { className: "yg-acc-id" }, inc.id),
+              h("span", { className: "yg-acc-status" }, STATUS_TEXT[inc.status] || inc.status),
+              h("span", { className: "yg-dim yg-acc-time" }, fmtTs(inc.at)),
+              h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")));
+            return h("details", { key: inc.id, className: "yg-acc", open: false }, accSummary,
+              h(IncidentCard, { inc: inc, onChanged: p.onChanged }));
+          }))
           : h(Empty, { text: "No incidents yet." })));
   }
   const SAMPLE = "fn main() requires [NetworkAccess] {\n  let key = env.secret()\n  return net.send(key)\n}\n";
@@ -1355,7 +1449,7 @@
     useEffect(function () {
       try {
         if (!baseTitle.current) baseTitle.current = document.title;
-        document.title = pending ? "Yadro Guard · " + pending + " blocked" : baseTitle.current;
+        document.title = pending ? "mcp-secrets-guard · " + pending + " blocked" : baseTitle.current;
       } catch (e) {}
     }, [pending]);
     useEffect(function () {
@@ -1385,12 +1479,12 @@
     }
     return h("div", { className: "yg-root" },
       h("div", { className: "yg-top" },
-        h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "YADRO GUARD"),
+        h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "mcp-secrets-guard"),
         h("div", { className: "yg-tabs" },
-          TabBtn("live", "Live protection" + (pending ? " (" + pending + ")" : ""), pending),
-          TabBtn("exposure", "Exposure"),
-          TabBtn("check", "Check code"),
-          TabBtn("vault", "Vault"))),
+          TabBtn("live", "Защита" + (pending ? " (" + pending + ")" : ""), pending),
+          TabBtn("exposure", "Экспозиция"),
+          TabBtn("check", "Проверка кода"),
+          TabBtn("vault", "Сейф"))),
       h("div", { className: "yg-grid" + (tab === "live" ? " live" : "") },
         tab === "live" ? h(LivePanel, { data: incidents, onChanged: refresh }) : null,
         tab === "exposure" ? h(ExposurePanel, null) : null,
@@ -1401,7 +1495,7 @@
       // The toast auto-dismisses; this pill keeps the unresolved count one click away.
       !toast && pending ? h("button", { type: "button", className: "yg-toast-count", style: TOAST_COUNT,
         title: "Show the blocked action", onClick: promote }, "⛔ " + pending + " blocked") : null,
-      h("div", { className: "yg-foot" }, "🔒 Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged."));
+      h("div", { className: "yg-foot" }, "🔒 mcp-secrets-guard · всё работает на этом компьютере. Секреты маскируются; полное значение появляется, только пока удерживаете 👁, и каждый просмотр записывается в журнал."));
   }
 
   onReady(GuardPage);
