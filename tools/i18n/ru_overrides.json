@@ -84,5 +84,19 @@
  "Changes made by Guard (#)": "Изменения, сделанные Guard (#)",
  "Undo": "Отменить",
  "undone": "отменено",
- "Everything runs on this computer. Secret values are never shown or sent.": "Всё работает на этом компьютере. Секреты никогда не показываются и не отправляются."
+ "Everything runs on this computer. Secret values are never shown or sent.": "Всё работает на этом компьютере. Секреты никогда не показываются и не отправляются.",
+
+ "KB": "КБ",
+ "MB": "МБ",
+ "B": "Б",
+ "in # lines": "в # строк",
+ "⛔ Leak on line #": "⛔ Утечка в строке #",
+ " tried to: ": " пытался: ",
+ "No incidents yet": "Инцидентов пока нет",
+ "Move to trash? You can restore it later.": "В корзину? Его можно восстановить позже.",
+ "Moved to the trash.": "Перемещено в корзину.",
+ "public internet tunnel": "публичный интернет-туннель",
+ "Keep the action blocked and store the secret encrypted": "Оставить действие заблокированным и сохранить секрет в зашифрованном виде",
+ "Firewall verdicts come from the local Windows Firewall rules. Rules set by a company (group policy) or by other security software are not visible, so those show as 'not verified'.": "Вердикты брандмауэра основаны на локальных правилах брандмауэра Windows. Правила, заданные компанией (групповая политика) или другим защитным ПО не видны, поэтому они отображаются как «не проверено».",
+ "It does not test from the internet. An external check sends your IP address to an outside service, so it is only done when you ask for it.": "Оно не тестирует из интернета. Внешняя проверка отправляет ваш IP-адрес во внешний сервис, поэтому это выполняется только по вашему запросу."
 }

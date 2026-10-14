@@ -20,6 +20,7 @@
     " medium · ": " средних · ",
     " min ago": " мин назад",
     " safe listeners": " безопасных",
+    " tried to: ": " пытался: ",
     "# action blocked": "Заблокировано действие",
     "# actions blocked": "Заблокировано действий: #",
     "() on line": "() в строке",
@@ -158,6 +159,7 @@
     "AsusUpdateCheck": "AsusUpdateCheck",
     "Automatic": "Автоматически",
     "Automatic fix": "Автоматическое исправление",
+    "B": "Б",
     "BIP# word list failed its integrity check": "Список слов BIP# не прошёл проверку целостности",
     "BIP# word list has the wrong size": "Список слов BIP# имеет неправильный размер",
     "BIP39 word list failed its integrity check": "Список слов BIP39 не прошёл проверку целостности",
@@ -266,6 +268,7 @@
     "Financial": "Финансовые",
     "Fine inside a trusted home network; dangerous if forwarded to the internet.": "Нормально в доверенной домашней сети; опасно, если открыт доступ из интернета.",
     "Firewall verdicts come from the local Windows Firewall rules. Rules set by a company": "Вердикты брандмауэра основаны на локальных правилах брандмауэра Windows. Правила, заданные компанией",
+    "Firewall verdicts come from the local Windows Firewall rules. Rules set by a company (group policy) or by other security software are not visible, so those show as 'not verified'.": "Вердикты брандмауэра основаны на локальных правилах брандмауэра Windows. Правила, заданные компанией (групповая политика) или другим защитным ПО не видны, поэтому они отображаются как «не проверено».",
     "Full report": "Полный отчет",
     "Game streaming and LAN discovery.": "Потоковая передача игр и обнаружение в LAN.",
     "GitHub access token": "Токен доступа GitHub",
@@ -292,15 +295,18 @@
     "Incident not found.": "Инцидент не найден.",
     "It cannot see port forwarding on your router. Make sure the router forwards no ports you do not need.": "Оно не видит переадресацию портов на вашем маршрутизаторе. Убедитесь, что маршрутизатор не пересылает ненужные вам порты.",
     "It does not test from the internet. An external check sends your IP address to an outside service,": "Оно не тестирует из интернета. Внешняя проверка отправляет ваш IP-адрес во внешний сервис,",
+    "It does not test from the internet. An external check sends your IP address to an outside service, so it is only done when you ask for it.": "Оно не тестирует из интернета. Внешняя проверка отправляет ваш IP-адрес во внешний сервис, поэтому это выполняется только по вашему запросу.",
     "Items in the trash are deleted for good after # days. While in the trash, agents cannot use them.": "Через # дней корзина очищается навсегда. Пока запись в корзине, агенты не могут ею пользоваться.",
     "Items in the trash are deleted for good after 30 days. While in the trash, agents cannot use them.": "Через 30 дней корзина очищается навсегда. Пока запись в корзине, агенты не могут ею пользоваться.",
     "JSON Web Token": "JSON Web Token",
     "Jupyter": "Jupyter",
     "Jupyter Notebook": "Jupyter Notebook",
+    "KB": "КБ",
     "Keep ASUS software updated, or disable the service if you do not need it.": "Обновляйте ПО ASUS или отключите службу, если она не нужна.",
     "Keep OLLAMA_HOST=#.#.#.#.": "Оставьте OLLAMA_HOST=#.#.#.#.",
     "Keep OLLAMA_HOST=127.0.0.1.": "Оставьте OLLAMA_HOST=127.0.0.1.",
     "Keep the action blocked": "Оставить действие заблокированным",
+    "Keep the action blocked and store the secret encrypted": "Оставить действие заблокированным и сохранить секрет в зашифрованном виде",
     "Kind changed.": "Тип изменён.",
     "Kind of secret": "Тип секрета",
     "LM Studio": "LM Studio",
@@ -322,6 +328,7 @@
     "Location": "Местоположение",
     "Location data": "Данные о местоположении",
     "Low": "Низкий",
+    "MB": "МБ",
     "Make sure the tunnel requires a Cloudflare Access login.": "Убедитесь, что туннель требует вход через Cloudflare Access.",
     "Manual": "Вручную",
     "Marked as trusted. It no longer lowers your score.": "Отмечено как доверенное. Больше не снижает вашу оценку.",
@@ -334,6 +341,8 @@
     "Model and agent APIs are often started without authentication.": "API моделей и агентов часто запускаются без защиты.",
     "MongoDB database": "База данных MongoDB",
     "Move to trash": "В корзину",
+    "Move to trash? You can restore it later.": "В корзину? Его можно восстановить позже.",
+    "Moved to the trash.": "Перемещено в корзину.",
     "Moved to the trash. You can restore it.": "Перемещено в корзину. Можно восстановить.",
     "MySQL / MariaDB database": "База данных MySQL / MariaDB",
     "MySQL database": "База данных MySQL",
@@ -347,6 +356,7 @@
     "New name": "Новое название",
     "New value": "Новое значение",
     "No decided incidents yet.": "Решённых инцидентов пока нет.",
+    "No incidents yet": "Инцидентов пока нет",
     "No incidents yet.": "Инцидентов пока нет.",
     "No safe automatic fix for this leak. Use one of the protections above.": "Нет безопасного автоматического исправления для этой утечки. Используйте одну из защит выше.",
     "Normal for Steam. Nothing to do.": "Нормально для Steam. Ничего делать не нужно.",
@@ -628,6 +638,7 @@
     "if (l.firewall_rule) t +=": "if (l.firewall_rule) t +=",
     "if (r.status ===": "if (r.status ===",
     "in #": "в #",
+    "in # lines": "в # строк",
     "incident history": "история инцидентов",
     "live protection": "защита в реальном времени",
     "llama.cpp server (local AI model)": "Сервер llama.cpp (локальная ИИ-модель)",
@@ -649,6 +660,7 @@
     "program stopped": "программа остановлена",
     "protected on line": "защищено в строке",
     "protected secret": "защищённый секрет",
+    "public internet tunnel": "публичный интернет-туннель",
     "python -m http.server serves the whole folder to the network by default.": "python -m http.server по умолчанию открывает всю папку для сети.",
     "quarantined from an agent": "перехвачено у агента",
     "quarantined:": "в карантине:",
@@ -677,6 +689,7 @@
     "⛔ Block": "⛔ Заблокировать",
     "⛔ Block & quarantine": "⛔ Заблокировать и поместить в карантин",
     "⛔ Leak on line": "⛔ Утечка в строке",
+    "⛔ Leak on line #": "⛔ Утечка в строке #",
     "✓ No leaks found": "✓ Утечек не найдено",
     "✓ Protected": "✓ Защищено",
     "✓ verified: the fixed code passes the check": "✓ проверено: исправленный код проходит проверку",
@@ -721,6 +734,7 @@
   const { useState, useEffect, useCallback, useRef } = React;
   const API = "/api/plugins/yadro-guard";
   const POLL_MS = 4000;
+  const TOAST_MS = 20000;   // a blocked-action toast collapses to a plain counter after this long
 
   function post(path, body) {
     return SDK.fetchJSON(API + path, {
@@ -832,6 +846,47 @@
         h("button", { className: "yg-btn ghost", disabled: !!busy, onClick: function () { choose("allow"); },
           title: "Let this exact action run one time (expires in 15 minutes)" }, busy === "allow" ? "…" : "Allow once")) : null,
       note ? h("div", { className: "yg-note-line" }, note) : null);
+  }
+
+  // ---- global toast: a NEW intercepted incident pops up over every Hermes tab ----
+  // Fixed to the viewport, so it is still on screen when the chat or another tab has the
+  // focus. The secret itself is never rendered here: Reveal posts /incidents/reveal and
+  // keeps the value only while the eye is held (same audit trail as the incident card).
+  const TOAST_BOX = { position: "fixed", bottom: "16px", right: "16px", zIndex: 50, width: "360px",
+    maxWidth: "calc(100vw - 32px)", boxSizing: "border-box", background: "var(--yg-surface, rgb(10 10 14 / .94))",
+    border: "1px solid var(--yg-bad, #e25555)", borderRadius: "10px", padding: "10px 12px",
+    boxShadow: "0 18px 50px rgb(0 0 0 / .7)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" };
+  const TOAST_COUNT = { position: "fixed", bottom: "16px", right: "16px", zIndex: 50, background: "var(--yg-bad, #e25555)",
+    color: "#fff", border: "none", borderRadius: "999px", padding: "6px 13px", font: "inherit", fontSize: "11px",
+    fontWeight: 700, letterSpacing: ".04em", cursor: "pointer", boxShadow: "0 10px 30px rgb(0 0 0 / .55)" };
+  const TAB_BADGE = { marginLeft: "6px", display: "inline-block", minWidth: "15px", padding: "0 4px", borderRadius: "999px",
+    background: "var(--yg-bad, #e25555)", color: "#fff", fontSize: "9px", fontWeight: 700, lineHeight: "15px",
+    textAlign: "center", letterSpacing: "0" };
+  function GuardToast(p) {
+    const inc = p.inc;
+    const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const findings = inc.findings || [];
+    const f = findings.length ? findings[0] : null;
+    return h("div", { className: "yg-toast", role: "alert", "aria-live": "assertive", style: TOAST_BOX },
+      h("div", { className: "yg-inc-top" },
+        h(Pill, { kind: "bad" }, "⛔ Guard blocked an agent"),
+        h("span", { className: "yg-dim yg-small yg-right" }, p.count > 1 ? "1 of " + p.count + " waiting" : ago(inc.at)),
+        h("button", { type: "button", className: "yg-btn ghost", style: { padding: "2px 7px", fontSize: "11px" },
+          title: "Hide. The counter stays on the Guard tab.", onClick: p.onDismiss }, "✕")),
+      h("div", { className: "yg-inc-story" }, "Agent ", h("b", null, who), " tried to use the tool ",
+        h("b", { className: "yg-mono" }, inc.tool || "?"), " to send data to ",
+        h("b", { className: "yg-mono" }, inc.destination || "?"), "."),
+      f ? h("div", { className: "yg-row" },
+        h(Chip, { label: { id: f.label, label: f.title } }),
+        f.token ? h(Reveal, { incident: inc.id, index: 0, preview: f.preview })
+          : h("span", { className: "yg-mono yg-dim" }, f.preview)) : null,
+      p.note ? h("div", { className: "yg-err yg-small" }, p.note) : null,
+      h("div", { className: "yg-actions" },
+        h("button", { className: "yg-btn bad", disabled: !!p.busy, onClick: function () { p.onDecide("block"); },
+          title: "Keep the action blocked" }, p.busy === "block" ? "…" : "⛔ Block"),
+        h("button", { className: "yg-btn good", disabled: !!p.busy, onClick: function () { p.onDecide("allow"); },
+          title: "Let this exact action run one time (expires in 15 minutes)" }, p.busy === "allow" ? "…" : "Allow once"),
+        h("button", { className: "yg-btn ghost", disabled: !!p.busy, onClick: p.onOpen }, "Show in Guard")));
   }
 
   function LivePanel(p) {
@@ -1164,12 +1219,17 @@
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
     function done() { setMode(""); setVal(""); setMenuOpen(false); }
-    // Close menu when clicking outside
+    // Close menu when clicking outside or pressing Escape
     useEffect(function () {
       if (!menuOpen) return;
       function handleClick(e) { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); }
+      function handleKey(e) { if (e.key === "Escape") setMenuOpen(false); }
       document.addEventListener("click", handleClick);
-      return function () { document.removeEventListener("click", handleClick); };
+      document.addEventListener("keydown", handleKey);
+      return function () {
+        document.removeEventListener("click", handleClick);
+        document.removeEventListener("keydown", handleKey);
+      };
     }, [menuOpen]);
     return h("div", { className: "yg-inc done" },
       h("div", { className: "yg-inc-top" },
@@ -1177,19 +1237,28 @@
         h("span", { className: "yg-dim yg-small" }, v.kind === "file" ? T("file") + " · " + fmtSize(v.size || 0) : T("text")),
         h("span", { className: "yg-dim yg-small" }, v.source === "runtime-quarantine" ? "quarantined from an agent" : "added by you"),
         h("span", { className: "yg-dim yg-small yg-right" }, ago(v.changed || v.created)),
+        // One compact ⋮ per row; all four actions live in the dropdown.
         mode ? null : h("div", { ref: menuRef, className: "yg-vault-menu", style: { position: "relative" } },
-          h("button", { className: "yg-vault-menu-btn", disabled: p.busy, onClick: function () { setMenuOpen(!menuOpen); } }, "⋮"),
-          menuOpen ? h("div", { className: "yg-vault-menu-dropdown" },
-            h("button", { className: "yg-vault-menu-item", onClick: function () { setVal(v.title || ""); setMode("rename"); } }, "Rename"),
-            h("button", { className: "yg-vault-menu-item", onClick: function () { setMode("kind"); } }, "Change kind"),
+          h("button", { type: "button", className: "yg-vault-menu-btn", disabled: p.busy,
+            title: "Actions for this secret", "aria-label": "Actions for this secret",
+            "aria-haspopup": "menu", "aria-expanded": menuOpen,
+            onClick: function () { setMenuOpen(!menuOpen); } }, "⋮"),
+          menuOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu" },
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setVal(v.title || ""); setMode("rename"); } }, "✏ Rename"),
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setMode("kind"); } }, "🏷 Change kind"),
             v.kind === "file"
-              ? h("button", { className: "yg-vault-menu-item", onClick: function () { p.op({ op: "save", token: v.token }, "Saved a copy to Downloads."); done(); } }, "Save a copy to Downloads")
-              : h("button", { className: "yg-vault-menu-item", onClick: function () { setMode("replace"); } }, "Replace value"),
-            h("button", { className: "yg-vault-menu-item" + (v.deleted ? " bad" : ""), onClick: function () {
-              if (confirm(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later."))
-                p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
-              done();
-            } }, v.deleted ? "Delete forever" : "Move to trash")) : null)),
+              ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+                onClick: function () { p.op({ op: "save", token: v.token }, "Saved a copy to Downloads."); done(); } }, "⬇ Save a copy to Downloads")
+              : h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+                onClick: function () { setMode("replace"); } }, "↻ Replace value"),
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item" + (v.deleted ? " bad" : ""),
+              onClick: function () {
+                if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
+                  p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
+                done();
+              } }, "🗑 " + (v.deleted ? "Delete forever" : "Move to trash"))) : null)),
       mode === "rename" ? h("div", { className: "yg-actions" },
         h("input", { className: "yg-input", value: val, placeholder: "New name", onChange: function (e) { setVal(e.target.value); } }),
         h("button", { className: "yg-btn", disabled: p.busy || !val.trim(), onClick: function () { p.op({ op: "rename", token: v.token, title: val }, "Renamed."); done(); } }, "Save"),
@@ -1210,26 +1279,115 @@
     const [tab, setTab] = useState("live");
     const [incidents, setIncidents] = useState(null);
     const [vault, setVault] = useState(null);
+    const [toast, setToast] = useState(null);
+    const [toastBusy, setToastBusy] = useState("");
+    const [toastNote, setToastNote] = useState("");
     const alive = useRef(true);
+    const seen = useRef(null);      // pending ids already announced (null = nothing polled yet)
+    const queue = useRef([]);       // new pending incidents still waiting for their toast
+    const lastPending = useRef([]); // pending incidents as of the last poll
+    const toastRef = useRef(null);  // mirror of `toast`, readable from stable callbacks
+    const baseTitle = useRef("");
+    const showToast = useCallback(function (inc) {
+      toastRef.current = inc; setToast(inc); setToastBusy(""); setToastNote("");
+    }, []);
+    // Web Notifications: the toast lives inside the plugin, a notification follows the user
+    // to a minimized or backgrounded Hermes window.
+    const notify = useCallback(function (inc) {
+      try {
+        if (typeof Notification === "undefined" || !Notification || Notification.permission !== "granted") return;
+        const n = new Notification(T("Yadro Guard blocked an agent"), {
+          body: T("Agent tried to use the tool") + " " + (inc.tool || "?") + " " + T("to send data to") + " " +
+            (inc.destination || "?") + ". " + T("Open Guard to allow or block it."),
+          tag: "yadro-guard",
+        });
+        n.onclick = function () { try { window.focus(); } catch (e) {} showToast(inc); };
+      } catch (e) { /* notifications are a bonus: never break the panel over one */ }
+    }, [showToast]);
+    // Drop the toast that is on screen and show the next blocked action, if any.
+    const promote = useCallback(function () {
+      const cur = toastRef.current;
+      if (cur) queue.current = queue.current.filter(function (i) { return i.id !== cur.id; });
+      if (queue.current.length) return showToast(queue.current[0]);
+      // Nothing queued (dismissed or already decided): fall back to what the last poll still
+      // reports as pending, so the counter pill can always bring a blocked action back.
+      const rest = lastPending.current.filter(function (i) { return !cur || i.id !== cur.id; });
+      showToast(rest.length ? rest[0] : null);
+    }, [showToast]);
+    // Diff every poll: only ids that were not pending before raise a toast.
+    const announce = useCallback(function (d) {
+      const items = (d && d.items) || [];
+      const pend = items.filter(function (i) { return i.status === "pending"; });
+      lastPending.current = pend;
+      const open = {};
+      pend.forEach(function (i) { open[i.id] = i; });
+      queue.current = queue.current.filter(function (i) { return open[i.id]; });   // decided elsewhere
+      const ids = pend.map(function (i) { return i.id; });
+      if (seen.current === null) { seen.current = ids; return; }   // first poll: never spam
+      const fresh = pend.filter(function (i) { return seen.current.indexOf(i.id) < 0; });
+      seen.current = ids;
+      if (!fresh.length) return;
+      queue.current = queue.current.concat(fresh);
+      notify(fresh[0]);
+      if (!toastRef.current) promote();
+    }, [notify, promote]);
     const refresh = useCallback(function () {
-      SDK.fetchJSON(API + "/incidents").then(function (d) { if (alive.current) setIncidents(d); })
+      SDK.fetchJSON(API + "/incidents").then(function (d) { if (alive.current) { setIncidents(d); announce(d); } })
         .catch(function () { if (alive.current) setIncidents({ status: "error", message: "Guard backend is not reachable." }); });
       SDK.fetchJSON(API + "/vault").then(function (d) { if (alive.current) setVault(d); }).catch(function () {});
-    }, []);
+    }, [announce]);
     useEffect(function () {
       alive.current = true; refresh();
       const t = setInterval(function () { if (!document.hidden) refresh(); }, POLL_MS);
       return function () { alive.current = false; clearInterval(t); };
     }, [refresh]);
+    // Ask once, quietly — there is no toast/notification at all without permission.
+    useEffect(function () {
+      try {
+        if (typeof Notification !== "undefined" && Notification.permission === "default" && Notification.requestPermission)
+          Notification.requestPermission();
+      } catch (e) {}
+    }, []);
+    useEffect(function () { return function () { try { document.title = baseTitle.current || ""; } catch (e) {} }; }, []);
     const pending = incidents && incidents.pending ? incidents.pending : 0;
-    function TabBtn(id, text) {
-      return h("button", { className: "yg-tab" + (tab === id ? " on" : ""), onClick: function () { setTab(id); } }, text);
+    // The sidebar entry is registered by the host and cannot be badged from here, so the
+    // unresolved count also goes into the window title while something is waiting.
+    useEffect(function () {
+      try {
+        if (!baseTitle.current) baseTitle.current = document.title;
+        document.title = pending ? "Yadro Guard · " + pending + " blocked" : baseTitle.current;
+      } catch (e) {}
+    }, [pending]);
+    useEffect(function () {
+      if (!toast) return;
+      const t = setTimeout(promote, TOAST_MS);   // auto-dismiss; the counter stays
+      return function () { clearTimeout(t); };
+    }, [toast, promote]);
+    // Same endpoint the incident card uses, so a toast decision lands in the same journal.
+    function decide(choice) {
+      const inc = toast;
+      if (!inc) return;
+      setToastBusy(choice); setToastNote("");
+      post("/incidents/decide", { incident: inc.id, choice: choice })
+        .then(function (r) {
+          if (r.status === "ok") {
+            lastPending.current = lastPending.current.filter(function (i) { return i.id !== inc.id; });
+            refresh(); promote();
+          }
+          else { setToastBusy(""); setToastNote(r.message || "Could not save the decision."); }
+        })
+        .catch(function () { setToastBusy(""); setToastNote("Could not reach the Guard backend."); });
+    }
+    function TabBtn(id, text, badge) {
+      return h("button", { className: "yg-tab" + (tab === id ? " on" : ""), onClick: function () { setTab(id); },
+          title: badge ? badge + " unresolved" : undefined },
+        text, badge ? h("span", { className: "yg-tab-badge", style: TAB_BADGE }, "" + badge) : null);
     }
     return h("div", { className: "yg-root" },
       h("div", { className: "yg-top" },
         h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "YADRO GUARD"),
         h("div", { className: "yg-tabs" },
-          TabBtn("live", "Live protection" + (pending ? " (" + pending + ")" : "")),
+          TabBtn("live", "Live protection" + (pending ? " (" + pending + ")" : ""), pending),
           TabBtn("exposure", "Exposure"),
           TabBtn("check", "Check code"),
           TabBtn("vault", "Vault"))),
@@ -1238,6 +1396,11 @@
         tab === "exposure" ? h(ExposurePanel, null) : null,
         tab === "check" ? h(CheckPanel, null) : null,
         tab === "vault" ? h(VaultPanel, { vault: vault, onChanged: refresh }) : null),
+      toast ? h(GuardToast, { inc: toast, count: pending, busy: toastBusy, note: toastNote,
+        onDecide: decide, onDismiss: promote, onOpen: function () { setTab("live"); promote(); } }) : null,
+      // The toast auto-dismisses; this pill keeps the unresolved count one click away.
+      !toast && pending ? h("button", { type: "button", className: "yg-toast-count", style: TOAST_COUNT,
+        title: "Show the blocked action", onClick: promote }, "⛔ " + pending + " blocked") : null,
       h("div", { className: "yg-foot" }, "🔒 Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged."));
   }
 

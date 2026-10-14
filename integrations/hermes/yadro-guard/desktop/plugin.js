@@ -2,7 +2,7 @@
 import * as React from "react";
 import { host } from "@hermes/plugin-sdk";
 
-const CSS = "/* Yadro Guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 1 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n";
+const CSS = "/* Yadro Guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 1 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--yg-surface);\n  border: 1px solid var(--yg-border); border-radius: 6px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);\n  min-width: 180px; z-index: 100; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n";
 const API = "/api/plugins/yadro-guard";
 let rest = null;
 let GuardPage = null;
@@ -35,6 +35,7 @@ const makeGuardPage = function (SDK, onReady) {
     " medium · ": " средних · ",
     " min ago": " мин назад",
     " safe listeners": " безопасных",
+    " tried to: ": " пытался: ",
     "# action blocked": "Заблокировано действие",
     "# actions blocked": "Заблокировано действий: #",
     "() on line": "() в строке",
@@ -173,6 +174,7 @@ const makeGuardPage = function (SDK, onReady) {
     "AsusUpdateCheck": "AsusUpdateCheck",
     "Automatic": "Автоматически",
     "Automatic fix": "Автоматическое исправление",
+    "B": "Б",
     "BIP# word list failed its integrity check": "Список слов BIP# не прошёл проверку целостности",
     "BIP# word list has the wrong size": "Список слов BIP# имеет неправильный размер",
     "BIP39 word list failed its integrity check": "Список слов BIP39 не прошёл проверку целостности",
@@ -281,6 +283,7 @@ const makeGuardPage = function (SDK, onReady) {
     "Financial": "Финансовые",
     "Fine inside a trusted home network; dangerous if forwarded to the internet.": "Нормально в доверенной домашней сети; опасно, если открыт доступ из интернета.",
     "Firewall verdicts come from the local Windows Firewall rules. Rules set by a company": "Вердикты брандмауэра основаны на локальных правилах брандмауэра Windows. Правила, заданные компанией",
+    "Firewall verdicts come from the local Windows Firewall rules. Rules set by a company (group policy) or by other security software are not visible, so those show as 'not verified'.": "Вердикты брандмауэра основаны на локальных правилах брандмауэра Windows. Правила, заданные компанией (групповая политика) или другим защитным ПО не видны, поэтому они отображаются как «не проверено».",
     "Full report": "Полный отчет",
     "Game streaming and LAN discovery.": "Потоковая передача игр и обнаружение в LAN.",
     "GitHub access token": "Токен доступа GitHub",
@@ -307,15 +310,18 @@ const makeGuardPage = function (SDK, onReady) {
     "Incident not found.": "Инцидент не найден.",
     "It cannot see port forwarding on your router. Make sure the router forwards no ports you do not need.": "Оно не видит переадресацию портов на вашем маршрутизаторе. Убедитесь, что маршрутизатор не пересылает ненужные вам порты.",
     "It does not test from the internet. An external check sends your IP address to an outside service,": "Оно не тестирует из интернета. Внешняя проверка отправляет ваш IP-адрес во внешний сервис,",
+    "It does not test from the internet. An external check sends your IP address to an outside service, so it is only done when you ask for it.": "Оно не тестирует из интернета. Внешняя проверка отправляет ваш IP-адрес во внешний сервис, поэтому это выполняется только по вашему запросу.",
     "Items in the trash are deleted for good after # days. While in the trash, agents cannot use them.": "Через # дней корзина очищается навсегда. Пока запись в корзине, агенты не могут ею пользоваться.",
     "Items in the trash are deleted for good after 30 days. While in the trash, agents cannot use them.": "Через 30 дней корзина очищается навсегда. Пока запись в корзине, агенты не могут ею пользоваться.",
     "JSON Web Token": "JSON Web Token",
     "Jupyter": "Jupyter",
     "Jupyter Notebook": "Jupyter Notebook",
+    "KB": "КБ",
     "Keep ASUS software updated, or disable the service if you do not need it.": "Обновляйте ПО ASUS или отключите службу, если она не нужна.",
     "Keep OLLAMA_HOST=#.#.#.#.": "Оставьте OLLAMA_HOST=#.#.#.#.",
     "Keep OLLAMA_HOST=127.0.0.1.": "Оставьте OLLAMA_HOST=127.0.0.1.",
     "Keep the action blocked": "Оставить действие заблокированным",
+    "Keep the action blocked and store the secret encrypted": "Оставить действие заблокированным и сохранить секрет в зашифрованном виде",
     "Kind changed.": "Тип изменён.",
     "Kind of secret": "Тип секрета",
     "LM Studio": "LM Studio",
@@ -337,6 +343,7 @@ const makeGuardPage = function (SDK, onReady) {
     "Location": "Местоположение",
     "Location data": "Данные о местоположении",
     "Low": "Низкий",
+    "MB": "МБ",
     "Make sure the tunnel requires a Cloudflare Access login.": "Убедитесь, что туннель требует вход через Cloudflare Access.",
     "Manual": "Вручную",
     "Marked as trusted. It no longer lowers your score.": "Отмечено как доверенное. Больше не снижает вашу оценку.",
@@ -349,6 +356,8 @@ const makeGuardPage = function (SDK, onReady) {
     "Model and agent APIs are often started without authentication.": "API моделей и агентов часто запускаются без защиты.",
     "MongoDB database": "База данных MongoDB",
     "Move to trash": "В корзину",
+    "Move to trash? You can restore it later.": "В корзину? Его можно восстановить позже.",
+    "Moved to the trash.": "Перемещено в корзину.",
     "Moved to the trash. You can restore it.": "Перемещено в корзину. Можно восстановить.",
     "MySQL / MariaDB database": "База данных MySQL / MariaDB",
     "MySQL database": "База данных MySQL",
@@ -362,6 +371,7 @@ const makeGuardPage = function (SDK, onReady) {
     "New name": "Новое название",
     "New value": "Новое значение",
     "No decided incidents yet.": "Решённых инцидентов пока нет.",
+    "No incidents yet": "Инцидентов пока нет",
     "No incidents yet.": "Инцидентов пока нет.",
     "No safe automatic fix for this leak. Use one of the protections above.": "Нет безопасного автоматического исправления для этой утечки. Используйте одну из защит выше.",
     "Normal for Steam. Nothing to do.": "Нормально для Steam. Ничего делать не нужно.",
@@ -643,6 +653,7 @@ const makeGuardPage = function (SDK, onReady) {
     "if (l.firewall_rule) t +=": "if (l.firewall_rule) t +=",
     "if (r.status ===": "if (r.status ===",
     "in #": "в #",
+    "in # lines": "в # строк",
     "incident history": "история инцидентов",
     "live protection": "защита в реальном времени",
     "llama.cpp server (local AI model)": "Сервер llama.cpp (локальная ИИ-модель)",
@@ -664,6 +675,7 @@ const makeGuardPage = function (SDK, onReady) {
     "program stopped": "программа остановлена",
     "protected on line": "защищено в строке",
     "protected secret": "защищённый секрет",
+    "public internet tunnel": "публичный интернет-туннель",
     "python -m http.server serves the whole folder to the network by default.": "python -m http.server по умолчанию открывает всю папку для сети.",
     "quarantined from an agent": "перехвачено у агента",
     "quarantined:": "в карантине:",
@@ -692,6 +704,7 @@ const makeGuardPage = function (SDK, onReady) {
     "⛔ Block": "⛔ Заблокировать",
     "⛔ Block & quarantine": "⛔ Заблокировать и поместить в карантин",
     "⛔ Leak on line": "⛔ Утечка в строке",
+    "⛔ Leak on line #": "⛔ Утечка в строке #",
     "✓ No leaks found": "✓ Утечек не найдено",
     "✓ Protected": "✓ Защищено",
     "✓ verified: the fixed code passes the check": "✓ проверено: исправленный код проходит проверку",
@@ -736,6 +749,7 @@ const makeGuardPage = function (SDK, onReady) {
   const { useState, useEffect, useCallback, useRef } = React;
   const API = "/api/plugins/yadro-guard";
   const POLL_MS = 4000;
+  const TOAST_MS = 20000;   // a blocked-action toast collapses to a plain counter after this long
 
   function post(path, body) {
     return SDK.fetchJSON(API + path, {
@@ -847,6 +861,47 @@ const makeGuardPage = function (SDK, onReady) {
         h("button", { className: "yg-btn ghost", disabled: !!busy, onClick: function () { choose("allow"); },
           title: "Let this exact action run one time (expires in 15 minutes)" }, busy === "allow" ? "…" : "Allow once")) : null,
       note ? h("div", { className: "yg-note-line" }, note) : null);
+  }
+
+  // ---- global toast: a NEW intercepted incident pops up over every Hermes tab ----
+  // Fixed to the viewport, so it is still on screen when the chat or another tab has the
+  // focus. The secret itself is never rendered here: Reveal posts /incidents/reveal and
+  // keeps the value only while the eye is held (same audit trail as the incident card).
+  const TOAST_BOX = { position: "fixed", bottom: "16px", right: "16px", zIndex: 50, width: "360px",
+    maxWidth: "calc(100vw - 32px)", boxSizing: "border-box", background: "var(--yg-surface, rgb(10 10 14 / .94))",
+    border: "1px solid var(--yg-bad, #e25555)", borderRadius: "10px", padding: "10px 12px",
+    boxShadow: "0 18px 50px rgb(0 0 0 / .7)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" };
+  const TOAST_COUNT = { position: "fixed", bottom: "16px", right: "16px", zIndex: 50, background: "var(--yg-bad, #e25555)",
+    color: "#fff", border: "none", borderRadius: "999px", padding: "6px 13px", font: "inherit", fontSize: "11px",
+    fontWeight: 700, letterSpacing: ".04em", cursor: "pointer", boxShadow: "0 10px 30px rgb(0 0 0 / .55)" };
+  const TAB_BADGE = { marginLeft: "6px", display: "inline-block", minWidth: "15px", padding: "0 4px", borderRadius: "999px",
+    background: "var(--yg-bad, #e25555)", color: "#fff", fontSize: "9px", fontWeight: 700, lineHeight: "15px",
+    textAlign: "center", letterSpacing: "0" };
+  function GuardToast(p) {
+    const inc = p.inc;
+    const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const findings = inc.findings || [];
+    const f = findings.length ? findings[0] : null;
+    return h("div", { className: "yg-toast", role: "alert", "aria-live": "assertive", style: TOAST_BOX },
+      h("div", { className: "yg-inc-top" },
+        h(Pill, { kind: "bad" }, "⛔ Guard blocked an agent"),
+        h("span", { className: "yg-dim yg-small yg-right" }, p.count > 1 ? "1 of " + p.count + " waiting" : ago(inc.at)),
+        h("button", { type: "button", className: "yg-btn ghost", style: { padding: "2px 7px", fontSize: "11px" },
+          title: "Hide. The counter stays on the Guard tab.", onClick: p.onDismiss }, "✕")),
+      h("div", { className: "yg-inc-story" }, "Agent ", h("b", null, who), " tried to use the tool ",
+        h("b", { className: "yg-mono" }, inc.tool || "?"), " to send data to ",
+        h("b", { className: "yg-mono" }, inc.destination || "?"), "."),
+      f ? h("div", { className: "yg-row" },
+        h(Chip, { label: { id: f.label, label: f.title } }),
+        f.token ? h(Reveal, { incident: inc.id, index: 0, preview: f.preview })
+          : h("span", { className: "yg-mono yg-dim" }, f.preview)) : null,
+      p.note ? h("div", { className: "yg-err yg-small" }, p.note) : null,
+      h("div", { className: "yg-actions" },
+        h("button", { className: "yg-btn bad", disabled: !!p.busy, onClick: function () { p.onDecide("block"); },
+          title: "Keep the action blocked" }, p.busy === "block" ? "…" : "⛔ Block"),
+        h("button", { className: "yg-btn good", disabled: !!p.busy, onClick: function () { p.onDecide("allow"); },
+          title: "Let this exact action run one time (expires in 15 minutes)" }, p.busy === "allow" ? "…" : "Allow once"),
+        h("button", { className: "yg-btn ghost", disabled: !!p.busy, onClick: p.onOpen }, "Show in Guard")));
   }
 
   function LivePanel(p) {
@@ -1176,13 +1231,49 @@ const makeGuardPage = function (SDK, onReady) {
     const v = p.v;
     const [mode, setMode] = useState("");
     const [val, setVal] = useState("");
-    function done() { setMode(""); setVal(""); }
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+    function done() { setMode(""); setVal(""); setMenuOpen(false); }
+    // Close menu when clicking outside or pressing Escape
+    useEffect(function () {
+      if (!menuOpen) return;
+      function handleClick(e) { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); }
+      function handleKey(e) { if (e.key === "Escape") setMenuOpen(false); }
+      document.addEventListener("click", handleClick);
+      document.addEventListener("keydown", handleKey);
+      return function () {
+        document.removeEventListener("click", handleClick);
+        document.removeEventListener("keydown", handleKey);
+      };
+    }, [menuOpen]);
     return h("div", { className: "yg-inc done" },
       h("div", { className: "yg-inc-top" },
         h(Chip, { label: { id: v.label, label: v.title || v.filename || v.label } }),
         h("span", { className: "yg-dim yg-small" }, v.kind === "file" ? T("file") + " · " + fmtSize(v.size || 0) : T("text")),
         h("span", { className: "yg-dim yg-small" }, v.source === "runtime-quarantine" ? "quarantined from an agent" : "added by you"),
-        h("span", { className: "yg-dim yg-small yg-right" }, ago(v.changed || v.created))),
+        h("span", { className: "yg-dim yg-small yg-right" }, ago(v.changed || v.created)),
+        // One compact ⋮ per row; all four actions live in the dropdown.
+        mode ? null : h("div", { ref: menuRef, className: "yg-vault-menu", style: { position: "relative" } },
+          h("button", { type: "button", className: "yg-vault-menu-btn", disabled: p.busy,
+            title: "Actions for this secret", "aria-label": "Actions for this secret",
+            "aria-haspopup": "menu", "aria-expanded": menuOpen,
+            onClick: function () { setMenuOpen(!menuOpen); } }, "⋮"),
+          menuOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu" },
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setVal(v.title || ""); setMode("rename"); } }, "✏ Rename"),
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setMode("kind"); } }, "🏷 Change kind"),
+            v.kind === "file"
+              ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+                onClick: function () { p.op({ op: "save", token: v.token }, "Saved a copy to Downloads."); done(); } }, "⬇ Save a copy to Downloads")
+              : h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+                onClick: function () { setMode("replace"); } }, "↻ Replace value"),
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item" + (v.deleted ? " bad" : ""),
+              onClick: function () {
+                if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
+                  p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
+                done();
+              } }, "🗑 " + (v.deleted ? "Delete forever" : "Move to trash"))) : null)),
       mode === "rename" ? h("div", { className: "yg-actions" },
         h("input", { className: "yg-input", value: val, placeholder: "New name", onChange: function (e) { setVal(e.target.value); } }),
         h("button", { className: "yg-btn", disabled: p.busy || !val.trim(), onClick: function () { p.op({ op: "rename", token: v.token, title: val }, "Renamed."); done(); } }, "Save"),
@@ -1196,40 +1287,122 @@ const makeGuardPage = function (SDK, onReady) {
         KINDS.map(function (k) {
           return h("button", { key: k[0], type: "button", className: "yg-kind" + (v.label === k[0] ? " on" : ""),
             onClick: function () { p.op({ op: "relabel", token: v.token, label: k[0] }, "Kind changed."); done(); } }, k[1]);
-        }), h("button", { className: "yg-btn ghost", onClick: done }, "Cancel")) : null,
-      mode ? null : h("div", { className: "yg-actions" },
-        h("button", { className: "yg-btn ghost", disabled: p.busy, onClick: function () { setVal(v.title || ""); setMode("rename"); } }, "Rename"),
-        h("button", { className: "yg-btn ghost", disabled: p.busy, onClick: function () { setMode("kind"); } }, "Change kind"),
-        v.kind === "file"
-          ? h("button", { className: "yg-btn ghost", disabled: p.busy, onClick: function () { p.op({ op: "save", token: v.token }, "Saved a copy to Downloads."); } }, "Save a copy to Downloads")
-          : h("button", { className: "yg-btn ghost", disabled: p.busy, onClick: function () { setMode("replace"); } }, "Replace value"),
-        h("button", { className: "yg-btn bad", disabled: p.busy, onClick: function () { p.op({ op: "trash", token: v.token }, "Moved to the trash. You can restore it."); } }, "Move to trash")));
+        }), h("button", { className: "yg-btn ghost", onClick: done }, "Cancel")) : null);
   }
 
   function GuardPage() {
     const [tab, setTab] = useState("live");
     const [incidents, setIncidents] = useState(null);
     const [vault, setVault] = useState(null);
+    const [toast, setToast] = useState(null);
+    const [toastBusy, setToastBusy] = useState("");
+    const [toastNote, setToastNote] = useState("");
     const alive = useRef(true);
+    const seen = useRef(null);      // pending ids already announced (null = nothing polled yet)
+    const queue = useRef([]);       // new pending incidents still waiting for their toast
+    const lastPending = useRef([]); // pending incidents as of the last poll
+    const toastRef = useRef(null);  // mirror of `toast`, readable from stable callbacks
+    const baseTitle = useRef("");
+    const showToast = useCallback(function (inc) {
+      toastRef.current = inc; setToast(inc); setToastBusy(""); setToastNote("");
+    }, []);
+    // Web Notifications: the toast lives inside the plugin, a notification follows the user
+    // to a minimized or backgrounded Hermes window.
+    const notify = useCallback(function (inc) {
+      try {
+        if (typeof Notification === "undefined" || !Notification || Notification.permission !== "granted") return;
+        const n = new Notification(T("Yadro Guard blocked an agent"), {
+          body: T("Agent tried to use the tool") + " " + (inc.tool || "?") + " " + T("to send data to") + " " +
+            (inc.destination || "?") + ". " + T("Open Guard to allow or block it."),
+          tag: "yadro-guard",
+        });
+        n.onclick = function () { try { window.focus(); } catch (e) {} showToast(inc); };
+      } catch (e) { /* notifications are a bonus: never break the panel over one */ }
+    }, [showToast]);
+    // Drop the toast that is on screen and show the next blocked action, if any.
+    const promote = useCallback(function () {
+      const cur = toastRef.current;
+      if (cur) queue.current = queue.current.filter(function (i) { return i.id !== cur.id; });
+      if (queue.current.length) return showToast(queue.current[0]);
+      // Nothing queued (dismissed or already decided): fall back to what the last poll still
+      // reports as pending, so the counter pill can always bring a blocked action back.
+      const rest = lastPending.current.filter(function (i) { return !cur || i.id !== cur.id; });
+      showToast(rest.length ? rest[0] : null);
+    }, [showToast]);
+    // Diff every poll: only ids that were not pending before raise a toast.
+    const announce = useCallback(function (d) {
+      const items = (d && d.items) || [];
+      const pend = items.filter(function (i) { return i.status === "pending"; });
+      lastPending.current = pend;
+      const open = {};
+      pend.forEach(function (i) { open[i.id] = i; });
+      queue.current = queue.current.filter(function (i) { return open[i.id]; });   // decided elsewhere
+      const ids = pend.map(function (i) { return i.id; });
+      if (seen.current === null) { seen.current = ids; return; }   // first poll: never spam
+      const fresh = pend.filter(function (i) { return seen.current.indexOf(i.id) < 0; });
+      seen.current = ids;
+      if (!fresh.length) return;
+      queue.current = queue.current.concat(fresh);
+      notify(fresh[0]);
+      if (!toastRef.current) promote();
+    }, [notify, promote]);
     const refresh = useCallback(function () {
-      SDK.fetchJSON(API + "/incidents").then(function (d) { if (alive.current) setIncidents(d); })
+      SDK.fetchJSON(API + "/incidents").then(function (d) { if (alive.current) { setIncidents(d); announce(d); } })
         .catch(function () { if (alive.current) setIncidents({ status: "error", message: "Guard backend is not reachable." }); });
       SDK.fetchJSON(API + "/vault").then(function (d) { if (alive.current) setVault(d); }).catch(function () {});
-    }, []);
+    }, [announce]);
     useEffect(function () {
       alive.current = true; refresh();
       const t = setInterval(function () { if (!document.hidden) refresh(); }, POLL_MS);
       return function () { alive.current = false; clearInterval(t); };
     }, [refresh]);
+    // Ask once, quietly — there is no toast/notification at all without permission.
+    useEffect(function () {
+      try {
+        if (typeof Notification !== "undefined" && Notification.permission === "default" && Notification.requestPermission)
+          Notification.requestPermission();
+      } catch (e) {}
+    }, []);
+    useEffect(function () { return function () { try { document.title = baseTitle.current || ""; } catch (e) {} }; }, []);
     const pending = incidents && incidents.pending ? incidents.pending : 0;
-    function TabBtn(id, text) {
-      return h("button", { className: "yg-tab" + (tab === id ? " on" : ""), onClick: function () { setTab(id); } }, text);
+    // The sidebar entry is registered by the host and cannot be badged from here, so the
+    // unresolved count also goes into the window title while something is waiting.
+    useEffect(function () {
+      try {
+        if (!baseTitle.current) baseTitle.current = document.title;
+        document.title = pending ? "Yadro Guard · " + pending + " blocked" : baseTitle.current;
+      } catch (e) {}
+    }, [pending]);
+    useEffect(function () {
+      if (!toast) return;
+      const t = setTimeout(promote, TOAST_MS);   // auto-dismiss; the counter stays
+      return function () { clearTimeout(t); };
+    }, [toast, promote]);
+    // Same endpoint the incident card uses, so a toast decision lands in the same journal.
+    function decide(choice) {
+      const inc = toast;
+      if (!inc) return;
+      setToastBusy(choice); setToastNote("");
+      post("/incidents/decide", { incident: inc.id, choice: choice })
+        .then(function (r) {
+          if (r.status === "ok") {
+            lastPending.current = lastPending.current.filter(function (i) { return i.id !== inc.id; });
+            refresh(); promote();
+          }
+          else { setToastBusy(""); setToastNote(r.message || "Could not save the decision."); }
+        })
+        .catch(function () { setToastBusy(""); setToastNote("Could not reach the Guard backend."); });
+    }
+    function TabBtn(id, text, badge) {
+      return h("button", { className: "yg-tab" + (tab === id ? " on" : ""), onClick: function () { setTab(id); },
+          title: badge ? badge + " unresolved" : undefined },
+        text, badge ? h("span", { className: "yg-tab-badge", style: TAB_BADGE }, "" + badge) : null);
     }
     return h("div", { className: "yg-root" },
       h("div", { className: "yg-top" },
         h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "YADRO GUARD"),
         h("div", { className: "yg-tabs" },
-          TabBtn("live", "Live protection" + (pending ? " (" + pending + ")" : "")),
+          TabBtn("live", "Live protection" + (pending ? " (" + pending + ")" : ""), pending),
           TabBtn("exposure", "Exposure"),
           TabBtn("check", "Check code"),
           TabBtn("vault", "Vault"))),
@@ -1238,6 +1411,11 @@ const makeGuardPage = function (SDK, onReady) {
         tab === "exposure" ? h(ExposurePanel, null) : null,
         tab === "check" ? h(CheckPanel, null) : null,
         tab === "vault" ? h(VaultPanel, { vault: vault, onChanged: refresh }) : null),
+      toast ? h(GuardToast, { inc: toast, count: pending, busy: toastBusy, note: toastNote,
+        onDecide: decide, onDismiss: promote, onOpen: function () { setTab("live"); promote(); } }) : null,
+      // The toast auto-dismisses; this pill keeps the unresolved count one click away.
+      !toast && pending ? h("button", { type: "button", className: "yg-toast-count", style: TOAST_COUNT,
+        title: "Show the blocked action", onClick: promote }, "⛔ " + pending + " blocked") : null,
       h("div", { className: "yg-foot" }, "🔒 Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged."));
   }
 
