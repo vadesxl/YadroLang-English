@@ -1,4 +1,4 @@
-/* Yadro Guard — Hermes dashboard tab.
+/* mcp-secrets-guard — Hermes dashboard tab.
  * Plain IIFE, no build step. React + fetchJSON come from the host via
  * window.__HERMES_PLUGIN_SDK__. All text is rendered through React (auto-escaped);
  * no innerHTML anywhere. HTML reports open in a sandboxed iframe (no scripts). */
@@ -28,6 +28,8 @@
     "(l.icon ? l.icon +": "(l.icon ? l.icon +",
     "(l.reach ===": "(l.reach ===",
     "(managed by your organisation)": "(управляется вашей организацией)",
+    "(pid": "(pid",
+    "(rule": "(правило",
     "(showSafe ?": "(showSafe ?",
     ") else": ") else",
     ") if isinstance(paths, dict) else": ") if isinstance(paths, dict) else",
@@ -595,9 +597,10 @@
     "Windows keeps the clock in sync with time servers. It is not a server others can log into.": "Windows синхронизирует часы с серверами времени. Это не сервер, в который можно войти.",
     "Windows refused the change. Nothing was changed.": "Windows отклонила изменение. Ничего не изменено.",
     "Windows system service": "Системная служба Windows",
-    "Yadro Guard": "Yadro Guard",
-    "Yadro Guard is not set up yet.": "Yadro Guard ещё не настроен.",
-    "Yadro Guard is not set up yet. Run the installer once, then reload Hermes.": "Yadro Guard ещё не настроен. Запустите установщик один раз, затем перезагрузите Hermes.",
+    "mcp-secrets-guard": "mcp-secrets-guard",
+    "mcp-secrets-guard blocked an agent": "mcp-secrets-guard заблокировал агента",
+    "mcp-secrets-guard is not set up yet.": "mcp-secrets-guard ещё не настроен.",
+    "mcp-secrets-guard is not set up yet. Run the installer once, then reload Hermes.": "mcp-secrets-guard ещё не настроен. Запустите установщик один раз, затем перезагрузите Hermes.",
     "You cancelled the Windows confirmation. Nothing was changed.": "Вы отменили подтверждение Windows. Ничего не изменено.",
     "You marked this as trusted.": "Вы отметили это как доверенное.",
     "Your embeddings are reachable.": "Ваши эмбеддинги доступны из сети.",
@@ -660,6 +663,7 @@
     "program stopped": "программа остановлена",
     "protected on line": "защищено в строке",
     "protected secret": "защищённый секрет",
+    "port": "порт",
     "public internet tunnel": "публичный интернет-туннель",
     "python -m http.server serves the whole folder to the network by default.": "python -m http.server по умолчанию открывает всю папку для сети.",
     "quarantined from an agent": "перехвачено у агента",
@@ -739,7 +743,7 @@
   function post(path, body) {
     return SDK.fetchJSON(API + path, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Yadro-Guard": "1" },   // CSRF guard on the backend
+      headers: { "Content-Type": "application/json", "X-Mcp-Secrets-Guard": "1" },   // CSRF guard on the backend
       body: JSON.stringify(body),
     });
   }
@@ -809,6 +813,100 @@
         ].join("\n") + (inc.risks && inc.risks[0] ? "\nСниппет:\n" + (inc.risks[0].snippet || "") : "");
     sha256(body).then(function (hash) { var out = body + proofFooter(hash, when); blobDownload("incident-" + inc.id + "." + (kind === "json" ? "json" : "txt"), out, kind === "json" ? "application/json" : "text/plain;charset=utf-8"); });
   }
+  // ---- Security Passport: full PC summary (protection + exposure + vault + journal) ----
+  // Client-side only: pulls /incidents, /exposure, /vault, renders a Proof-Sealed TXT and a
+  // styled print window (Save as PDF). No backend endpoint needed; secrets are never fetched
+  // in full — only titles, labels and masked previews that the journal already exposes.
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>]/g, function (c) {
+      return c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;";
+    });
+  }
+  function passportText(inc, exp, vlt) {
+    var L = [];
+    var items = (inc && inc.items) || [];
+    var pend = items.filter(function (i) { return i.status === "pending"; });
+    var quar = items.filter(function (i) { return i.status === "quarantined" || i.status === "blocked"; });
+    var allo = items.filter(function (i) { return i.status === "allowed" || i.status === "protected"; });
+    L.push("mcp-secrets-guard — ПАСПОРТ БЕЗОПАСНОСТИ ПК");
+    L.push("Сформирован: " + fmtTs(Math.floor(Date.now() / 1000)));
+    L.push("============================================================");
+    L.push("");
+    L.push("1. ЗАЩИТА — перехват секретов до запуска");
+    L.push("   Ожидают решения:        " + pend.length);
+    L.push("   Всего инцидентов:       " + items.length);
+    L.push("   Заблокировано/карантин: " + quar.length);
+    L.push("   Разрешено/с защитой:    " + allo.length);
+    L.push("");
+    L.push("2. ЭКСПОЗИЦИЯ — открытые сетевые порты");
+    if (exp && exp.status === "ok") {
+      var c = exp.counts || {};
+      L.push("   Оценка открытости:     " + (exp.score != null ? exp.score : "?") + "/100");
+      L.push("   Критических: " + (c.critical || 0) + " · Высоких: " + (c.high || 0) +
+        " · Средних: " + (c.medium || 0) + " · Низких: " + (c.low || 0));
+      var risky = (exp.listeners || []).filter(function (l) { return l.severity !== "info"; });
+      if (risky.length) {
+        L.push("   Риски:");
+        risky.forEach(function (l) {
+          L.push("   - " + (l.proto || "?") + "/" + (l.port || "?") + "  " +
+            (l.service || l.process || "") + "  [" + (l.severity || "?") + "]");
+        });
+      } else { L.push("   Рисков не обнаружено."); }
+    } else { L.push("   (сканер недоступен: " + ((exp && exp.message) || "нет данных") + ")"); }
+    L.push("");
+    L.push("3. СЕЙФ — зашифрованное хранилище секретов");
+    var vitems = ((vlt && vlt.items) || []).filter(function (v) { return !v.deleted; });
+    var byLabel = {};
+    vitems.forEach(function (v) { var k = v.label || "Прочее"; byLabel[k] = (byLabel[k] || 0) + 1; });
+    L.push("   Всего секретов: " + vitems.length);
+    Object.keys(byLabel).forEach(function (k) { L.push("   - " + k + ": " + byLabel[k]); });
+    L.push("");
+    L.push("4. ЖУРНАЛ ИНЦИДЕНТОВ");
+    if (items.length) {
+      items.slice(0, 100).forEach(function (i) {
+        L.push("   [" + fmtTs(i.at) + "] " + (STATUS_TEXT[i.status] || i.status) +
+          " — " + (i.tool || "?") + " → " + (i.destination || "?"));
+      });
+    } else { L.push("   (пусто)"); }
+    L.push("");
+    return L.join("\n");
+  }
+  function buildPassport(kind, done) {
+    Promise.all([
+      SDK.fetchJSON(API + "/incidents").catch(function () { return { status: "error", message: "incidents unreachable" }; }),
+      SDK.fetchJSON(API + "/exposure").catch(function () { return { status: "error", message: "exposure unreachable" }; }),
+      SDK.fetchJSON(API + "/vault").catch(function () { return { status: "error", message: "vault unreachable" }; })
+    ]).then(function (res) {
+      var body = passportText(res[0], res[1], res[2]);
+      var when = fmtTs(Math.floor(Date.now() / 1000));
+      sha256(body).then(function (hash) {
+        if (kind === "txt") {
+          blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt",
+            body + proofFooter(hash, when), "text/plain;charset=utf-8");
+        } else {
+          openPassportPrint(body, when, hash);
+        }
+        if (done) done();
+      });
+    }).catch(function () { if (done) done(); });
+  }
+  function openPassportPrint(body, when, hash) {
+    var html = "<!doctype html><html><head><meta charset='utf-8'><title>mcp-secrets-guard — Паспорт безопасности</title>" +
+      "<style>body{font:13px/1.55 'Segoe UI',Arial,sans-serif;color:#111;margin:36px;max-width:820px}" +
+      "h1{font-size:20px;margin:0 0 4px} .sub{color:#666;margin-bottom:18px}" +
+      "pre{white-space:pre-wrap;word-break:break-word;background:#f6f7f9;border:1px solid #e2e5ea;border-radius:8px;padding:14px;font:12px/1.5 ui-monospace,Consolas,monospace}" +
+      ".seal{margin-top:18px;padding:10px 12px;border:1px dashed #8a5cf6;border-radius:8px;color:#4b2e83;font-size:12px}" +
+      "@media print{body{margin:0} .noprint{display:none}}</style></head><body>" +
+      "<h1>🛡 mcp-secrets-guard — Паспорт безопасности ПК</h1>" +
+      "<div class='sub'>Сформирован: " + escHtml(when) + " · локально, без облака</div>" +
+      "<button class='noprint' onclick='window.print()' style='margin-bottom:14px;padding:8px 14px;cursor:pointer'>Печать / Сохранить как PDF</button>" +
+      "<pre>" + escHtml(body) + "</pre>" +
+      "<div class='seal'>🔏 Proof Seal — SHA-256: " + escHtml(hash) + "<br>Сформирован: " + escHtml(when) + " · целостность подтверждена (локально)</div>" +
+      "</body></html>";
+    var w = window.open("", "_blank");
+    if (!w) { blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", body, "text/plain;charset=utf-8"); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }
   const LABEL_COLOR = { Credentials: "#8a5cf6", Financial: "#e8a33d", PII: "#e0533d", Health: "#d14fa0", Location: "#2f9fd8" };
   const STATUS_TEXT = { pending: "Waiting for your decision", protected: "Sent with protection",
     quarantined: "Blocked, secret quarantined", allowed: "Allowed once" };
@@ -858,6 +956,8 @@
     const inc = p.inc;
     const [busy, setBusy] = useState("");
     const [note, setNote] = useState("");
+    const [ruleOpen, setRuleOpen] = useState(false);
+    const [ruleBusy, setRuleBusy] = useState("");
     const pending = inc.status === "pending";
     function choose(choice) {
       setBusy(choice);
@@ -866,6 +966,18 @@
         .catch(function () { setNote("Could not reach the Guard backend."); })
         .finally(function () { setBusy(""); });
     }
+    function makeRule(action, matchType, match) {
+      if (!match) { setNote("Нечего запоминать: нет домена или инструмента."); return; }
+      setRuleOpen(false); setRuleBusy(action + ":" + matchType);
+      post("/rules", { action: action, match_type: matchType, match: match, incident: inc.id })
+        .then(function (r) {
+          setRuleBusy("");
+          if (r.status === "ok") setNote("Постоянное правило создано: " + (action === "block" ? "всегда блокировать" : "всегда разрешать") + " " + matchType + " «" + match + "». Оно применится к следующим действиям.");
+          else setNote(r.message || "Не удалось сохранить правило.");
+        })
+        .catch(function () { setRuleBusy(""); setNote("Не удалось связаться с бэкендом Guard."); });
+    }
+    const domain = (inc.destination || "").replace(/^[a-z]+:\/\//i, "").split(/[/?#]/)[0] || "";
     const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
     const fullCmd = ((inc.tool || "") + " " + (inc.destination || "")).trim() +
       ((inc.risks || []).length ? "  # " + inc.risks[0].snippet : "") +
@@ -875,6 +987,21 @@
         h("span", { className: "yg-inc-id" }, inc.id),
         h(Pill, { kind: pending ? "bad" : inc.status === "quarantined" ? "warn" : "ok" }, STATUS_TEXT[inc.status] || inc.status),
         h("span", { className: "yg-dim yg-right" }, fmtTs(inc.at) + (inc.attempts > 1 ? " · " + inc.attempts + " attempts" : "")),
+        h("span", { style: { position: "relative" } },
+          h("button", { type: "button", className: "yg-btn ghost", disabled: !!ruleBusy,
+            title: "Запомнить решение навсегда: всегда блокировать или всегда разрешать этот домен/инструмент",
+            onClick: function () { setRuleOpen(!ruleOpen); } },
+            ruleBusy ? "…" : "⚙ Постоянное правило"),
+          ruleOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu",
+              style: { position: "absolute", right: 0, top: "100%", zIndex: 40, minWidth: "230px" } },
+            domain ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("block", "domain", domain); } }, "⛔ Всегда блокировать домен " + domain) : null,
+            domain ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("allow", "domain", domain); } }, "✓ Всегда разрешать домен " + domain) : null,
+            inc.tool ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("block", "tool", inc.tool); } }, "⛔ Всегда блокировать инструмент " + inc.tool) : null,
+            inc.tool ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("allow", "tool", inc.tool); } }, "✓ Всегда разрешать инструмент " + inc.tool) : null) : null),
         h("span", { style: { width: "0" } })),
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
         "Агент ", h("b", null, who), " попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
@@ -963,9 +1090,28 @@
     const data = p.data;
     const [q, setQ] = useState("");
     const [filter, setFilter] = useState("all");
+    const [histBusy, setHistBusy] = useState("");
     if (!data) return h(Card, { title: "live protection", className: "wide" }, h(Empty, { text: "loading…" }));
     if (data.status === "error") return h(Card, { title: "live protection", className: "wide" },
       h("div", { className: "yg-err" }, "● " + data.message));
+    function delIncident(id) {
+      if (!window.confirm("Удалить инцидент " + id + " из истории? Это нельзя отменить.")) return;
+      setHistBusy(id);
+      post("/incidents/delete", { incident: id }).then(function (r) {
+        setHistBusy("");
+        if (r.status === "ok" && p.onChanged) p.onChanged();
+        else if (r.status !== "ok") window.alert(r.message || "Не удалось удалить инцидент.");
+      }).catch(function () { setHistBusy(""); window.alert("Не удалось связаться с бэкендом Guard."); });
+    }
+    function clearHistory() {
+      if (!window.confirm("Очистить всю решённую историю инцидентов? Ожидающие решения останутся. Это нельзя отменить.")) return;
+      setHistBusy("__all__");
+      post("/incidents/clear", { scope: "resolved" }).then(function (r) {
+        setHistBusy("");
+        if (r.status === "ok" && p.onChanged) p.onChanged();
+        else if (r.status !== "ok") window.alert(r.message || "Не удалось очистить историю.");
+      }).catch(function () { setHistBusy(""); window.alert("Не удалось связаться с бэкендом Guard."); });
+    }
     const items = data.items || [];
     const pending = items.filter(function (i) { return i.status === "pending"; });
     const done = items.filter(function (i) { return i.status !== "pending"; })
@@ -991,14 +1137,21 @@
           h("input", { className: "yg-input yg-hst-search", placeholder: "Поиск по тексту или ИД…", value: q,
             onChange: function (e) { setQ(e.target.value); } }),
           h("div", { className: "yg-kinds", style: { margin: 0 } },
-            FILTERS.map(function (f) { return h("button", { key: f[0], type: "button", className: "yg-kind" + (filter === f[0] ? " on" : ""), onClick: function () { setFilter(f[0]); } }, f[1]); }))),
+            FILTERS.map(function (f) { return h("button", { key: f[0], type: "button", className: "yg-kind" + (filter === f[0] ? " on" : ""), onClick: function () { setFilter(f[0]); } }, f[1]); })),
+          done.length ? h("button", { type: "button", className: "yg-btn ghost", disabled: !!histBusy,
+            title: "Удалить все решённые инциденты из истории", onClick: clearHistory },
+            histBusy === "__all__" ? "…" : "🗑 Очистить историю") : null),
         done.length ? h("div", { className: "yg-list" },
           done.slice(0, 50).map(function (inc) {
             var accSummary = h("summary", { className: "yg-acc-sum" },
               h("span", { className: "yg-acc-id" }, inc.id),
               h("span", { className: "yg-acc-status" }, STATUS_TEXT[inc.status] || inc.status),
               h("span", { className: "yg-dim yg-acc-time" }, fmtTs(inc.at)),
-              h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")));
+              h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")),
+              h("button", { type: "button", className: "yg-btn ghost yg-acc-del", disabled: !!histBusy,
+                title: "Удалить эту запись из истории",
+                onClick: function (e) { e.preventDefault(); e.stopPropagation(); delIncident(inc.id); } },
+                histBusy === inc.id ? "…" : "🗑"));
             return h("details", { key: inc.id, className: "yg-acc", open: false }, accSummary,
               h(IncidentCard, { inc: inc, onChanged: p.onChanged }));
           }))
@@ -1108,9 +1261,9 @@
     return h(React.Fragment, null,
       h(Card, { title: "network exposure", className: "wide" },
         h("div", { className: "yg-shield " + (bad ? "bad" : "ok") },
-          h("span", { className: "yg-big" }, (bad ? "⛔ " : "✓ ") + "Exposure score " + data.score + "/100"),
-          h("span", { className: "yg-dim" }, "  " + (c.critical || 0) + " critical · " + (c.high || 0) + " high · " +
-            (c.medium || 0) + " medium · " + (c.low || 0) + " low")),
+          h("span", { className: "yg-big" }, bad ? "⛔ " : "✓ ", T("Exposure score "), data.score, "/100"),
+          h("span", { className: "yg-dim" }, "  ", c.critical || 0, T(" critical · "), c.high || 0, T(" high · "),
+            c.medium || 0, T(" medium · "), c.low || 0, T(" low"))),
         h("div", { className: "yg-dim yg-small" }, "Programs on this computer that accept network connections, and who can reach them. Nothing is changed by this scan."),
         h("div", { className: "yg-actions" },
           h("button", { className: "yg-btn", disabled: busy, onClick: function () { load(true); } }, busy ? "Scanning…" : "Check again"),
@@ -1135,10 +1288,13 @@
   const FW_SCOPE = { everyone: "from anyone", "local network": "from your local network only",
     "some addresses": "from some addresses", "default": "by default", "group policy": "(managed by your organisation)" };
   function fwText(l) {
-    let t = FW_TEXT[l.firewall] != null ? FW_TEXT[l.firewall] : "firewall: " + l.firewall;
-    if (l.firewall_scope && FW_SCOPE[l.firewall_scope]) t += " " + FW_SCOPE[l.firewall_scope];
-    if (l.firewall_rule) t += " (rule \u201c" + l.firewall_rule + "\u201d)";
-    return t;
+    // Each fragment is translated on its own (T()); returning one concatenated
+    // string would defeat T(), because the whole joined sentence has no key.
+    const parts = [];
+    parts.push(T(FW_TEXT[l.firewall] != null ? FW_TEXT[l.firewall] : "firewall: " + l.firewall));
+    if (l.firewall_scope && FW_SCOPE[l.firewall_scope]) parts.push(T(FW_SCOPE[l.firewall_scope]));
+    if (l.firewall_rule) parts.push(T("(rule") + " \u201c" + l.firewall_rule + "\u201d");
+    return parts.join(" ");
   }
 
   // What the user can do about a port. System changes open a Windows (UAC) confirmation.
@@ -1211,13 +1367,16 @@
       h("div", { className: "yg-inc-top" },
         h(Pill, { kind: s[1] }, s[0]),
         h("b", null, l.service),
-        h("span", { className: "yg-dim yg-right yg-mono" }, l.proto + " " + addrText(l) + " port " + l.port)),
+        // Split into nodes so each text fragment goes through T(); a single
+        // "proto addr port N" string has no i18n key and would stay English.
+        h("span", { className: "yg-dim yg-right yg-mono" },
+          l.proto + " " + addrText(l), " ", T("port"), " ", l.port)),
       h("div", { className: "yg-inc-story" },
-        h("b", { className: "yg-mono" }, l.process), " (pid " + l.pid + ") · " + (REACH[l.reach] || l.reach) +
-        (l.reach === "this_computer" ? "" : " · " + fwText(l)),
+        h("b", { className: "yg-mono" }, l.process), " ", T("(pid"), " ", l.pid, ") · ", T(REACH[l.reach] || l.reach),
+        l.reach === "this_computer" ? null : " · " + fwText(l),
         (l.tags || []).indexOf("public-tunnel") >= 0 ? h("span", { className: "yg-err" }, " · public internet tunnel") : null),
       l.trusted ? h("div", { className: "yg-ok yg-small" }, "You marked this as trusted.") : null,
-      p.compact ? null : h("div", { className: "yg-dim" }, l.why),
+      p.compact ? null : h("div", { className: "yg-dim" }, T(l.why)),
       p.compact || l.fix === "Nothing to do." ? null : h("div", { className: "yg-ok yg-small" }, T("What to do:") + " " + T(l.fix)),
       p.compact ? null : h(PortActions, { l: l, onChanged: p.onChanged }));
   }
@@ -1337,6 +1496,12 @@
             title: "Actions for this secret", "aria-label": "Actions for this secret",
             "aria-haspopup": "menu", "aria-expanded": menuOpen,
             onClick: function () { setMenuOpen(!menuOpen); } }, "⋮"),
+          h("button", { type: "button", className: "yg-vault-menu-btn yg-vault-trash-btn", disabled: p.busy,
+            title: v.deleted ? T("Delete forever") : T("Move to trash"), "aria-label": v.deleted ? T("Delete forever") : T("Move to trash"),
+            onClick: function () {
+              if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
+                p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
+            } }, "🗑"),
           menuOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu" },
             h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
               onClick: function () { setVal(v.title || ""); setMode("rename"); } }, "✏ Rename"),
@@ -1352,7 +1517,7 @@
                 if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
                   p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
                 done();
-              } }, "🗑 " + (v.deleted ? "Delete forever" : "Move to trash"))) : null)),
+              } }, "🗑 " + T(v.deleted ? "Delete forever" : "Move to trash"))) : null)),
       mode === "rename" ? h("div", { className: "yg-actions" },
         h("input", { className: "yg-input", value: val, placeholder: "New name", onChange: function (e) { setVal(e.target.value); } }),
         h("button", { className: "yg-btn", disabled: p.busy || !val.trim(), onClick: function () { p.op({ op: "rename", token: v.token, title: val }, "Renamed."); done(); } }, "Save"),
@@ -1371,6 +1536,8 @@
 
   function GuardPage() {
     const [tab, setTab] = useState("live");
+    const [passportOpen, setPassportOpen] = useState(false);
+    const [passportBusy, setPassportBusy] = useState("");
     const [incidents, setIncidents] = useState(null);
     const [vault, setVault] = useState(null);
     const [toast, setToast] = useState(null);
@@ -1390,7 +1557,7 @@
     const notify = useCallback(function (inc) {
       try {
         if (typeof Notification === "undefined" || !Notification || Notification.permission !== "granted") return;
-        const n = new Notification(T("Yadro Guard blocked an agent"), {
+        const n = new Notification(T("mcp-secrets-guard blocked an agent"), {
           body: T("Agent tried to use the tool") + " " + (inc.tool || "?") + " " + T("to send data to") + " " +
             (inc.destination || "?") + ". " + T("Open Guard to allow or block it."),
           tag: "yadro-guard",
@@ -1449,7 +1616,7 @@
     useEffect(function () {
       try {
         if (!baseTitle.current) baseTitle.current = document.title;
-        document.title = pending ? "mcp-secrets-guard · " + pending + " blocked" : baseTitle.current;
+        document.title = pending ? "mcp-secrets-guard · " + pending + " заблокировано" : baseTitle.current;
       } catch (e) {}
     }, [pending]);
     useEffect(function () {
@@ -1482,9 +1649,22 @@
         h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "mcp-secrets-guard"),
         h("div", { className: "yg-tabs" },
           TabBtn("live", "Защита" + (pending ? " (" + pending + ")" : ""), pending),
-          TabBtn("exposure", "Экспозиция"),
+          TabBtn("exposure", "Порты"),
           TabBtn("check", "Проверка кода"),
-          TabBtn("vault", "Сейф"))),
+          TabBtn("vault", "Сейф")),
+        h("div", { className: "yg-passport", style: { position: "relative", marginLeft: "auto" } },
+          h("button", { type: "button", className: "yg-btn ghost", disabled: !!passportBusy,
+            title: "Скачать сводный паспорт безопасности ПК (защита + порты + сейф + журнал) с подписью Proof Seal",
+            onClick: function () { setPassportOpen(!passportOpen); } },
+            passportBusy ? "… " + passportBusy : "⤓ Паспорт безопасности"),
+          passportOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu",
+              style: { position: "absolute", right: 0, top: "100%", zIndex: 60, minWidth: "220px" } },
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setPassportOpen(false); setPassportBusy("TXT");
+                buildPassport("txt", function () { setPassportBusy(""); }); } }, "⤓ Скачать TXT (с Proof Seal)"),
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setPassportOpen(false); setPassportBusy("PDF");
+                buildPassport("pdf", function () { setPassportBusy(""); }); } }, "🖨 Открыть для печати / PDF")) : null)),
       h("div", { className: "yg-grid" + (tab === "live" ? " live" : "") },
         tab === "live" ? h(LivePanel, { data: incidents, onChanged: refresh }) : null,
         tab === "exposure" ? h(ExposurePanel, null) : null,

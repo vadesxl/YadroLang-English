@@ -46,14 +46,14 @@ def собрать() -> str:
         "export default {\n"
         '  id: "yadro-guard",\n'
         '  name: "Guard",\n'
-        '  description: "Yadro Guard: live leak blocking, exposure scan, code check and vault. Offline.",\n'
+        '  description: "mcp-secrets-guard: live leak blocking, exposure scan, code check and vault. Offline.",\n'
         "  defaultEnabled: true,\n"
         "  register(ctx) {\n"
         "    rest = ctx.rest;\n"
         "    ctx.registerMany([\n"
         '      { id: "page", area: "routes", title: "Guard", data: { path: "/guard" }, render: function () { return React.createElement(DesktopGuardPage); } },\n'
         '      { id: "nav", area: "sidebar.nav", order: -900, data: { path: "/guard", label: "Guard", codicon: "shield" } },\n'
-        '      { id: "open", area: "palette", data: { id: "guard.open", label: "Open Yadro Guard", keywords: ["guard", "security", "secrets"], run: function () { host.navigate("/guard"); } } }\n'
+        '      { id: "open", area: "palette", data: { id: "guard.open", label: "Open mcp-secrets-guard", keywords: ["guard", "security", "secrets"], run: function () { host.navigate("/guard"); } } }\n'
         "    ]);\n"
         "  }\n"
         "};\n"

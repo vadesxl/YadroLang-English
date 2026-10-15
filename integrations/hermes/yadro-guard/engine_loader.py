@@ -1,4 +1,4 @@
-"""Load the Yadro Guard engine package under a UNIQUE module name.
+"""Load the mcp-secrets-guard engine package under a UNIQUE module name.
 
 Hermes runs many plugins in one Python process. Importing the engine as a
 generic ``src`` package could collide with another package of the same name or

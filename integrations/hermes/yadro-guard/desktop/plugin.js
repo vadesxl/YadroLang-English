@@ -2,7 +2,7 @@
 import * as React from "react";
 import { host } from "@hermes/plugin-sdk";
 
-const CSS = "/* Yadro Guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 1 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--yg-surface);\n  border: 1px solid var(--yg-border); border-radius: 6px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);\n  min-width: 180px; z-index: 100; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n";
+const CSS = "/* mcp-secrets-guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 1 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n/* Trash button: hidden until its row is hovered; keep it subtle so the \u22ee remains primary. */\n.yg-vault-trash-btn { opacity: 0; transition: opacity 0.12s ease; max-width: 0; padding-left: 0; padding-right: 0;\n  border-color: transparent; overflow: hidden; }\n.yg-inc:hover .yg-vault-trash-btn, .yg-inc:focus-within .yg-vault-trash-btn { opacity: 1; max-width: 60px;\n  padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }\n.yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }\n.yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--yg-surface);\n  border: 1px solid var(--yg-border); border-radius: 6px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);\n  min-width: 180px; z-index: 100; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }\n.yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }\n.yg-passport .yg-btn { white-space: nowrap; }\n";
 const API = "/api/plugins/yadro-guard";
 let rest = null;
 let GuardPage = null;
@@ -43,6 +43,8 @@ const makeGuardPage = function (SDK, onReady) {
     "(l.icon ? l.icon +": "(l.icon ? l.icon +",
     "(l.reach ===": "(l.reach ===",
     "(managed by your organisation)": "(управляется вашей организацией)",
+    "(pid": "(pid",
+    "(rule": "(правило",
     "(showSafe ?": "(showSafe ?",
     ") else": ") else",
     ") if isinstance(paths, dict) else": ") if isinstance(paths, dict) else",
@@ -610,9 +612,10 @@ const makeGuardPage = function (SDK, onReady) {
     "Windows keeps the clock in sync with time servers. It is not a server others can log into.": "Windows синхронизирует часы с серверами времени. Это не сервер, в который можно войти.",
     "Windows refused the change. Nothing was changed.": "Windows отклонила изменение. Ничего не изменено.",
     "Windows system service": "Системная служба Windows",
-    "Yadro Guard": "Yadro Guard",
-    "Yadro Guard is not set up yet.": "Yadro Guard ещё не настроен.",
-    "Yadro Guard is not set up yet. Run the installer once, then reload Hermes.": "Yadro Guard ещё не настроен. Запустите установщик один раз, затем перезагрузите Hermes.",
+    "mcp-secrets-guard": "mcp-secrets-guard",
+    "mcp-secrets-guard blocked an agent": "mcp-secrets-guard заблокировал агента",
+    "mcp-secrets-guard is not set up yet.": "mcp-secrets-guard ещё не настроен.",
+    "mcp-secrets-guard is not set up yet. Run the installer once, then reload Hermes.": "mcp-secrets-guard ещё не настроен. Запустите установщик один раз, затем перезагрузите Hermes.",
     "You cancelled the Windows confirmation. Nothing was changed.": "Вы отменили подтверждение Windows. Ничего не изменено.",
     "You marked this as trusted.": "Вы отметили это как доверенное.",
     "Your embeddings are reachable.": "Ваши эмбеддинги доступны из сети.",
@@ -675,6 +678,7 @@ const makeGuardPage = function (SDK, onReady) {
     "program stopped": "программа остановлена",
     "protected on line": "защищено в строке",
     "protected secret": "защищённый секрет",
+    "port": "порт",
     "public internet tunnel": "публичный интернет-туннель",
     "python -m http.server serves the whole folder to the network by default.": "python -m http.server по умолчанию открывает всю папку для сети.",
     "quarantined from an agent": "перехвачено у агента",
@@ -754,7 +758,7 @@ const makeGuardPage = function (SDK, onReady) {
   function post(path, body) {
     return SDK.fetchJSON(API + path, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Yadro-Guard": "1" },   // CSRF guard on the backend
+      headers: { "Content-Type": "application/json", "X-Mcp-Secrets-Guard": "1" },   // CSRF guard on the backend
       body: JSON.stringify(body),
     });
   }
@@ -824,6 +828,100 @@ const makeGuardPage = function (SDK, onReady) {
         ].join("\n") + (inc.risks && inc.risks[0] ? "\nСниппет:\n" + (inc.risks[0].snippet || "") : "");
     sha256(body).then(function (hash) { var out = body + proofFooter(hash, when); blobDownload("incident-" + inc.id + "." + (kind === "json" ? "json" : "txt"), out, kind === "json" ? "application/json" : "text/plain;charset=utf-8"); });
   }
+  // ---- Security Passport: full PC summary (protection + exposure + vault + journal) ----
+  // Client-side only: pulls /incidents, /exposure, /vault, renders a Proof-Sealed TXT and a
+  // styled print window (Save as PDF). No backend endpoint needed; secrets are never fetched
+  // in full — only titles, labels and masked previews that the journal already exposes.
+  function escHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>]/g, function (c) {
+      return c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;";
+    });
+  }
+  function passportText(inc, exp, vlt) {
+    var L = [];
+    var items = (inc && inc.items) || [];
+    var pend = items.filter(function (i) { return i.status === "pending"; });
+    var quar = items.filter(function (i) { return i.status === "quarantined" || i.status === "blocked"; });
+    var allo = items.filter(function (i) { return i.status === "allowed" || i.status === "protected"; });
+    L.push("mcp-secrets-guard — ПАСПОРТ БЕЗОПАСНОСТИ ПК");
+    L.push("Сформирован: " + fmtTs(Math.floor(Date.now() / 1000)));
+    L.push("============================================================");
+    L.push("");
+    L.push("1. ЗАЩИТА — перехват секретов до запуска");
+    L.push("   Ожидают решения:        " + pend.length);
+    L.push("   Всего инцидентов:       " + items.length);
+    L.push("   Заблокировано/карантин: " + quar.length);
+    L.push("   Разрешено/с защитой:    " + allo.length);
+    L.push("");
+    L.push("2. ЭКСПОЗИЦИЯ — открытые сетевые порты");
+    if (exp && exp.status === "ok") {
+      var c = exp.counts || {};
+      L.push("   Оценка открытости:     " + (exp.score != null ? exp.score : "?") + "/100");
+      L.push("   Критических: " + (c.critical || 0) + " · Высоких: " + (c.high || 0) +
+        " · Средних: " + (c.medium || 0) + " · Низких: " + (c.low || 0));
+      var risky = (exp.listeners || []).filter(function (l) { return l.severity !== "info"; });
+      if (risky.length) {
+        L.push("   Риски:");
+        risky.forEach(function (l) {
+          L.push("   - " + (l.proto || "?") + "/" + (l.port || "?") + "  " +
+            (l.service || l.process || "") + "  [" + (l.severity || "?") + "]");
+        });
+      } else { L.push("   Рисков не обнаружено."); }
+    } else { L.push("   (сканер недоступен: " + ((exp && exp.message) || "нет данных") + ")"); }
+    L.push("");
+    L.push("3. СЕЙФ — зашифрованное хранилище секретов");
+    var vitems = ((vlt && vlt.items) || []).filter(function (v) { return !v.deleted; });
+    var byLabel = {};
+    vitems.forEach(function (v) { var k = v.label || "Прочее"; byLabel[k] = (byLabel[k] || 0) + 1; });
+    L.push("   Всего секретов: " + vitems.length);
+    Object.keys(byLabel).forEach(function (k) { L.push("   - " + k + ": " + byLabel[k]); });
+    L.push("");
+    L.push("4. ЖУРНАЛ ИНЦИДЕНТОВ");
+    if (items.length) {
+      items.slice(0, 100).forEach(function (i) {
+        L.push("   [" + fmtTs(i.at) + "] " + (STATUS_TEXT[i.status] || i.status) +
+          " — " + (i.tool || "?") + " → " + (i.destination || "?"));
+      });
+    } else { L.push("   (пусто)"); }
+    L.push("");
+    return L.join("\n");
+  }
+  function buildPassport(kind, done) {
+    Promise.all([
+      SDK.fetchJSON(API + "/incidents").catch(function () { return { status: "error", message: "incidents unreachable" }; }),
+      SDK.fetchJSON(API + "/exposure").catch(function () { return { status: "error", message: "exposure unreachable" }; }),
+      SDK.fetchJSON(API + "/vault").catch(function () { return { status: "error", message: "vault unreachable" }; })
+    ]).then(function (res) {
+      var body = passportText(res[0], res[1], res[2]);
+      var when = fmtTs(Math.floor(Date.now() / 1000));
+      sha256(body).then(function (hash) {
+        if (kind === "txt") {
+          blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt",
+            body + proofFooter(hash, when), "text/plain;charset=utf-8");
+        } else {
+          openPassportPrint(body, when, hash);
+        }
+        if (done) done();
+      });
+    }).catch(function () { if (done) done(); });
+  }
+  function openPassportPrint(body, when, hash) {
+    var html = "<!doctype html><html><head><meta charset='utf-8'><title>mcp-secrets-guard — Паспорт безопасности</title>" +
+      "<style>body{font:13px/1.55 'Segoe UI',Arial,sans-serif;color:#111;margin:36px;max-width:820px}" +
+      "h1{font-size:20px;margin:0 0 4px} .sub{color:#666;margin-bottom:18px}" +
+      "pre{white-space:pre-wrap;word-break:break-word;background:#f6f7f9;border:1px solid #e2e5ea;border-radius:8px;padding:14px;font:12px/1.5 ui-monospace,Consolas,monospace}" +
+      ".seal{margin-top:18px;padding:10px 12px;border:1px dashed #8a5cf6;border-radius:8px;color:#4b2e83;font-size:12px}" +
+      "@media print{body{margin:0} .noprint{display:none}}</style></head><body>" +
+      "<h1>🛡 mcp-secrets-guard — Паспорт безопасности ПК</h1>" +
+      "<div class='sub'>Сформирован: " + escHtml(when) + " · локально, без облака</div>" +
+      "<button class='noprint' onclick='window.print()' style='margin-bottom:14px;padding:8px 14px;cursor:pointer'>Печать / Сохранить как PDF</button>" +
+      "<pre>" + escHtml(body) + "</pre>" +
+      "<div class='seal'>🔏 Proof Seal — SHA-256: " + escHtml(hash) + "<br>Сформирован: " + escHtml(when) + " · целостность подтверждена (локально)</div>" +
+      "</body></html>";
+    var w = window.open("", "_blank");
+    if (!w) { blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", body, "text/plain;charset=utf-8"); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+  }
   const LABEL_COLOR = { Credentials: "#8a5cf6", Financial: "#e8a33d", PII: "#e0533d", Health: "#d14fa0", Location: "#2f9fd8" };
   const STATUS_TEXT = { pending: "Waiting for your decision", protected: "Sent with protection",
     quarantined: "Blocked, secret quarantined", allowed: "Allowed once" };
@@ -873,6 +971,8 @@ const makeGuardPage = function (SDK, onReady) {
     const inc = p.inc;
     const [busy, setBusy] = useState("");
     const [note, setNote] = useState("");
+    const [ruleOpen, setRuleOpen] = useState(false);
+    const [ruleBusy, setRuleBusy] = useState("");
     const pending = inc.status === "pending";
     function choose(choice) {
       setBusy(choice);
@@ -881,6 +981,18 @@ const makeGuardPage = function (SDK, onReady) {
         .catch(function () { setNote("Could not reach the Guard backend."); })
         .finally(function () { setBusy(""); });
     }
+    function makeRule(action, matchType, match) {
+      if (!match) { setNote("Нечего запоминать: нет домена или инструмента."); return; }
+      setRuleOpen(false); setRuleBusy(action + ":" + matchType);
+      post("/rules", { action: action, match_type: matchType, match: match, incident: inc.id })
+        .then(function (r) {
+          setRuleBusy("");
+          if (r.status === "ok") setNote("Постоянное правило создано: " + (action === "block" ? "всегда блокировать" : "всегда разрешать") + " " + matchType + " «" + match + "». Оно применится к следующим действиям.");
+          else setNote(r.message || "Не удалось сохранить правило.");
+        })
+        .catch(function () { setRuleBusy(""); setNote("Не удалось связаться с бэкендом Guard."); });
+    }
+    const domain = (inc.destination || "").replace(/^[a-z]+:\/\//i, "").split(/[/?#]/)[0] || "";
     const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
     const fullCmd = ((inc.tool || "") + " " + (inc.destination || "")).trim() +
       ((inc.risks || []).length ? "  # " + inc.risks[0].snippet : "") +
@@ -890,6 +1002,21 @@ const makeGuardPage = function (SDK, onReady) {
         h("span", { className: "yg-inc-id" }, inc.id),
         h(Pill, { kind: pending ? "bad" : inc.status === "quarantined" ? "warn" : "ok" }, STATUS_TEXT[inc.status] || inc.status),
         h("span", { className: "yg-dim yg-right" }, fmtTs(inc.at) + (inc.attempts > 1 ? " · " + inc.attempts + " attempts" : "")),
+        h("span", { style: { position: "relative" } },
+          h("button", { type: "button", className: "yg-btn ghost", disabled: !!ruleBusy,
+            title: "Запомнить решение навсегда: всегда блокировать или всегда разрешать этот домен/инструмент",
+            onClick: function () { setRuleOpen(!ruleOpen); } },
+            ruleBusy ? "…" : "⚙ Постоянное правило"),
+          ruleOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu",
+              style: { position: "absolute", right: 0, top: "100%", zIndex: 40, minWidth: "230px" } },
+            domain ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("block", "domain", domain); } }, "⛔ Всегда блокировать домен " + domain) : null,
+            domain ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("allow", "domain", domain); } }, "✓ Всегда разрешать домен " + domain) : null,
+            inc.tool ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("block", "tool", inc.tool); } }, "⛔ Всегда блокировать инструмент " + inc.tool) : null,
+            inc.tool ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("allow", "tool", inc.tool); } }, "✓ Всегда разрешать инструмент " + inc.tool) : null) : null),
         h("span", { style: { width: "0" } })),
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
         "Агент ", h("b", null, who), " попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
@@ -978,9 +1105,28 @@ const makeGuardPage = function (SDK, onReady) {
     const data = p.data;
     const [q, setQ] = useState("");
     const [filter, setFilter] = useState("all");
+    const [histBusy, setHistBusy] = useState("");
     if (!data) return h(Card, { title: "live protection", className: "wide" }, h(Empty, { text: "loading…" }));
     if (data.status === "error") return h(Card, { title: "live protection", className: "wide" },
       h("div", { className: "yg-err" }, "● " + data.message));
+    function delIncident(id) {
+      if (!window.confirm("Удалить инцидент " + id + " из истории? Это нельзя отменить.")) return;
+      setHistBusy(id);
+      post("/incidents/delete", { incident: id }).then(function (r) {
+        setHistBusy("");
+        if (r.status === "ok" && p.onChanged) p.onChanged();
+        else if (r.status !== "ok") window.alert(r.message || "Не удалось удалить инцидент.");
+      }).catch(function () { setHistBusy(""); window.alert("Не удалось связаться с бэкендом Guard."); });
+    }
+    function clearHistory() {
+      if (!window.confirm("Очистить всю решённую историю инцидентов? Ожидающие решения останутся. Это нельзя отменить.")) return;
+      setHistBusy("__all__");
+      post("/incidents/clear", { scope: "resolved" }).then(function (r) {
+        setHistBusy("");
+        if (r.status === "ok" && p.onChanged) p.onChanged();
+        else if (r.status !== "ok") window.alert(r.message || "Не удалось очистить историю.");
+      }).catch(function () { setHistBusy(""); window.alert("Не удалось связаться с бэкендом Guard."); });
+    }
     const items = data.items || [];
     const pending = items.filter(function (i) { return i.status === "pending"; });
     const done = items.filter(function (i) { return i.status !== "pending"; })
@@ -1006,14 +1152,21 @@ const makeGuardPage = function (SDK, onReady) {
           h("input", { className: "yg-input yg-hst-search", placeholder: "Поиск по тексту или ИД…", value: q,
             onChange: function (e) { setQ(e.target.value); } }),
           h("div", { className: "yg-kinds", style: { margin: 0 } },
-            FILTERS.map(function (f) { return h("button", { key: f[0], type: "button", className: "yg-kind" + (filter === f[0] ? " on" : ""), onClick: function () { setFilter(f[0]); } }, f[1]); }))),
+            FILTERS.map(function (f) { return h("button", { key: f[0], type: "button", className: "yg-kind" + (filter === f[0] ? " on" : ""), onClick: function () { setFilter(f[0]); } }, f[1]); })),
+          done.length ? h("button", { type: "button", className: "yg-btn ghost", disabled: !!histBusy,
+            title: "Удалить все решённые инциденты из истории", onClick: clearHistory },
+            histBusy === "__all__" ? "…" : "🗑 Очистить историю") : null),
         done.length ? h("div", { className: "yg-list" },
           done.slice(0, 50).map(function (inc) {
             var accSummary = h("summary", { className: "yg-acc-sum" },
               h("span", { className: "yg-acc-id" }, inc.id),
               h("span", { className: "yg-acc-status" }, STATUS_TEXT[inc.status] || inc.status),
               h("span", { className: "yg-dim yg-acc-time" }, fmtTs(inc.at)),
-              h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")));
+              h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")),
+              h("button", { type: "button", className: "yg-btn ghost yg-acc-del", disabled: !!histBusy,
+                title: "Удалить эту запись из истории",
+                onClick: function (e) { e.preventDefault(); e.stopPropagation(); delIncident(inc.id); } },
+                histBusy === inc.id ? "…" : "🗑"));
             return h("details", { key: inc.id, className: "yg-acc", open: false }, accSummary,
               h(IncidentCard, { inc: inc, onChanged: p.onChanged }));
           }))
@@ -1123,9 +1276,9 @@ const makeGuardPage = function (SDK, onReady) {
     return h(React.Fragment, null,
       h(Card, { title: "network exposure", className: "wide" },
         h("div", { className: "yg-shield " + (bad ? "bad" : "ok") },
-          h("span", { className: "yg-big" }, (bad ? "⛔ " : "✓ ") + "Exposure score " + data.score + "/100"),
-          h("span", { className: "yg-dim" }, "  " + (c.critical || 0) + " critical · " + (c.high || 0) + " high · " +
-            (c.medium || 0) + " medium · " + (c.low || 0) + " low")),
+          h("span", { className: "yg-big" }, bad ? "⛔ " : "✓ ", T("Exposure score "), data.score, "/100"),
+          h("span", { className: "yg-dim" }, "  ", c.critical || 0, T(" critical · "), c.high || 0, T(" high · "),
+            c.medium || 0, T(" medium · "), c.low || 0, T(" low"))),
         h("div", { className: "yg-dim yg-small" }, "Programs on this computer that accept network connections, and who can reach them. Nothing is changed by this scan."),
         h("div", { className: "yg-actions" },
           h("button", { className: "yg-btn", disabled: busy, onClick: function () { load(true); } }, busy ? "Scanning…" : "Check again"),
@@ -1150,10 +1303,13 @@ const makeGuardPage = function (SDK, onReady) {
   const FW_SCOPE = { everyone: "from anyone", "local network": "from your local network only",
     "some addresses": "from some addresses", "default": "by default", "group policy": "(managed by your organisation)" };
   function fwText(l) {
-    let t = FW_TEXT[l.firewall] != null ? FW_TEXT[l.firewall] : "firewall: " + l.firewall;
-    if (l.firewall_scope && FW_SCOPE[l.firewall_scope]) t += " " + FW_SCOPE[l.firewall_scope];
-    if (l.firewall_rule) t += " (rule \u201c" + l.firewall_rule + "\u201d)";
-    return t;
+    // Each fragment is translated on its own (T()); returning one concatenated
+    // string would defeat T(), because the whole joined sentence has no key.
+    const parts = [];
+    parts.push(T(FW_TEXT[l.firewall] != null ? FW_TEXT[l.firewall] : "firewall: " + l.firewall));
+    if (l.firewall_scope && FW_SCOPE[l.firewall_scope]) parts.push(T(FW_SCOPE[l.firewall_scope]));
+    if (l.firewall_rule) parts.push(T("(rule") + " \u201c" + l.firewall_rule + "\u201d");
+    return parts.join(" ");
   }
 
   // What the user can do about a port. System changes open a Windows (UAC) confirmation.
@@ -1226,13 +1382,16 @@ const makeGuardPage = function (SDK, onReady) {
       h("div", { className: "yg-inc-top" },
         h(Pill, { kind: s[1] }, s[0]),
         h("b", null, l.service),
-        h("span", { className: "yg-dim yg-right yg-mono" }, l.proto + " " + addrText(l) + " port " + l.port)),
+        // Split into nodes so each text fragment goes through T(); a single
+        // "proto addr port N" string has no i18n key and would stay English.
+        h("span", { className: "yg-dim yg-right yg-mono" },
+          l.proto + " " + addrText(l), " ", T("port"), " ", l.port)),
       h("div", { className: "yg-inc-story" },
-        h("b", { className: "yg-mono" }, l.process), " (pid " + l.pid + ") · " + (REACH[l.reach] || l.reach) +
-        (l.reach === "this_computer" ? "" : " · " + fwText(l)),
+        h("b", { className: "yg-mono" }, l.process), " ", T("(pid"), " ", l.pid, ") · ", T(REACH[l.reach] || l.reach),
+        l.reach === "this_computer" ? null : " · " + fwText(l),
         (l.tags || []).indexOf("public-tunnel") >= 0 ? h("span", { className: "yg-err" }, " · public internet tunnel") : null),
       l.trusted ? h("div", { className: "yg-ok yg-small" }, "You marked this as trusted.") : null,
-      p.compact ? null : h("div", { className: "yg-dim" }, l.why),
+      p.compact ? null : h("div", { className: "yg-dim" }, T(l.why)),
       p.compact || l.fix === "Nothing to do." ? null : h("div", { className: "yg-ok yg-small" }, T("What to do:") + " " + T(l.fix)),
       p.compact ? null : h(PortActions, { l: l, onChanged: p.onChanged }));
   }
@@ -1352,6 +1511,12 @@ const makeGuardPage = function (SDK, onReady) {
             title: "Actions for this secret", "aria-label": "Actions for this secret",
             "aria-haspopup": "menu", "aria-expanded": menuOpen,
             onClick: function () { setMenuOpen(!menuOpen); } }, "⋮"),
+          h("button", { type: "button", className: "yg-vault-menu-btn yg-vault-trash-btn", disabled: p.busy,
+            title: v.deleted ? T("Delete forever") : T("Move to trash"), "aria-label": v.deleted ? T("Delete forever") : T("Move to trash"),
+            onClick: function () {
+              if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
+                p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
+            } }, "🗑"),
           menuOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu" },
             h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
               onClick: function () { setVal(v.title || ""); setMode("rename"); } }, "✏ Rename"),
@@ -1367,7 +1532,7 @@ const makeGuardPage = function (SDK, onReady) {
                 if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
                   p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
                 done();
-              } }, "🗑 " + (v.deleted ? "Delete forever" : "Move to trash"))) : null)),
+              } }, "🗑 " + T(v.deleted ? "Delete forever" : "Move to trash"))) : null)),
       mode === "rename" ? h("div", { className: "yg-actions" },
         h("input", { className: "yg-input", value: val, placeholder: "New name", onChange: function (e) { setVal(e.target.value); } }),
         h("button", { className: "yg-btn", disabled: p.busy || !val.trim(), onClick: function () { p.op({ op: "rename", token: v.token, title: val }, "Renamed."); done(); } }, "Save"),
@@ -1386,6 +1551,8 @@ const makeGuardPage = function (SDK, onReady) {
 
   function GuardPage() {
     const [tab, setTab] = useState("live");
+    const [passportOpen, setPassportOpen] = useState(false);
+    const [passportBusy, setPassportBusy] = useState("");
     const [incidents, setIncidents] = useState(null);
     const [vault, setVault] = useState(null);
     const [toast, setToast] = useState(null);
@@ -1405,7 +1572,7 @@ const makeGuardPage = function (SDK, onReady) {
     const notify = useCallback(function (inc) {
       try {
         if (typeof Notification === "undefined" || !Notification || Notification.permission !== "granted") return;
-        const n = new Notification(T("Yadro Guard blocked an agent"), {
+        const n = new Notification(T("mcp-secrets-guard blocked an agent"), {
           body: T("Agent tried to use the tool") + " " + (inc.tool || "?") + " " + T("to send data to") + " " +
             (inc.destination || "?") + ". " + T("Open Guard to allow or block it."),
           tag: "yadro-guard",
@@ -1464,7 +1631,7 @@ const makeGuardPage = function (SDK, onReady) {
     useEffect(function () {
       try {
         if (!baseTitle.current) baseTitle.current = document.title;
-        document.title = pending ? "mcp-secrets-guard · " + pending + " blocked" : baseTitle.current;
+        document.title = pending ? "mcp-secrets-guard · " + pending + " заблокировано" : baseTitle.current;
       } catch (e) {}
     }, [pending]);
     useEffect(function () {
@@ -1497,9 +1664,22 @@ const makeGuardPage = function (SDK, onReady) {
         h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "mcp-secrets-guard"),
         h("div", { className: "yg-tabs" },
           TabBtn("live", "Защита" + (pending ? " (" + pending + ")" : ""), pending),
-          TabBtn("exposure", "Экспозиция"),
+          TabBtn("exposure", "Порты"),
           TabBtn("check", "Проверка кода"),
-          TabBtn("vault", "Сейф"))),
+          TabBtn("vault", "Сейф")),
+        h("div", { className: "yg-passport", style: { position: "relative", marginLeft: "auto" } },
+          h("button", { type: "button", className: "yg-btn ghost", disabled: !!passportBusy,
+            title: "Скачать сводный паспорт безопасности ПК (защита + порты + сейф + журнал) с подписью Proof Seal",
+            onClick: function () { setPassportOpen(!passportOpen); } },
+            passportBusy ? "… " + passportBusy : "⤓ Паспорт безопасности"),
+          passportOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu",
+              style: { position: "absolute", right: 0, top: "100%", zIndex: 60, minWidth: "220px" } },
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setPassportOpen(false); setPassportBusy("TXT");
+                buildPassport("txt", function () { setPassportBusy(""); }); } }, "⤓ Скачать TXT (с Proof Seal)"),
+            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setPassportOpen(false); setPassportBusy("PDF");
+                buildPassport("pdf", function () { setPassportBusy(""); }); } }, "🖨 Открыть для печати / PDF")) : null)),
       h("div", { className: "yg-grid" + (tab === "live" ? " live" : "") },
         tab === "live" ? h(LivePanel, { data: incidents, onChanged: refresh }) : null,
         tab === "exposure" ? h(ExposurePanel, null) : null,
@@ -1525,14 +1705,14 @@ function DesktopGuardPage() {
 export default {
   id: "yadro-guard",
   name: "Guard",
-  description: "Yadro Guard: live leak blocking, exposure scan, code check and vault. Offline.",
+  description: "mcp-secrets-guard: live leak blocking, exposure scan, code check and vault. Offline.",
   defaultEnabled: true,
   register(ctx) {
     rest = ctx.rest;
     ctx.registerMany([
       { id: "page", area: "routes", title: "Guard", data: { path: "/guard" }, render: function () { return React.createElement(DesktopGuardPage); } },
       { id: "nav", area: "sidebar.nav", order: -900, data: { path: "/guard", label: "Guard", codicon: "shield" } },
-      { id: "open", area: "palette", data: { id: "guard.open", label: "Open Yadro Guard", keywords: ["guard", "security", "secrets"], run: function () { host.navigate("/guard"); } } }
+      { id: "open", area: "palette", data: { id: "guard.open", label: "Open mcp-secrets-guard", keywords: ["guard", "security", "secrets"], run: function () { host.navigate("/guard"); } } }
     ]);
   }
 };

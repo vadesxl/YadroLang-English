@@ -1,4 +1,4 @@
-"""Yadro Guard — Hermes dashboard plugin backend (mounted at /api/plugins/yadro-guard/).
+"""mcp-secrets-guard вЂ” Hermes dashboard plugin backend (mounted at /api/plugins/yadro-guard/).
 
 Design:
 - The analysis engine runs in a SEPARATE process (its own Python with llvmlite)
@@ -54,7 +54,7 @@ def _same_origin_guard():
         # (app:// / no origin) cannot add headers, JSON + origin check covers it.
         needs_header = origin.startswith(("http://", "https://"))
         if request.method == "POST" and (ctype != "application/json" or not ok_origin
-                                         or (needs_header and request.headers.get("x-yadro-guard") != "1")):
+                                         or (needs_header and request.headers.get("x-mcp-secrets-guard") != "1")):
             from fastapi import HTTPException
             raise HTTPException(status_code=403, detail="Request refused: not from the Guard tab.")
     # `from __future__ import annotations` turns the hint into a string FastAPI cannot resolve
@@ -95,7 +95,7 @@ def _engine(args: List[str], stdin_obj: Dict[str, Any] | None = None) -> Dict[st
     cfg = _config()
     home, python = cfg.get("engine_home"), cfg.get("python")
     if not home or not python or not Path(home).is_dir():
-        return _error("Yadro Guard is not set up yet. Run the installer once, then reload Hermes.")
+        return _error("mcp-secrets-guard is not set up yet. Run the installer once, then reload Hermes.")
     try:
         res = subprocess.run([python, "-m", *args], cwd=home, capture_output=True, text=True,
                              encoding="utf-8", timeout=TIMEOUT_S,
@@ -294,7 +294,7 @@ async def exposure(refresh: int = 0) -> Dict[str, Any]:
         return cached
     mod = _engine_module("exposure")
     if mod is None:
-        return _error("Yadro Guard is not set up yet.")
+        return _error("mcp-secrets-guard is not set up yet.")
     try:
         result = await asyncio.to_thread(mod.scan)
     except Exception:
@@ -320,7 +320,7 @@ async def exposure_act(body: "RemedyBody") -> Dict[str, Any]:
     """Do something about a listener. System changes ask Windows (UAC) for confirmation."""
     mod = _engine_module("remedy")
     if mod is None:
-        return _error("Yadro Guard is not set up yet.")
+        return _error("mcp-secrets-guard is not set up yet.")
     action = str(getattr(body, "action", ""))
     try:
         if action == "undo":
@@ -345,7 +345,7 @@ async def exposure_act(body: "RemedyBody") -> Dict[str, Any]:
 async def exposure_fixes() -> Dict[str, Any]:
     mod = _engine_module("remedy")
     if mod is None:
-        return _error("Yadro Guard is not set up yet.")
+        return _error("mcp-secrets-guard is not set up yet.")
     return {"status": "ok", "items": (await asyncio.to_thread(mod.journal))[:30]}
 
 
@@ -353,7 +353,7 @@ async def exposure_fixes() -> Dict[str, Any]:
 async def incidents() -> Dict[str, Any]:
     pol = _policy()
     if pol is None:
-        return _error("Yadro Guard is not set up yet.")
+        return _error("mcp-secrets-guard is not set up yet.")
     items = await asyncio.to_thread(pol.list_incidents, 100)
     return {"status": "ok", "items": items,
             "pending": sum(1 for i in items if i.get("status") == "pending")}
@@ -363,7 +363,7 @@ async def incidents() -> Dict[str, Any]:
 async def decide(body: "DecisionBody") -> Dict[str, Any]:
     pol = _policy()
     if pol is None:
-        return _error("Yadro Guard is not set up yet.")
+        return _error("mcp-secrets-guard is not set up yet.")
     incident, choice = str(getattr(body, "incident", ""))[:32], str(getattr(body, "choice", ""))
     if choice not in ("protect", "block", "allow"):
         return _error("Unknown choice.")
@@ -380,7 +380,7 @@ async def reveal(body: "RevealBody") -> Dict[str, Any]:
     """Full value of a caught secret for the hold-to-show eye button (CSRF-guarded, audited)."""
     pol = _policy()
     if pol is None:
-        return _error("Yadro Guard is not set up yet.")
+        return _error("mcp-secrets-guard is not set up yet.")
     incident, index = str(getattr(body, "incident", ""))[:32], getattr(body, "index", -1)
     if not isinstance(index, int) or isinstance(index, bool):
         return _error("Unknown finding.")
@@ -392,3 +392,4 @@ async def health() -> Dict[str, Any]:
     cfg = _config()
     ok = bool(cfg.get("engine_home")) and Path(cfg.get("engine_home", "")).is_dir()
     return {"status": "ok" if ok else "error", "configured": ok}
+

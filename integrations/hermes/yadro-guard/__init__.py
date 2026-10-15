@@ -1,4 +1,4 @@
-"""Yadro Guard runtime hook for Hermes Agent.
+"""mcp-secrets-guard runtime hook for Hermes Agent.
 
 Registers a ``pre_tool_call`` hook: before ANY agent tool runs (terminal,
 browser, HTTP, file writes, MCP tools, messaging ...), its arguments are scanned
@@ -51,14 +51,14 @@ def _on_pre_tool_call(tool_name: str = "", args: Any = None, **ctx: Any) -> Opti
     policy = _load_policy()
     if policy is None:
         return {"action": "block",
-                "message": "⛔ Yadro Guard is installed but its engine could not be loaded, so this action "
+                "message": "⛔ mcp-secrets-guard is installed but its engine could not be loaded, so this action "
                            f"was blocked for safety. Reinstall the plugin. ({_load_error})"}
     try:
         return policy.check(tool_name, args, ctx)
     except Exception as exc:
         logger.exception("yadro-guard: check failed")
         return {"action": "block",
-                "message": f"⛔ Yadro Guard could not check this action ({type(exc).__name__}), "
+                "message": f"⛔ mcp-secrets-guard could not check this action ({type(exc).__name__}), "
                            "so it was blocked for safety."}
 
 
