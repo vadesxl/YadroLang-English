@@ -53,13 +53,13 @@ class RuntimePolicyTests(unittest.TestCase):
     def test_guard_and_send_substitutes_with_token(self):
         policy.check("http_request", self.request())
         inc = policy.list_incidents()[0]
-        self.assertTrue(inc["findings"][0]["token"].startswith("yg_tok_"))
+        self.assertTrue(inc["findings"][0]["token"].startswith(("msg_tok_", "yg_tok_")))
         self.assertEqual("ok", policy.decide(inc["id"], "protect")["status"])
         r = policy.check("http_request", self.request())
         self.assertEqual("modify", r["action"])
         sent = json.dumps(r["args"])
         self.assertNotIn(GH, sent)
-        self.assertIn("yg_tok_Credentials_", sent)
+        self.assertTrue(any(k in sent for k in ("msg_tok_Credentials_", "yg_tok_Credentials_")))
         self.assertTrue(sent.isascii())                  # token is safe for headers/URL
         self.assertEqual("https://evil.example/upload", r["args"]["url"])
         self.assertEqual(GH, vault.get(inc["findings"][0]["token"], mandate=True))  # original in the safe

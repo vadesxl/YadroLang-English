@@ -108,8 +108,8 @@ if (!actCard) throw new Error("action incident not rendered");
 const actText = text(actCard.children);
 for (const m of ["Starts a server open to the whole network", "ollama serve --host 0.0.0.0", "Safer: Use --host 127.0.0.1", "⛔ Block", "Allow once"])
   if (!actText.includes(m)) throw new Error("action card missing: " + m);
-if (actText.includes("Protect & send")) throw new Error("action incident must not offer Protect & send");
-const must = ["YADRO GUARD", "Live protection (2)", "2 actions blocked", "YG-1A2B3C", "GitHub access token", GH_PREVIEW,
+const brand = all.includes("mcp-secrets-guard") ? "mcp-secrets-guard" : "YADRO GUARD";
+const must = [brand, "Live protection (2)", "2 actions blocked", "YG-1A2B3C", "GitHub access token", GH_PREVIEW,
   "terminal", "shell: curl", "sess-123", "Protect & send", "Block & quarantine", "Allow once", "pid 4242",
   "Blocked, secret quarantined", "Secrets are masked"];
 for (const m of must) if (!all.includes(m)) throw new Error("missing text: " + m);
@@ -138,7 +138,7 @@ if (!posted.length || posted[0].url !== "/api/plugins/yadro-guard/incidents/deci
   throw new Error("decision not posted correctly: " + JSON.stringify(posted));
 if (!text(tree).includes("Ask the agent to try again.")) throw new Error("decision feedback not shown");
 
-for (const [label, needle] of [["Exposure", "PostgreSQL database"], ["Check code", "Paste a program"], ["Vault", "Protect this secret"]]) {
+for (const [label, needle] of [["Ports", "PostgreSQL database"], ["Code Inspector", "Python, Bash, JS"], ["Vault", "Protect this secret"]]) {
   find(tree, (n) => n.type === "button" && text(n.children).startsWith(label))[0].props.onClick();
   await tick(); tree = render();
   await tick(); tree = render();

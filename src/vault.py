@@ -92,17 +92,19 @@ def _save(data):
     os.replace(temporary, p)  # atomic: the vault is never "half-written"
 
 
-def put(secret: str, label: str) -> str:
+def put(secret: str, label: str, title: str = "") -> str:
     if label not in _labels:
         raise VaultError(f"unknown label: {label}")
     if not secret:
         raise VaultError("empty secret")
     cipher = _dpapi(secret.encode("utf-8"), True)  # fails BEFORE writing if there is no encryption
     # Token is ASCII-only: it goes into HTTP headers, URLs, and JSON of external services.
-    token = f"yg_tok_{_token_en_label[label]}_{secrets.token_hex(16)}"
+    token = f"msg_tok_{_token_en_label[label]}_{secrets.token_hex(16)}"
     data = _load()
     data["items"][token] = {"label": label, "created": int(time.time()),
-                              "blob": base64.b64encode(cipher).decode("ascii")}
+                             "title": str(title)[:MAX_NAME] if title else "",
+                             "source": "manual",
+                             "blob": base64.b64encode(cipher).decode("ascii")}
     _save(data)
     return token
 
@@ -226,7 +228,7 @@ def put_file(contents: bytes, filename: str, label: str, title: str = "") -> str
         raise VaultError(f"unknown label: {label}")
     import hashlib
     cipher = _dpapi(bytes(contents), True)
-    token = f"yg_tok_{_token_en_label[label]}_{secrets.token_hex(16)}"
+    token = f"msg_tok_{_token_en_label[label]}_{secrets.token_hex(16)}"
     name = _filename(filename)
     data = _load()
     data["items"][token] = {"label": label, "created": int(time.time()), "kind": "file",
@@ -310,8 +312,9 @@ def put_json():
     try:
         data = json.loads(sys.stdin.read() or "{}")
         label = LABELS_EN.get(data.get("label", ""), data.get("label", ""))
-        token = put(str(data.get("secret", "")), label)
-        return {"status": "ok", "token": token, "label": data.get("label")}
+        title = str(data.get("title", "")).strip()[:MAX_NAME]
+        token = put(str(data.get("secret", "")), label, title=title)
+        return {"status": "ok", "token": token, "label": data.get("label"), "title": title}
     except VaultError as e:
         return {"status": "error", "message": str(e)}
     except (ValueError, TypeError):

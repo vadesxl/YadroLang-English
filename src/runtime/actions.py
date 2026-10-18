@@ -101,6 +101,13 @@ def scan_actions(args: Any) -> List[RiskyAction]:
             m = rx.search(text)
             if m and kind not in seen:
                 seen.add(kind)
-                start = max(0, m.start() - 20)
-                out.append(RiskyAction(kind, title, why, safer, path, text[start:m.end() + 20].strip()[:4096]))
+                if "\n" in text:
+                    line_start = text.rfind("\n", 0, m.start()) + 1
+                    line_end = text.find("\n", m.end())
+                    if line_end == -1:
+                        line_end = len(text)
+                    snip = text[line_start:line_end].strip()
+                else:
+                    snip = text.strip()
+                out.append(RiskyAction(kind, title, why, safer, path, snip[:4096]))
     return out

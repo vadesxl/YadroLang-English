@@ -189,7 +189,7 @@ select.yg-input { appearance: auto; }
 .yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }
 .yg-passport .yg-btn { white-space: nowrap; }
 
-/* --- animations for VisualSecurityMap widget --- */
+/* --- animations for VisualSecurityMap & Pac-Agent Cyber Arena --- */
 @keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }
 .yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }
@@ -198,3 +198,59 @@ select.yg-input { appearance: auto; }
 .yg-flow-rev { animation: ygDashFlowRev 2.2s linear infinite; }
 @keyframes ygDashFlow { to { stroke-dashoffset: -72; } }
 @keyframes ygDashFlowRev { from { stroke-dashoffset: 72; } to { stroke-dashoffset: 0; } }
+
+/* --- Pac-Agent Cyber Arena Styles --- */
+.yg-arena-card { padding: 12px; margin-bottom: 12px; position: relative; overflow: hidden; }
+.yg-arena-svg { display: block; width: 100%; height: auto; border-radius: 10px; background: radial-gradient(circle at 50% 50%, #0d1527 0%, #060911 100%); border: 1px solid rgba(0, 240, 255, 0.22); box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 0 24px rgba(0,240,255,0.06); }
+.yg-arena-toolbar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+.yg-arena-btn { font-size: 11px; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; letter-spacing: .06em; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.18); font-family: inherit; }
+.yg-arena-btn.vault { background: linear-gradient(135deg, #f0b44a, #d48806); color: #000; border-color: #ffd591; }
+.yg-arena-btn.vault:hover { box-shadow: 0 0 12px rgba(240, 180, 74, 0.6); }
+.yg-arena-btn.block { background: linear-gradient(135deg, #ff4d4f, #cf1322); color: #fff; border-color: #ffa39e; }
+.yg-arena-btn.block:hover { box-shadow: 0 0 12px rgba(255, 77, 79, 0.6); }
+.yg-arena-btn.live { background: rgba(0, 240, 255, 0.12); color: #00f0ff; border-color: rgba(0, 240, 255, 0.4); }
+.yg-arena-btn.live:hover { background: rgba(0, 240, 255, 0.22); box-shadow: 0 0 12px rgba(0, 240, 255, 0.5); }
+.yg-arena-status-banner { margin-top: 8px; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 11.5px; text-align: center; letter-spacing: .04em; }
+.yg-arena-status-banner.ok { background: rgba(62,196,109,0.15); color: #3ec46d; border: 1px solid rgba(62,196,109,0.3); }
+.yg-arena-status-banner.vault { background: rgba(240,180,74,0.18); color: #ffd591; border: 1px solid rgba(240,180,74,0.4); }
+.yg-arena-status-banner.danger { background: rgba(255,77,79,0.2); color: #ff7875; border: 1px solid rgba(255,77,79,0.45); }
+
+/* Pac-Agent Eye & Mouth Animations */
+@keyframes pacJawsTop { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-32deg); } }
+@keyframes pacJawsBottom { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(32deg); } }
+@keyframes pacScanEye { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(16px); } }
+@keyframes pacShieldBubble { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.18); opacity: 0.85; } }
+@keyframes pacRailDash { to { stroke-dashoffset: -40; } }
+@keyframes pacSparkExplode { 0% { transform: scale(0.2) rotate(0deg); opacity: 1; } 100% { transform: scale(2.2) rotate(45deg); opacity: 0; } }
+@keyframes pacVaultFlash { 0%, 100% { stroke: #f0b44a; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 4; filter: drop-shadow(0 0 12px #ffd700); } }
+
+.yg-pac-jaw-top { transform-origin: 430px 120px; animation: pacJawsTop 0.44s ease-in-out infinite; }
+.yg-pac-jaw-bottom { transform-origin: 430px 120px; animation: pacJawsBottom 0.44s ease-in-out infinite; }
+.yg-pac-scanner { animation: pacScanEye 1.6s ease-in-out infinite; }
+.yg-pac-shield { transform-origin: 430px 120px; animation: pacShieldBubble 2s ease-in-out infinite; }
+.yg-conduit-active { stroke-dasharray: 8 6; animation: pacRailDash 1s linear infinite; }
+.yg-vault-glow { animation: pacVaultFlash 1.5s ease-in-out infinite; }
+
+/* Language Switcher */
+.yg-lang-switch { display: inline-flex; border: 1px solid var(--yg-border); border-radius: 6px; overflow: hidden; margin-left: 8px; background: rgba(0,0,0,0.35); }
+.yg-lang-btn { background: transparent; border: none; color: var(--yg-accent-dim); padding: 5px 11px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }
+.yg-lang-btn:hover { color: #fff; }
+.yg-lang-btn.on { background: var(--yg-accent); color: #000; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3); }
+
+/* Settings & Multi-Agent Hub */
+.yg-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; margin-top: 10px; }
+.yg-hub-card { background: rgba(0,0,0,0.25); border: 1px solid var(--yg-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
+.yg-hub-title { font-weight: 700; font-size: 13px; color: var(--yg-accent); display: flex; align-items: center; gap: 6px; }
+.yg-hub-desc { font-size: 11px; color: var(--color-muted-foreground, #8a97ab); margin: 6px 0; }
+.yg-hub-pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 6px 8px; font-size: 10px; font-family: monospace; white-space: pre-wrap; word-break: break-all; margin: 4px 0 8px; color: #a5f3fc; }
+
+/* Rules Table */
+.yg-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }
+.yg-table th, .yg-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--yg-border); }
+.yg-table th { font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: .08em; color: var(--yg-accent-dim); }
+
+/* Incident clean code block & single row actions */
+.yg-fullcmd { margin: 8px 0; border: 1px solid var(--yg-border); border-radius: 6px; background: rgba(0,0,0,0.4); overflow: hidden; }
+.yg-fullcmd-pre { padding: 10px 12px; margin: 0; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; color: #67e8f9; line-height: 1.5; font-family: ui-monospace, Consolas, monospace; }
+.yg-fullcmd-actions { display: flex; gap: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-top: 1px solid var(--yg-border); align-items: center; flex-wrap: nowrap; overflow-x: auto; }
+.yg-fullcmd-actions .yg-btn { white-space: nowrap; font-size: 10px; }

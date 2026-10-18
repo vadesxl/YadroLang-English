@@ -107,7 +107,7 @@ def _incident_text(inc: Dict[str, Any]) -> str:
         parts.append(f'The tool "{inc["tool"]}" tried a risky action: {r["title"]}. {r["why"]}')
     choices = ("Protect & send, Block & quarantine, or Allow once" if inc["findings"]
                else "Block, or Allow once")
-    return (f'⛔ Yadro Guard blocked this action. {" ".join(parts)} Incident {inc["id"]}. '
+    return (f'⛔ MCP Secrets Guard blocked this action. {" ".join(parts)} Incident {inc["id"]}. '
             f"The user can choose in the Guard tab: {choices}. "
             "Do not retry until the user has decided, and never try to work around this block.")
 
@@ -140,7 +140,7 @@ def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -
             _log_event(d.get("incident"), "sent with protection")
             return {"action": "modify", "args": safe if isinstance(safe, dict) else {"value": safe}}
         if d["choice"] == "block":
-            return {"action": "block", "message": f'⛔ Yadro Guard: this action was blocked by the user '
+            return {"action": "block", "message": f'⛔ MCP Secrets Guard: this action was blocked by the user '
                                                   f'(incident {d.get("incident")}). Do not retry it.'}
     inc = _new_incident(tool_name, args, findings, key, context or {}, risks)
     return {"action": "block", "message": _incident_text(inc)}
@@ -148,8 +148,27 @@ def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -
 
 def _replacement_for(tokens: Dict[str, str]):
     def repl(f: detectors.Finding) -> str:
-        return tokens.get(fingerprint(f.value)) or f"[{f.title} hidden by Yadro Guard]"
+        return tokens.get(fingerprint(f.value)) or f"[{f.title} hidden by Secrets Guard]"
     return repl
+
+
+def _lookup_hermes_chat_title(session_id: str) -> Optional[str]:
+    if not session_id:
+        return None
+    try:
+        import sqlite3
+        db_path = Path.home() / "AppData" / "Local" / "hermes" / "state.db"
+        if not db_path.exists():
+            return None
+        con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=0.5)
+        row = con.execute("SELECT title FROM sessions WHERE id = ? OR id LIKE ? LIMIT 1",
+                          (session_id, f"%{session_id}%")).fetchone()
+        con.close()
+        if row and row[0]:
+            return str(row[0]).strip()
+    except Exception:
+        pass
+    return None
 
 
 def _new_incident(tool_name, args, findings, key, ctx, risks=()) -> Dict[str, Any]:
@@ -161,10 +180,33 @@ def _new_incident(tool_name, args, findings, key, ctx, risks=()) -> Dict[str, An
             _write("incidents.json", incidents)
             return inc
     import sys
-    inc = {"id": "YG-" + secrets.token_hex(3).upper(), "key": key, "status": "pending",
+    agent_info = {k: str(ctx.get(k, ""))[:80] for k in ("session_id", "task_id", "turn_id", "tool_call_id")}
+    session_id = agent_info.get("session_id", "")
+    chat_title = _lookup_hermes_chat_title(session_id)
+    if chat_title:
+        agent_info["chat_title"] = chat_title
+
+    # Extract command snippet if command is in args
+    command_str = ""
+    if isinstance(args, dict):
+        cmd_val = args.get("command") or args.get("cmd") or args.get("script")
+        if isinstance(cmd_val, str) and cmd_val:
+            command_str = cmd_val
+    elif isinstance(args, str) and args:
+        command_str = args
+
+    if command_str:
+        scrubbed = command_str
+        hits = detectors.scan_text(command_str)
+        for f in sorted(hits, key=lambda x: x.start, reverse=True):
+            scrubbed = scrubbed[:f.start] + f.preview + scrubbed[f.end:]
+        command_str = scrubbed[:4096]
+
+    inc = {"id": "MSG-" + secrets.token_hex(3).upper(), "key": key, "status": "pending",
            "at": int(time.time()), "last_at": int(time.time()), "attempts": 1,
            "tool": tool_name, "destination": _destination(tool_name, args),
-           "agent": {k: str(ctx.get(k, ""))[:80] for k in ("session_id", "task_id", "turn_id", "tool_call_id")},
+           "command": command_str,
+           "agent": agent_info,
            "process": {"pid": os.getpid(), "name": Path(sys.argv[0] if sys.argv and sys.argv[0] else "python").name[:60]},
            "findings": _quarantine(findings),
            "risks": [_risk_public(r) for r in risks],

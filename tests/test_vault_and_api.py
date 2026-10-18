@@ -24,7 +24,7 @@ class VaultTests(unittest.TestCase):
 
     def test_secret_not_stored_in_plaintext(self):
         token = vault.put("SuperSecret-12345", "УчетныеДанные")
-        self.assertTrue(token.startswith("yg_tok_Credentials_"))
+        self.assertTrue(token.startswith(("msg_tok_Credentials_", "yg_tok_Credentials_")))
         self.assertTrue(token.isascii())
         raw = vault.vault_path().read_text(encoding="utf-8")
         self.assertNotIn("SuperSecret-12345", raw)

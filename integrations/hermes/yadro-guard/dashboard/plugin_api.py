@@ -138,6 +138,7 @@ class CodeBody(BaseModel):
 class SecretBody(BaseModel):
     secret: str
     label: str
+    title: str = ""
 
 
 def _check_code(code: Any) -> str | None:
@@ -189,13 +190,14 @@ async def vault() -> Dict[str, Any]:
 @router.post("/vault")
 async def vault_put(body: "SecretBody") -> Dict[str, Any]:
     secret, label = getattr(body, "secret", ""), getattr(body, "label", "")
+    title = str(getattr(body, "title", ""))[:80]
     if not isinstance(secret, str) or not secret:
         return _error("Enter the secret value.")
     if len(secret) > MAX_SECRET:
         return _error("This secret is too long (limit 4 KB).")
     if label not in LABELS:
         return _error("Choose what kind of data this is.")
-    return await asyncio.to_thread(_engine, ["src.vault", "put-json"], {"secret": secret, "label": label})
+    return await asyncio.to_thread(_engine, ["src.vault", "put-json"], {"secret": secret, "label": label, "title": title})
 
 
 MAX_FILE_B64 = 14_000_000            # ~10 MB file after base64
@@ -239,7 +241,7 @@ async def vault_op(body: "VaultOpBody") -> Dict[str, Any]:
     op, token = str(getattr(body, "op", "")), str(getattr(body, "token", ""))
     if op not in VAULT_OPS:
         return _error("Unknown operation.")
-    if not token.startswith("yg_tok_") or len(token) > 80 or not set(token) <= _TOKEN_CHARS:
+    if not (token.startswith("msg_tok_") or token.startswith("yg_tok_")) or len(token) > 80 or not set(token) <= _TOKEN_CHARS:
         return _error("Unknown entry.")
     secret = getattr(body, "secret", "")
     if op == "replace" and (not isinstance(secret, str) or not secret or len(secret) > MAX_SECRET):
@@ -392,4 +394,187 @@ async def health() -> Dict[str, Any]:
     cfg = _config()
     ok = bool(cfg.get("engine_home")) and Path(cfg.get("engine_home", "")).is_dir()
     return {"status": "ok" if ok else "error", "configured": ok}
+
+
+def _get_hermes_session_titles() -> Dict[str, str]:
+    out: Dict[str, str] = {}
+    db_paths = [
+        Path.home() / "AppData" / "Local" / "hermes" / "state.db",
+        Path.home() / ".hermes" / "state.db"
+    ]
+    for db in db_paths:
+        if db.exists():
+            try:
+                import sqlite3
+                con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=0.5)
+                for sid, title in con.execute("SELECT id, title FROM sessions WHERE title IS NOT NULL"):
+                    if sid and title:
+                        t = str(title).strip()
+                        out[str(sid)] = t
+                        # Also map suffix
+                        out[str(sid)[-6:]] = t
+                con.close()
+                break
+            except Exception:
+                pass
+    return out
+
+
+@router.get("/sessions/titles")
+async def session_titles() -> Dict[str, Any]:
+    return {"status": "ok", "titles": _get_hermes_session_titles()}
+
+
+# Enrich incidents with human session titles if not already present
+@router.get("/incidents")
+async def incidents() -> Dict[str, Any]:
+    pol = _policy()
+    if pol is None:
+        return _error("mcp-secrets-guard is not set up yet.")
+    items = await asyncio.to_thread(pol.list_incidents, 100)
+    titles = _get_hermes_session_titles()
+    for inc in items:
+        agent = inc.get("agent")
+        if isinstance(agent, dict):
+            sid = agent.get("session_id", "")
+            if sid and not agent.get("chat_title"):
+                resolved = titles.get(sid) or titles.get(sid[-6:])
+                if resolved:
+                    agent["chat_title"] = resolved
+    return {"status": "ok", "items": items,
+            "pending": sum(1 for i in items if i.get("status") == "pending")}
+
+
+RULES_FILE = PLUGIN_DIR / "rules.json"
+
+
+def _read_rules() -> list:
+    try:
+        return json.loads(RULES_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def _write_rules(rules: list) -> None:
+    try:
+        RULES_FILE.write_text(json.dumps(rules, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
+class RuleBody(BaseModel):
+    action: str = ""       # "block" | "allow"
+    match_type: str = ""   # "domain" | "tool"
+    match: str = ""
+    incident: str = ""
+
+
+@router.get("/rules")
+async def list_rules() -> Dict[str, Any]:
+    return {"status": "ok", "items": _read_rules()}
+
+
+@router.post("/rules")
+async def create_rule(body: "RuleBody") -> Dict[str, Any]:
+    action = getattr(body, "action", "")
+    match_type = getattr(body, "match_type", "")
+    match = str(getattr(body, "match", "")).strip()
+    if action not in ("block", "allow") or match_type not in ("domain", "tool") or not match:
+        return _error("Invalid rule format.")
+    rules = _read_rules()
+    new_rule = {
+        "id": "RULE-" + str(int(time.time()))[-6:],
+        "action": action,
+        "match_type": match_type,
+        "match": match,
+        "created_at": int(time.time()),
+        "incident": getattr(body, "incident", "")
+    }
+    rules = [r for r in rules if not (r.get("match_type") == match_type and r.get("match") == match)]
+    rules.insert(0, new_rule)
+    _write_rules(rules[:200])
+    return {"status": "ok", "rule": new_rule}
+
+
+class DeleteRuleBody(BaseModel):
+    id: str = ""
+    match: str = ""
+
+
+@router.post("/rules/delete")
+async def delete_rule(body: "DeleteRuleBody") -> Dict[str, Any]:
+    rid, match = getattr(body, "id", ""), getattr(body, "match", "")
+    rules = _read_rules()
+    before = len(rules)
+    rules = [r for r in rules if r.get("id") != rid and r.get("match") != match]
+    if len(rules) == before:
+        return _error("Rule not found.")
+    _write_rules(rules)
+    return {"status": "ok"}
+
+
+class IncidentOpBody(BaseModel):
+    incident: str = ""
+    scope: str = ""
+
+
+@router.post("/incidents/delete")
+async def delete_incident(body: "IncidentOpBody") -> Dict[str, Any]:
+    inc_id = getattr(body, "incident", "")
+    if not inc_id:
+        return _error("Missing incident ID.")
+    pol = _policy()
+    if pol is None:
+        return _error("mcp-secrets-guard is not set up yet.")
+    try:
+        incs = pol._read("incidents.json", [])
+        new_incs = [i for i in incs if i.get("id") != inc_id]
+        pol._write("incidents.json", new_incs)
+        return {"status": "ok"}
+    except Exception as e:
+        return _error(f"Could not delete incident: {e}")
+
+
+@router.post("/incidents/clear")
+async def clear_incidents(body: "IncidentOpBody") -> Dict[str, Any]:
+    pol = _policy()
+    if pol is None:
+        return _error("mcp-secrets-guard is not set up yet.")
+    try:
+        incs = pol._read("incidents.json", [])
+        new_incs = [i for i in incs if i.get("status") == "pending"]
+        pol._write("incidents.json", new_incs)
+        return {"status": "ok"}
+    except Exception as e:
+        return _error(f"Could not clear incidents: {e}")
+
+
+class ConfigUpdateBody(BaseModel):
+    lang: str = ""
+    arena_mode: str = ""
+    fail_closed: bool | None = None
+    notifications: bool | None = None
+
+
+@router.get("/config")
+async def get_config() -> Dict[str, Any]:
+    return {"status": "ok", "config": _config()}
+
+
+@router.post("/config")
+async def update_config(body: "ConfigUpdateBody") -> Dict[str, Any]:
+    cfg = _config()
+    if getattr(body, "lang", ""):
+        cfg["lang"] = getattr(body, "lang")
+    if getattr(body, "arena_mode", ""):
+        cfg["arena_mode"] = getattr(body, "arena_mode")
+    if getattr(body, "fail_closed", None) is not None:
+        cfg["fail_closed"] = bool(getattr(body, "fail_closed"))
+    if getattr(body, "notifications", None) is not None:
+        cfg["notifications"] = bool(getattr(body, "notifications"))
+    try:
+        CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        return _error(f"Could not save config: {e}")
+    return {"status": "ok", "config": cfg}
 
