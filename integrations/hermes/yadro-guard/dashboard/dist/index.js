@@ -993,27 +993,70 @@
     items.forEach(function(i){ if (i.agent && i.agent.session_id) { var c = resolveChatTitle(i.agent.session_id); chatName = c.title; chatId = c.id; } if (i.destination) dest = i.destination; });
     var s0 = useState(false), demo = s0[0], setDemo = s0[1];
     var s1 = useState(0), demoT = s1[0], setDemoT = s1[1];
-    function startDemo(){ setDemo(true); setDemoT(0); var t = setInterval(function(){ setDemoT(function(v){ return v>=100 ? (clearInterval(t), setDemo(false), 100) : v+5; }); }, 50); }
-    var cx = 350, cy = 90, ip = demoT / 100, imp = demo ? "rgba(255,255,255,0.9)" : "rgba(120,160,255,0.55)";
+    function stopDemo(){ if(demo){ setDemo(false); setDemoT(0); } }
+    function startDemo(){ setDemo(true); setDemoT(0); var t = setInterval(function(){ setDemoT(function(v){ if(v>=100){ clearInterval(t); setDemo(false); return 100; } return v+5; }); }, 50); }
+    function doRefresh(){ stopDemo(); if(p.refresh) p.refresh(); }
+    var ip = demoT / 100;
     return h("div", { className: "yg-card yg-vismap wide", style: { marginBottom: 10 } },
       h("svg", { width: "100%", height: 180, viewBox: "0 0 700 180", style: { display: "block", background: "rgba(15,18,26,0.5)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.10)" } },
         h("defs", null,
-          h("linearGradient", { id: "gSh", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:sc}), h("stop",{offset:"100%",stopColor:sc})),
-          h("linearGradient", { id: "gCh", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:"#8a5cf6"}), h("stop",{offset:"100%",stopColor:"#4a1d7a"})),
-          h("linearGradient", { id: "gVl", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:"#e8a33d"}), h("stop",{offset:"100%",stopColor:"#a66a1e"})),
-          h("filter", { id: "gl" }, h("feGaussianBlur", { stdDeviation: "3", result: "cb" }), h("feMerge", null, h("feMergeNode", { "in": "cb" }), h("feMergeNode", { "in": "SourceGraphic" })))),
-        h("path", { className: "yg-flow-path", d: "M 100 90 Q 190 50 300 75", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
-        h("path", { className: "yg-flow-path", d: "M 400 80 Q 500 40 555 62", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
-        h("path", { className: "yg-flow-path", d: "M 400 100 Q 500 140 555 118", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
-        h("circle", { cx: 100 + 200*ip, cy: 90 - 40*ip, r: 4, fill: imp, filter: "url(#gl)" }),
-        h("g", { transform: "translate(70,78)" }, h("circle", { r: 30, fill: "url(#gCh)", filter: "url(#gl)" }), h("text", { x: 0, y: 6, textAnchor: "middle", fill: "#fff", fontSize: 20 }, "\ud83e\udd16"), h("text", { x: 0, y: 36, textAnchor: "middle", fill: "#cfd8ea", fontSize: 10, fontWeight: 700 }, chatName.length>16?chatName.slice(0,15)+"…":chatName), h("text", { x: 0, y: 49, textAnchor: "middle", fill: "#8a97ab", fontSize: 9 }, chatId)),
-        h("g", { transform: "translate(" + (cx-34) + "," + (cy-34) + ")" }, h("path", { d: "M 0 42 L 17 -30 L 34 42 Z", fill: "url(#gSh)", stroke: "#fff", strokeWidth: 1.5, filter: "url(#gl)" }), h("circle", { cx: 17, cy: 6, r: 11, fill: sc, filter: "url(#gl)", className: "yg-shield-core" }), h("text", { x: 17, y: 10, textAnchor: "middle", fill: "#000", fontSize: 10, fontWeight: 700 }, "\u2713"), h("text", { x: 17, y: 48, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9.5, fontWeight: 700 }, "Щит-сканер")),
-        h("g", { transform: "translate(540,48)" }, h("rect", { x: 0, y: 0, width: 30, height: 24, rx: 4, fill: "url(#gVl)", filter: "url(#gl)" }), h("text", { x: 15, y: 16, textAnchor: "middle", fill: "#000", fontSize: 10, fontWeight: 700 }, "\ud83d\udd12"), h("text", { x: 15, y: 32, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9, fontWeight: 700 }, "Сейф: " + vaultCount)),
-        h("g", { transform: "translate(540,102)" }, h("circle", { cx: 15, cy: 12, r: 13, fill: "none", stroke: "#5b8def", strokeWidth: 2.5, filter: "url(#gl)" }), h("path", { d: "M 3 12 Q 15 2 27 12 T 15 22 Z", fill: "none", stroke: "#5b8def", strokeWidth: 2 }), h("text", { x: 15, y: 30, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9, fontWeight: 700 }, "Интернет"), h("text", { x: 15, y: 42, textAnchor: "middle", fill: "#8a97ab", fontSize: 8 }, dest.length>14?dest.slice(0,13)+"…":dest))
+          h("linearGradient",{id:"gSh",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:sc}),h("stop",{offset:"100%",stopColor:sc})),
+          h("linearGradient",{id:"gCh",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:"#7c5cfc"}),h("stop",{offset:"100%",stopColor:"#3a1d7a"})),
+          h("linearGradient",{id:"gVl",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:"#f0b44a"}),h("stop",{offset:"100%",stopColor:"#a66a1e"})),
+          h("linearGradient",{id:"gNt",x1:0,y1:0,x2:0,y2:1},h("stop",{offset:"0%",stopColor:"#5b9dff"}),h("stop",{offset:"100%",stopColor:"#1a4a8c"})),
+          h("filter",{id:"gl"},h("feGaussianBlur",{stdDeviation:"3.5",result:"cb"}),h("feMerge",null,h("feMergeNode",{"in":"cb"}),h("feMergeNode",{"in":"SourceGraphic"}))),
+          h("filter",{id:"gs"},h("feDropShadow",{dx:0,dy:0,stdDeviation:"9",floodColor:sc,floodOpacity:"0.65"}))
+        ),
+        h("path",{className:"yg-flow-path",d:"M 130 92 C 180 52 260 52 318 80",fill:"none",stroke:sc,strokeWidth:3,opacity:0.45}),
+        h("path",{className:"yg-flow-path yg-flow-rev",d:"M 382 80 C 440 52 520 50 570 62",fill:"none",stroke:sc,strokeWidth:3,opacity:0.45}),
+        h("path",{className:"yg-flow-path",d:"M 382 100 C 440 130 520 132 570 118",fill:"none",stroke:sc,strokeWidth:3,opacity:0.45}),
+        // Left node: vector server icon (no emoji)
+        h("g",{transform:"translate(65,62)"},
+          h("circle",{cx:32,cy:32,r:30,fill:"url(#gCh)",filter:"url(#gl)"}),
+          h("path",{d:"M 18 22 h 28 v 5 h -28 z M 18 30 h 28 v 5 h -28 z M 18 38 h 28 v 5 h -28 z",fill:"none",stroke:"#fff",strokeWidth:2.2,strokeLinejoin:"round"}),
+          h("circle",{cx:22,cy:18,r:2.5,fill:"#3ec46d"}), h("circle",{cx:29,cy:18,r:2.5,fill:"#e8a33d"}), h("circle",{cx:36,cy:18,r:2.5,fill:"#5b9dff"}),
+          h("text",{x:32,y:76,textAnchor:"middle",fill:"#d8dce6",fontSize:10,fontWeight:700},chatName.length>14?chatName.slice(0,13)+"\u2026":chatName),
+          h("text",{x:32,y:89,textAnchor:"middle",fill:"#8a97ab",fontSize:9},chatId)
+        ),
+        // Center node: proper knight shield shape (no triangle!)
+        h("g",{transform:"translate(350,46)"},
+          h("path",{d:"M 0 -36 C -18 -30 -22 -10 -16 8 C -14 14 -18 36 0 52 C 18 36 14 14 16 8 C 22 -10 18 -30 0 -36 Z",fill:"url(#gSh)",stroke:"#fff",strokeWidth:2,filter:"url(#gs)"}),
+          h("circle",{cx:0,cy:4,r:13,fill:sc,filter:"url(#gl)",className:"yg-shield-core"}),
+          h("text",{x:0,y:8,textAnchor:"middle",fill:"#000",fontSize:12,fontWeight:700},"\u2713"),
+          h("text",{x:0,y:74,textAnchor:"middle",fill:"#cfd8ea",fontSize:9.5,fontWeight:700},"Щит-сканер")
+        ),
+        // Right top node: vector vault/safe icon (no emoji)
+        h("g",{transform:"translate(540,45)"},
+          h("circle",{cx:32,cy:32,r:30,fill:"url(#gVl)",filter:"url(#gl)"}),
+          h("path",{d:"M 17 20 h 30 v 22 h -30 z",fill:"none",stroke:"#fff",strokeWidth:2.2,strokeLinejoin:"round"}),
+          h("circle",{cx:32,cy:31,r:8,fill:"none",stroke:"#fff",strokeWidth:2}),
+          h("circle",{cx:32,cy:31,r:2.5,fill:"#fff"}),
+          h("text",{x:32,y:76,textAnchor:"middle",fill:"#cfd8ea",fontSize:10,fontWeight:700},"Сейф: "+vaultCount)
+        ),
+        // Right bottom node: vector globe/network icon
+        h("g",{transform:"translate(540,100)"},
+          h("circle",{cx:32,cy:32,r:30,fill:"url(#gNt)",filter:"url(#gl)"}),
+          h("circle",{cx:32,cy:32,r:13,fill:"none",stroke:"#fff",strokeWidth:2.2}),
+          h("ellipse",{cx:32,cy:32,rx:5.5,ry:13,fill:"none",stroke:"#fff",strokeWidth:1.6}),
+          h("path",{d:"M 19 32 h 26",fill:"none",stroke:"#fff",strokeWidth:1.6}),
+          h("text",{x:32,y:76,textAnchor:"middle",fill:"#cfd8ea",fontSize:10,fontWeight:700},"Интернет"),
+          h("text",{x:32,y:89,textAnchor:"middle",fill:"#8a97ab",fontSize:9},dest.length>14?dest.slice(0,13)+"\u2026":dest)
+        )
       ),
-      h("div", { className: "yg-vismap-cards", style: { display: "flex", gap: 8, marginTop: 10 } },         h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Состояние компьютера"), h("div", { className: "yg-big", style: { color: sc, marginTop: 4 } }, blocked ? "\u26a0 Атака отражена" : intercepted ? "\ud83d\udcc8 Секрет замаскирован" : "\u2705 Защита работает"), h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } }, "Все действия ИИ проверяются до запуска.")),
-        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Последняя проверка"), h("div", { className: "yg-big", style: { marginTop: 4 } }, items.length ? ("\u201b" + chatName + "\u201d попытался \u2014 остановлено") : "\u2014"), h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } }, dest)),
-        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Демо"), h("button", { className: "yg-btn good", onClick: startDemo, disabled: demo, style: { width: "100%", marginTop: 5 } }, demo ? "\u23f1\ufe0f Идёт проверка…" : "\u26a1 Наглядная проверка защиты (Демо)"), h("div", { className: "yg-dim yg-small", style: { marginTop: 4 } }, demo ? "Пароль перехвачен и заменён маской." : "")) )
+      h("div",{className:"yg-vismap-cards",style:{display:"flex",gap:8,marginTop:10}},
+        h("div",{className:"yg-card",style:{flex:1,padding:8}},
+          h("div",{className:"yg-dim yg-small",style:{textTransform:"uppercase",letterSpacing:".1em"}},"Состояние компьютера"),
+          h("div",{className:"yg-big",style:{color:sc,marginTop:4}},blocked?"\u26a0 Атака отражена":intercepted?"\ud83d\udcc8 Секрет замаскирован":"\u2705 Защита работает"),
+          h("div",{className:"yg-dim yg-small",style:{marginTop:3}},"Все действия ИИ проверяются до запуска.")),
+        h("div",{className:"yg-card",style:{flex:1,padding:8}},
+          h("div",{className:"yg-dim yg-small",style:{textTransform:"uppercase",letterSpacing:".1em"}},"Последняя проверка"),
+          h("div",{className:"yg-big",style:{marginTop:4}},items.length?("\u201b"+chatName+"\u201d попытался \u2014 остановлено"):"\u2014"),
+          h("div",{className:"yg-dim yg-small",style:{marginTop:3}},dest)),
+        h("div",{className:"yg-card",style:{flex:1,padding:8}},
+          h("div",{className:"yg-dim yg-small",style:{textTransform:"uppercase",letterSpacing:".1em"}},"Управление"),
+          h("button",{className:"yg-btn good",onClick:startDemo,disabled:demo,style:{width:"100%",marginTop:5,marginBottom:3}},demo?"\u23f1 Идёт проверка…":"\u26a1 Демо проверки"),
+          h("button",{className:"yg-btn ghost",onClick:doRefresh,style:{width:"100%"}},"\u21bb Обновить статус"),
+          h("div",{className:"yg-dim yg-small",style:{marginTop:4}},demo?"Пароль перехвачен и заменён маской.":"")))
     );
   }
   // Masked secret with a hold-to-show eye. The full value is fetched only while the button is
@@ -1217,7 +1260,7 @@
     const FILTERS = [["all", "Все"], ["blocked", "Заблокировано"], ["allowed", "Разрешено"]];
     return h(React.Fragment, null,
       h(Card, { title: "live protection", className: "wide" },
-        h(VisualSecurityMap, { data: data }),
+        h(VisualSecurityMap, { data: data, refresh: p.onChanged }),
         h("div", { className: "yg-shield " + (pending.length ? "bad" : "ok") },
           h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Защищено"),
           h("span", { className: "yg-dim" }, pending.length

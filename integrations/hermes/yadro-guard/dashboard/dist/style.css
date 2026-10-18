@@ -192,7 +192,9 @@ select.yg-input { appearance: auto; }
 /* --- animations for VisualSecurityMap widget --- */
 @keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }
-@keyframes ygDashFlow { to { stroke-dashoffset: -70; } }
 .yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }
 .yg-shield-core { animation: ygShieldPulse 2.5s ease-in-out infinite; }
-.yg-flow-path { stroke-dasharray: 70; animation: ygDashFlow 2.2s linear infinite; }
+.yg-flow-path { stroke-dasharray: 14 10; animation: ygDashFlow 2.2s linear infinite; }
+.yg-flow-rev { animation: ygDashFlowRev 2.2s linear infinite; }
+@keyframes ygDashFlow { to { stroke-dashoffset: -72; } }
+@keyframes ygDashFlowRev { from { stroke-dashoffset: 72; } to { stroke-dashoffset: 0; } }
