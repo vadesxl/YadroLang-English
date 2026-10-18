@@ -2,7 +2,7 @@
 import * as React from "react";
 import { host } from "@hermes/plugin-sdk";
 
-const CSS = "/* mcp-secrets-guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); box-shadow: none; text-shadow: none; background-image: none; }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 0 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 0 0 auto; display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; margin-left: auto; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n/* Trash button: hidden until its row is hovered; keep it subtle so the \u22ee remains primary. */\n.yg-vault-trash-btn { opacity: 0; transition: opacity 0.12s ease; max-width: 0; padding-left: 0; padding-right: 0;\n  border-color: transparent; overflow: hidden; }\n.yg-inc:hover .yg-vault-trash-btn, .yg-inc:focus-within .yg-vault-trash-btn { opacity: 1; max-width: 60px;\n  padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }\n.yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }\n.yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute !important; top: calc(100% + 6px) !important; bottom: auto !important; right: 0 !important; z-index: 999 !important; background: linear-gradient(180deg, #1e2230 0%, #141722 100%);\n  border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1); padding: 6px; min-width: 180px; }\n.yg-inc, .yg-card, .yg-list { overflow: visible !important; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }\n.yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }\n.yg-passport .yg-btn { white-space: nowrap; }\n\n/* --- animations for VisualSecurityMap & Pac-Agent Cyber Arena --- */\n@keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }\n@keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }\n.yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }\n.yg-shield-core { animation: ygShieldPulse 2.5s ease-in-out infinite; }\n.yg-flow-path { stroke-dasharray: 14 10; animation: ygDashFlow 2.2s linear infinite; }\n.yg-flow-rev { animation: ygDashFlowRev 2.2s linear infinite; }\n@keyframes ygDashFlow { to { stroke-dashoffset: -72; } }\n@keyframes ygDashFlowRev { from { stroke-dashoffset: 72; } to { stroke-dashoffset: 0; } }\n\n/* --- Pac-Agent Cyber Arena Styles --- */\n.yg-arena-card { padding: 12px; margin-bottom: 12px; position: relative; overflow: hidden; }\n.yg-arena-svg { display: block; width: 100%; height: auto; border-radius: 10px; background: radial-gradient(circle at 50% 50%, #0d1527 0%, #060911 100%); border: 1px solid rgba(0, 240, 255, 0.22); box-shadow: 0 10px 30px rgba(0,0,0,0.7), inset 0 0 24px rgba(0,240,255,0.06); }\n.yg-arena-toolbar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }\n.yg-arena-btn { font-size: 11px; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-weight: 700; letter-spacing: .06em; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.18); font-family: inherit; }\n.yg-arena-btn.vault { background: linear-gradient(135deg, #f0b44a, #d48806); color: #000; border-color: #ffd591; }\n.yg-arena-btn.vault:hover { box-shadow: 0 0 12px rgba(240, 180, 74, 0.6); }\n.yg-arena-btn.block { background: linear-gradient(135deg, #ff4d4f, #cf1322); color: #fff; border-color: #ffa39e; }\n.yg-arena-btn.block:hover { box-shadow: 0 0 12px rgba(255, 77, 79, 0.6); }\n.yg-arena-btn.live { background: rgba(0, 240, 255, 0.12); color: #00f0ff; border-color: rgba(0, 240, 255, 0.4); }\n.yg-arena-btn.live:hover { background: rgba(0, 240, 255, 0.22); box-shadow: 0 0 12px rgba(0, 240, 255, 0.5); }\n.yg-arena-status-banner { margin-top: 8px; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 11.5px; text-align: center; letter-spacing: .04em; }\n.yg-arena-status-banner.ok { background: rgba(62,196,109,0.15); color: #3ec46d; border: 1px solid rgba(62,196,109,0.3); }\n.yg-arena-status-banner.vault { background: rgba(240,180,74,0.18); color: #ffd591; border: 1px solid rgba(240,180,74,0.4); }\n.yg-arena-status-banner.danger { background: rgba(255,77,79,0.2); color: #ff7875; border: 1px solid rgba(255,77,79,0.45); }\n\n/* Pac-Agent Eye & Mouth Animations */\n@keyframes pacJawsTop { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(34deg); } }\n@keyframes pacJawsBottom { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-34deg); } }\n@keyframes pacScanEye { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(12px); } }\n@keyframes pacShieldBubble { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.18); opacity: 0.85; } }\n@keyframes pacRailDash { to { stroke-dashoffset: -40; } }\n@keyframes pacSparkExplode { 0% { transform: scale(0.2) rotate(0deg); opacity: 1; } 100% { transform: scale(2.2) rotate(45deg); opacity: 0; } }\n@keyframes pacVaultFlash { 0%, 100% { stroke: #f0b44a; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 4; filter: drop-shadow(0 0 12px #ffd700); } }\n\n.yg-pac-jaw-top { transform-origin: 0px 0px; animation: pacJawsTop 0.36s ease-in-out infinite; }\n.yg-pac-jaw-bottom { transform-origin: 0px 0px; animation: pacJawsBottom 0.36s ease-in-out infinite; }\n.yg-pac-scanner { animation: pacScanEye 1.6s ease-in-out infinite; }\n.yg-pac-shield { transform-origin: 0px 0px; animation: pacShieldBubble 2s ease-in-out infinite; }\n.yg-conduit-active { stroke-dasharray: 8 6; animation: pacRailDash 1s linear infinite; }\n.yg-vault-glow { animation: pacVaultFlash 1.5s ease-in-out infinite; }\n\n/* Language Switcher */\n.yg-lang-switch { display: inline-flex; border: 1px solid var(--yg-border); border-radius: 6px; overflow: hidden; margin-left: 8px; background: rgba(0,0,0,0.35); }\n.yg-lang-btn { background: transparent; border: none; color: var(--yg-accent-dim); padding: 5px 11px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }\n.yg-lang-btn:hover { color: #fff; }\n.yg-lang-btn.on { background: var(--yg-accent); color: #000; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3); }\n\n/* Settings & Multi-Agent Hub */\n.yg-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; margin-top: 10px; }\n.yg-hub-card { background: rgba(0,0,0,0.25); border: 1px solid var(--yg-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }\n.yg-hub-title { font-weight: 700; font-size: 13px; color: var(--yg-accent); display: flex; align-items: center; gap: 6px; }\n.yg-hub-desc { font-size: 11px; color: var(--color-muted-foreground, #8a97ab); margin: 6px 0; }\n.yg-hub-pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 6px 8px; font-size: 10px; font-family: monospace; white-space: pre-wrap; word-break: break-all; margin: 4px 0 8px; color: #a5f3fc; }\n\n/* Rules Table */\n.yg-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }\n.yg-table th, .yg-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--yg-border); }\n.yg-table th { font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: .08em; color: var(--yg-accent-dim); }\n\n/* Incident clean code block & single row actions */\n.yg-fullcmd { margin: 8px 0; border: 1px solid var(--yg-border); border-radius: 6px; background: rgba(0,0,0,0.4); overflow: hidden; }\n.yg-fullcmd-pre { padding: 10px 12px; margin: 0; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; color: #67e8f9; line-height: 1.5; font-family: ui-monospace, Consolas, monospace; }\n.yg-fullcmd-actions { display: flex; gap: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-top: 1px solid var(--yg-border); align-items: center; flex-wrap: nowrap; overflow-x: auto; }\n.yg-fullcmd-actions .yg-btn { white-space: nowrap; font-size: 10px; }\n";
+const CSS = "/* mcp-secrets-guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); box-shadow: none; text-shadow: none; background-image: none; }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 0 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 0 0 auto; display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; margin-left: auto; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n/* Trash button: hidden until its row is hovered; keep it subtle so the \u22ee remains primary. */\n.yg-vault-trash-btn { opacity: 0; transition: opacity 0.12s ease; max-width: 0; padding-left: 0; padding-right: 0;\n  border-color: transparent; overflow: hidden; }\n.yg-inc:hover .yg-vault-trash-btn, .yg-inc:focus-within .yg-vault-trash-btn { opacity: 1; max-width: 60px;\n  padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }\n.yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }\n.yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute !important; top: calc(100% + 6px) !important; bottom: auto !important; right: 0 !important; z-index: 999 !important; background: linear-gradient(180deg, #1e2230 0%, #141722 100%);\n  border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1); padding: 6px; min-width: 180px; }\n.yg-inc, .yg-card, .yg-list { overflow: visible !important; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }\n.yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }\n.yg-passport .yg-btn { white-space: nowrap; }\n\n/* --- animations for VisualSecurityMap & Pac-Agent Cyber Arena --- */\n@keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }\n@keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }\n.yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }\n.yg-shield-core { animation: ygShieldPulse 2.5s ease-in-out infinite; }\n.yg-flow-path { stroke-dasharray: 14 10; animation: ygDashFlow 2.2s linear infinite; }\n.yg-flow-rev { animation: ygDashFlowRev 2.2s linear infinite; }\n@keyframes ygDashFlow { to { stroke-dashoffset: -72; } }\n@keyframes ygDashFlowRev { from { stroke-dashoffset: 72; } to { stroke-dashoffset: 0; } }\n\n/* --- Hologram Cline Sentinel Cyber Arena Styles --- */\n.yg-arena-card { padding: 12px; margin-bottom: 12px; position: relative; overflow: hidden; }\n.yg-arena-svg { display: block; width: 100%; height: auto; border-radius: 12px; background: radial-gradient(circle at 50% 50%, #0f1629 0%, #060810 100%); border: 1px solid rgba(165, 243, 252, 0.25); box-shadow: 0 12px 36px rgba(0,0,0,0.75), inset 0 0 28px rgba(165,243,252,0.05); }\n.yg-arena-toolbar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }\n.yg-arena-btn { font-size: 11px; padding: 7px 15px; border-radius: 6px; cursor: pointer; font-weight: 700; letter-spacing: .06em; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.18); font-family: inherit; }\n.yg-arena-btn.vault { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border-color: #fde68a; }\n.yg-arena-btn.vault:hover { box-shadow: 0 0 14px rgba(245, 158, 11, 0.65); transform: translateY(-1px); }\n.yg-arena-btn.block { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; border-color: #fca5a5; }\n.yg-arena-btn.block:hover { box-shadow: 0 0 14px rgba(239, 68, 68, 0.65); transform: translateY(-1px); }\n.yg-arena-btn.live { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }\n.yg-arena-btn.live:hover { background: rgba(56, 189, 248, 0.22); box-shadow: 0 0 14px rgba(56, 189, 248, 0.5); transform: translateY(-1px); }\n.yg-arena-status-banner { margin-top: 8px; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 11.5px; text-align: center; letter-spacing: .04em; }\n.yg-arena-status-banner.ok { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.35); }\n.yg-arena-status-banner.vault { background: rgba(245,158,11,0.18); color: #fde68a; border: 1px solid rgba(245,158,11,0.45); }\n.yg-arena-status-banner.danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); }\n\n/* Hologram Cline Mascot & Matrix Animations */\n@keyframes holoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }\n@keyframes holoScanline { 0% { transform: translateY(-38px); opacity: 0; } 15% { opacity: 0.85; } 85% { opacity: 0.85; } 100% { transform: translateY(38px); opacity: 0; } }\n@keyframes holoRingPulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.08); opacity: 0.85; } }\n@keyframes holoShieldPulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.12); opacity: 0.85; } }\n@keyframes holoIridShimmer { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }\n@keyframes holoPacketStream { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(200px); opacity: 0; } }\n@keyframes holoOutStreamTop { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(250px, -45px); opacity: 0; } }\n@keyframes holoOutStreamBot { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(250px, 45px); opacity: 0; } }\n@keyframes holoRailDash { to { stroke-dashoffset: -36; } }\n@keyframes holoVaultFlash { 0%, 100% { stroke: #f59e0b; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 3.5; filter: drop-shadow(0 0 14px #fbbf24); } }\n\n.yg-holo-agent { transform-origin: 0px 0px; animation: holoFloat 3.4s ease-in-out infinite; }\n.yg-holo-scanline { animation: holoScanline 2.2s linear infinite; }\n.yg-holo-ring { transform-origin: 0px 50px; animation: holoRingPulse 2.6s ease-in-out infinite; }\n.yg-holo-shield-vault { transform-origin: 0px 0px; animation: holoShieldPulse 1.8s ease-in-out infinite; }\n.yg-holo-shield-danger { transform-origin: 0px 0px; animation: holoShieldPulse 1.2s ease-in-out infinite; }\n.yg-holo-border { animation: holoIridShimmer 10s linear infinite; }\n.yg-stream-pkt-1 { animation: holoPacketStream 2.2s linear infinite; }\n.yg-stream-pkt-2 { animation: holoPacketStream 2.2s linear 0.73s infinite; }\n.yg-stream-pkt-3 { animation: holoPacketStream 2.2s linear 1.46s infinite; }\n.yg-conduit-active { stroke-dasharray: 8 6; animation: holoRailDash 1s linear infinite; }\n.yg-vault-glow { animation: holoVaultFlash 1.5s ease-in-out infinite; }\n\n/* Language Switcher */\n.yg-lang-switch { display: inline-flex; border: 1px solid var(--yg-border); border-radius: 6px; overflow: hidden; margin-left: 8px; background: rgba(0,0,0,0.35); }\n.yg-lang-btn { background: transparent; border: none; color: var(--yg-accent-dim); padding: 5px 11px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }\n.yg-lang-btn:hover { color: #fff; }\n.yg-lang-btn.on { background: var(--yg-accent); color: #000; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3); }\n\n/* Settings & Multi-Agent Hub */\n.yg-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; margin-top: 10px; }\n.yg-hub-card { background: rgba(0,0,0,0.25); border: 1px solid var(--yg-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }\n.yg-hub-title { font-weight: 700; font-size: 13px; color: var(--yg-accent); display: flex; align-items: center; gap: 6px; }\n.yg-hub-desc { font-size: 11px; color: var(--color-muted-foreground, #8a97ab); margin: 6px 0; }\n.yg-hub-pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 6px 8px; font-size: 10px; font-family: monospace; white-space: pre-wrap; word-break: break-all; margin: 4px 0 8px; color: #a5f3fc; }\n\n/* Rules Table */\n.yg-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }\n.yg-table th, .yg-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--yg-border); }\n.yg-table th { font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: .08em; color: var(--yg-accent-dim); }\n\n/* Incident clean code block & single row actions */\n.yg-fullcmd { margin: 8px 0; border: 1px solid var(--yg-border); border-radius: 6px; background: rgba(0,0,0,0.4); overflow: hidden; }\n.yg-fullcmd-pre { padding: 10px 12px; margin: 0; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; color: #67e8f9; line-height: 1.5; font-family: ui-monospace, Consolas, monospace; }\n.yg-fullcmd-actions { display: flex; gap: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-top: 1px solid var(--yg-border); align-items: center; flex-wrap: nowrap; overflow-x: auto; }\n.yg-fullcmd-actions .yg-btn { white-space: nowrap; font-size: 10px; }\n";
 const API = "/api/plugins/yadro-guard";
 let rest = null;
 let GuardPage = null;
@@ -621,145 +621,176 @@ const makeGuardPage = function (SDK, onReady) {
         preserveAspectRatio: "xMidYMid meet"
       },
         h("defs", null,
-          h("linearGradient", { id: "agPatrol", x1: 0, y1: 0, x2: 1, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#00f0ff" }),
-            h("stop", { offset: "100%", stopColor: "#0077b6" })),
-          h("linearGradient", { id: "agVault", x1: 0, y1: 0, x2: 1, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#ffd700" }),
-            h("stop", { offset: "100%", stopColor: "#b8860b" })),
-          h("linearGradient", { id: "agDanger", x1: 0, y1: 0, x2: 1, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#ff4d4f" }),
-            h("stop", { offset: "100%", stopColor: "#990000" })),
-          h("linearGradient", { id: "agChat", x1: 0, y1: 0, x2: 0, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#3a4a75" }),
-            h("stop", { offset: "100%", stopColor: "#172033" })),
-          h("linearGradient", { id: "agSafe", x1: 0, y1: 0, x2: 0, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#ffd591" }),
-            h("stop", { offset: "100%", stopColor: "#874d00" })),
-          h("linearGradient", { id: "agNet", x1: 0, y1: 0, x2: 0, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#5b9dff" }),
-            h("stop", { offset: "100%", stopColor: "#10316b" })),
+          // Holographic Iridescent Border Gradient (Theme Hologram from Cline)
+          h("linearGradient", { id: "holoIridescentGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#f472b6" }),
+            h("stop", { offset: "25%", stopColor: "#38bdf8" }),
+            h("stop", { offset: "50%", stopColor: "#c084fc" }),
+            h("stop", { offset: "75%", stopColor: "#34d399" }),
+            h("stop", { offset: "100%", stopColor: "#ffffff" })),
+          // Squircle Dark Glass Fill
+          h("radialGradient", { id: "holoBgGrad", cx: "50%", cy: "50%", r: "65%" },
+            h("stop", { offset: "0%", stopColor: "#171d33" }),
+            h("stop", { offset: "100%", stopColor: "#080c16" })),
+          // Mascot Pearlescent Body Gradient
+          h("linearGradient", { id: "holoMascotGrad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#ffffff" }),
+            h("stop", { offset: "45%", stopColor: "#f1f5f9" }),
+            h("stop", { offset: "100%", stopColor: "#cbd5e1" })),
+          // Holographic Vault Crystal Gradient
+          h("linearGradient", { id: "holoVaultGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#fde68a" }),
+            h("stop", { offset: "50%", stopColor: "#f59e0b" }),
+            h("stop", { offset: "100%", stopColor: "#b45309" })),
+          // Global Network Hologram Gradient
+          h("linearGradient", { id: "holoNetGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#7dd3fc" }),
+            h("stop", { offset: "50%", stopColor: "#0284c7" }),
+            h("stop", { offset: "100%", stopColor: "#0c4a6e" })),
+          // Gateway Pedestal Gradient
+          h("linearGradient", { id: "holoGateGrad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#334155" }),
+            h("stop", { offset: "100%", stopColor: "#0f172a" })),
           h("filter", { id: "agGlow" },
             h("feGaussianBlur", { stdDeviation: "4", result: "blur" }),
             h("feMerge", null,
               h("feMergeNode", { in: "blur" }),
               h("feMergeNode", { in: "SourceGraphic" }))),
-          h("filter", { id: "agShieldGlow" },
-            h("feDropShadow", { dx: 0, dy: 0, stdDeviation: "10", floodColor: coreColor, floodOpacity: "0.8" })),
+          h("filter", { id: "holoShieldGlow" },
+            h("feDropShadow", { dx: 0, dy: 0, stdDeviation: "12", floodColor: coreColor, floodOpacity: "0.85" })),
+          h("filter", { id: "holoMascotShadow" },
+            h("feDropShadow", { dx: 0, dy: 3, stdDeviation: "4", floodColor: "rgba(0,0,0,0.7)", floodOpacity: "0.8" })),
           h("pattern", { id: "agGrid", width: "30", height: "30", patternUnits: "userSpaceOnUse" },
-            h("path", { d: "M 30 0 L 0 0 0 30", fill: "none", stroke: "rgba(0, 240, 255, 0.05)", strokeWidth: "1" }))
+            h("path", { d: "M 30 0 L 0 0 0 30", fill: "none", stroke: "rgba(56, 189, 248, 0.06)", strokeWidth: "1" }))
         ),
 
         // Background Cyber Grid
         h("rect", { width: "900", height: "240", fill: "url(#agGrid)" }),
 
         // Neon Data Conduits
-        // Path 1: Gateway -> Pac-Agent
+        // Path 1: Gateway -> Cline Hologram Sentinel
         h("path", {
-          d: "M 175 120 L 390 120",
+          d: "M 175 120 L 380 120",
           fill: "none",
-          stroke: mode === "block" ? "rgba(255,77,79,0.5)" : "rgba(0,240,255,0.45)",
+          stroke: mode === "block" ? "rgba(239,68,68,0.5)" : "rgba(56,189,248,0.45)",
           strokeWidth: 4,
           className: "yg-conduit-active"
         }),
-        // Path 2: Pac-Agent -> Armored Vault
+        // Path 2: Sentinel -> Hologram Vault
         h("path", {
-          d: "M 465 105 C 540 60, 630 65, 705 68",
+          d: "M 480 100 C 550 55, 630 60, 705 68",
           fill: "none",
-          stroke: mode === "vault" ? "rgba(255,215,0,0.8)" : "rgba(240,180,74,0.35)",
+          stroke: mode === "vault" ? "rgba(251,191,36,0.85)" : "rgba(245,158,11,0.35)",
           strokeWidth: 3.5,
           className: mode === "vault" ? "yg-conduit-active" : "yg-flow-path"
         }),
-        // Path 3: Pac-Agent -> Internet
+        // Path 3: Sentinel -> Hologram Internet
         h("path", {
-          d: "M 465 135 C 540 175, 630 175, 705 172",
+          d: "M 480 140 C 550 180, 630 180, 705 172",
           fill: "none",
-          stroke: "rgba(91,157,255,0.4)",
+          stroke: "rgba(56,189,248,0.45)",
           strokeWidth: 3.5,
           className: "yg-conduit-active"
         }),
 
-        // Continuous patrol traffic particles (Safe packets chomped by Pac-Agent)
+        // Continuous Dynamic Traffic Streams (Glide into Sentinel)
         mode === "patrol" ? h("g", null,
-          h("circle", { cx: 220, cy: 120, r: 4.5, fill: "#00f0ff", filter: "url(#agGlow)" }),
-          h("circle", { cx: 280, cy: 120, r: 4, fill: "#3ec46d", filter: "url(#agGlow)" }),
-          h("circle", { cx: 340, cy: 120, r: 5, fill: "#00f0ff", filter: "url(#agGlow)" }),
-          // Verified stream to Internet
-          h("circle", { cx: 550, cy: 160, r: 4, fill: "#00f0ff", filter: "url(#agGlow)" }),
-          h("circle", { cx: 620, cy: 170, r: 4.5, fill: "#5b9dff", filter: "url(#agGlow)" })
+          h("circle", { cx: 180, cy: 120, r: 4.5, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-stream-pkt-1" }),
+          h("circle", { cx: 180, cy: 120, r: 4, fill: "#34d399", filter: "url(#agGlow)", className: "yg-stream-pkt-2" }),
+          h("circle", { cx: 180, cy: 120, r: 4.5, fill: "#c084fc", filter: "url(#agGlow)", className: "yg-stream-pkt-3" }),
+          // Outbound verified streams
+          h("circle", { cx: 480, cy: 140, r: 4, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-out-pkt-bot" })
         ) : null,
 
         // LEFT NODE: Active Chat Gateway
         h("g", { transform: "translate(90, 120)" },
-          h("circle", { cx: 0, cy: 0, r: 44, fill: "url(#agChat)", stroke: "#4a6296", strokeWidth: 2, filter: "url(#agGlow)" }),
-          h("circle", { cx: 0, cy: 0, r: 38, fill: "none", stroke: "rgba(0,240,255,0.3)", strokeWidth: 1.5, strokeDasharray: "4 3" }),
-          // Server stack icon
-          h("rect", { x: -16, y: -18, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: -14, r: 1.5, fill: "#3ec46d" }),
-          h("rect", { x: -16, y: -6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: -2, r: 1.5, fill: "#ffd700" }),
-          h("rect", { x: -16, y: 6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: 10, r: 1.5, fill: "#00f0ff" }),
+          h("circle", { cx: 0, cy: 0, r: 44, fill: "url(#holoGateGrad)", stroke: "#475569", strokeWidth: 2, filter: "url(#agGlow)" }),
+          h("circle", { cx: 0, cy: 0, r: 38, fill: "none", stroke: "rgba(56,189,248,0.35)", strokeWidth: 1.5, strokeDasharray: "4 3" }),
+          // Server stack terminal icon
+          h("rect", { x: -16, y: -18, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: -14, r: 1.5, fill: "#34d399" }),
+          h("rect", { x: -16, y: -6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: -2, r: 1.5, fill: "#fbbf24" }),
+          h("rect", { x: -16, y: 6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: 10, r: 1.5, fill: "#38bdf8" }),
           // Chat Name Badge
-          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#e2e8f0", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#f1f5f9", fontSize: 11, fontWeight: 700 },
             chatName.length > 20 ? chatName.slice(0, 19) + "…" : chatName),
-          h("text", { x: 0, y: 72, textAnchor: "middle", fill: "#8a97ab", fontSize: 9.5 },
+          h("text", { x: 0, y: 72, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
             currentLang === "ru" ? "Шлюз ИИ-сеанса" : "Agent Gateway")
         ),
 
-        // CENTER: PAC-AGENT (The Cyber Sentinel)
-        h("g", { transform: "translate(430, 120)" },
-          // Outer Energy Shield Bubble
-          h("circle", {
-            cx: 0, cy: 0, r: 52,
-            fill: mode === "vault" ? "rgba(255,215,0,0.12)" : mode === "block" ? "rgba(255,77,79,0.18)" : "rgba(0,240,255,0.08)",
-            stroke: coreColor, strokeWidth: mode === "patrol" ? 1.5 : 3,
-            className: "yg-pac-shield",
-            filter: "url(#agShieldGlow)"
+        // CENTER: CLINE SENTINEL (The Holographic Agent)
+        h("g", { transform: "translate(430, 120)", className: "yg-holo-agent" },
+          // Holographic Ground Projection Ring
+          h("ellipse", {
+            cx: 0, cy: 50, rx: 46, ry: 12,
+            fill: "none", stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#holoIridescentGrad)",
+            strokeWidth: 1.5, className: "yg-holo-ring", filter: "url(#agGlow)"
           }),
-          // Threat Block Shockwave Rings
+
+          // Outer Shield Matrix (Vault or Threat Block)
+          mode === "vault" ? h("rect", {
+            x: -52, y: -52, width: 104, height: 104, rx: 26,
+            fill: "rgba(245,158,11,0.14)", stroke: "#fbbf24", strokeWidth: 2.5,
+            className: "yg-holo-shield-vault", filter: "url(#holoShieldGlow)"
+          }) : null,
+          mode === "block" ? h("rect", {
+            x: -52, y: -52, width: 104, height: 104, rx: 26,
+            fill: "rgba(239,68,68,0.2)", stroke: "#ef4444", strokeWidth: 3,
+            className: "yg-holo-shield-danger", filter: "url(#holoShieldGlow)"
+          }) : null,
+
+          // Threat Block Detonation Shockwaves
           exploded ? h("g", null,
-            h("circle", { cx: 0, cy: 0, r: 68, fill: "none", stroke: "#ff4d4f", strokeWidth: 3, opacity: 0.85 }),
-            h("circle", { cx: 0, cy: 0, r: 85, fill: "none", stroke: "#ff7875", strokeWidth: 2, opacity: 0.4 })
+            h("circle", { cx: 0, cy: 0, r: 70, fill: "none", stroke: "#ef4444", strokeWidth: 3, opacity: 0.9 }),
+            h("circle", { cx: 0, cy: 0, r: 88, fill: "none", stroke: "#fca5a5", strokeWidth: 2, opacity: 0.45 })
           ) : null,
-          // Pac-Agent Body & Dynamic Jaws
-          h("g", null,
-            // Top Jaw (faces LEFT towards incoming packets, rotates up)
-            h("path", {
-              d: "M 0 0 L -35 0 A 35 35 0 0 1 35 0 Z",
-              fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
-              stroke: coreColor, strokeWidth: 2,
-              className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-top",
-              style: { transformOrigin: "0px 0px" },
-              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(45)" : undefined
-            }),
-            // Bottom Jaw (faces LEFT, rotates down)
-            h("path", {
-              d: "M 0 0 L -35 0 A 35 35 0 0 0 35 0 Z",
-              fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
-              stroke: coreColor, strokeWidth: 2,
-              className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-bottom",
-              style: { transformOrigin: "0px 0px" },
-              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(-45)" : undefined
-            }),
-            // Cyber Scanner Eye Visor
-            h("circle", { cx: -10, cy: -18, r: 6, fill: "#030712", stroke: coreColor, strokeWidth: 1.5 }),
-            h("circle", { cx: -12, cy: -18, r: 3.2, fill: mode === "block" ? "#ff4d4f" : "#00f0ff", className: "yg-pac-scanner", filter: "url(#agGlow)" }),
-            h("circle", { cx: -13, cy: -19, r: 1.2, fill: "#ffffff" }),
-            // Forward scanner vision cone
-            h("polygon", {
-              points: "-12,-18 -70,-32 -70,-4",
-              fill: mode === "block" ? "rgba(255,77,79,0.12)" : "rgba(0,240,255,0.07)"
-            }),
-            // Micro-circuit etchings
-            h("circle", { cx: 16, cy: 6, r: 2, fill: "none", stroke: coreColor, strokeWidth: 1 }),
-            h("path", { d: "M 6 6 L 16 6", stroke: coreColor, strokeWidth: 1 })
-          ),
-          // Pac-Agent Badge / Title
-          h("text", { x: 0, y: 72, textAnchor: "middle", fill: coreColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em" },
+
+          // The Squircle Container (from Cline theme screenshot)
+          h("rect", {
+            x: -42, y: -42, width: 84, height: 84, rx: 20,
+            fill: "url(#holoBgGrad)",
+            stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#holoIridescentGrad)",
+            strokeWidth: 2.2,
+            filter: "url(#agGlow)",
+            className: mode === "patrol" ? "yg-holo-border" : undefined
+          }),
+
+          // Diagonal Glass Gloss Reflection
+          h("path", {
+            d: "M -38 -15 L -15 -38 L 10 -38 L -38 10 Z",
+            fill: "rgba(255, 255, 255, 0.08)"
+          }),
+
+          // Sweeping Laser Scanline
+          h("line", {
+            x1: -34, y1: 0, x2: 34, y2: 0,
+            stroke: mode === "block" ? "rgba(239,68,68,0.8)" : "rgba(56,189,248,0.75)",
+            strokeWidth: 1.5,
+            className: "yg-holo-scanline"
+          }),
+
+          // Cline Mascot Silhouette (Exact contour from screenshot)
+          h("path", {
+            d: "M -5 -19 A 5 5 0 0 1 5 -19 L 16 -19 A 5 5 0 0 1 21 -14 L 21 -5 L 28 0 L 21 5 L 21 14 A 5 5 0 0 1 16 19 L -16 19 A 5 5 0 0 1 -21 14 L -21 5 L -28 0 L -21 -5 L -21 -14 A 5 5 0 0 1 -16 -19 Z",
+            fill: mode === "block" ? "#fee2e2" : "url(#holoMascotGrad)",
+            stroke: mode === "block" ? "#ef4444" : "rgba(255,255,255,0.6)",
+            strokeWidth: 1.2,
+            filter: "url(#holoMascotShadow)"
+          }),
+
+          // Vertical Slit Eyes | |
+          h("rect", { x: -8.5, y: -6, width: 4.5, height: 13.5, rx: 2.25, fill: "#0b0f19" }),
+          h("circle", { cx: -6.25, cy: -2, r: 1.2, fill: mode === "block" ? "#ef4444" : "#38bdf8" }),
+          h("rect", { x: 4, y: -6, width: 4.5, height: 13.5, rx: 2.25, fill: "#0b0f19" }),
+          h("circle", { cx: 6.25, cy: -2, r: 1.2, fill: mode === "block" ? "#ef4444" : "#38bdf8" }),
+
+          // Agent Badge / Title
+          h("text", { x: 0, y: 68, textAnchor: "middle", fill: coreColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em" },
             mode === "vault" ? (currentLang === "ru" ? "🔒 ЗАХВАТ СЕКРЕТА" : "🔒 VAULTING SECRET")
               : mode === "block" ? (currentLang === "ru" ? "⛔ ОТРАЖЕНИЕ АТАКИ" : "⛔ THREAT BLOCKED")
-                : "PAC-AGENT SENTINEL")
+                : (currentLang === "ru" ? "CLINE-СТРАЖ · ГОЛОГРАММА" : "CLINE SENTINEL · HOLOGRAM"))
         ),
 
         // VAULT DEMO: Flying Secret Capsule & Masked Outbound Token
@@ -771,58 +802,55 @@ const makeGuardPage = function (SDK, onReady) {
           h("circle", { cx: 0, cy: 0, r: 7, fill: "#ffd700", filter: "url(#agGlow)" })
         ) : null,
         mode === "vault" && progress > 0.6 ? h("g", { transform: "translate(" + tokenX + ", 155)" },
-          h("rect", { x: -44, y: -10, width: 88, height: 20, rx: 5, fill: "rgba(0,240,255,0.2)", stroke: "#00f0ff", strokeWidth: 1.5, filter: "url(#agGlow)" }),
-          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#00f0ff", fontSize: 8.5, fontWeight: 700 }, "msg_tok_***")
+          h("rect", { x: -44, y: -10, width: 88, height: 20, rx: 5, fill: "rgba(56,189,248,0.2)", stroke: "#38bdf8", strokeWidth: 1.5, filter: "url(#agGlow)" }),
+          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#38bdf8", fontSize: 8.5, fontWeight: 700 }, "msg_tok_***")
         ) : null,
 
         // BLOCK DEMO: Approaching Threat Mine & Pulverizing Sparks
         mode === "block" && !exploded ? h("g", { transform: "translate(" + mineX + ", 120)" },
-          h("circle", { cx: 0, cy: 0, r: 14, fill: "#990000", stroke: "#ff4d4f", strokeWidth: 2.5, filter: "url(#agGlow)" }),
+          h("circle", { cx: 0, cy: 0, r: 14, fill: "#990000", stroke: "#ef4444", strokeWidth: 2.5, filter: "url(#agGlow)" }),
           h("path", { d: "M -6 -6 L 6 6 M 6 -6 L -6 6", stroke: "#fff", strokeWidth: 2 }),
-          h("text", { x: 0, y: 24, textAnchor: "middle", fill: "#ff7875", fontSize: 9, fontWeight: 700 }, "curl | python")
+          h("text", { x: 0, y: 24, textAnchor: "middle", fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, "curl | python")
         ) : null,
         exploded ? h("g", { transform: "translate(410, 120)" },
           // Explosive sparks
-          h("circle", { cx: -20, cy: -18, r: 3, fill: "#ff4d4f", filter: "url(#agGlow)" }),
-          h("circle", { cx: -28, cy: 12, r: 2.5, fill: "#ffd700", filter: "url(#agGlow)" }),
-          h("circle", { cx: -15, cy: 22, r: 3.5, fill: "#ff4d4f", filter: "url(#agGlow)" }),
+          h("circle", { cx: -20, cy: -18, r: 3, fill: "#ef4444", filter: "url(#agGlow)" }),
+          h("circle", { cx: -28, cy: 12, r: 2.5, fill: "#fbbf24", filter: "url(#agGlow)" }),
+          h("circle", { cx: -15, cy: 22, r: 3.5, fill: "#ef4444", filter: "url(#agGlow)" }),
           h("circle", { cx: -34, cy: -6, r: 2, fill: "#fff", filter: "url(#agGlow)" })
         ) : null,
 
-        // RIGHT TOP: Armored Vault Node
+        // RIGHT TOP: Armored Holographic Vault Node
         h("g", { transform: "translate(750, 68)" },
           h("rect", {
-            x: -42, y: -34, width: 84, height: 68, rx: 8,
-            fill: "url(#agSafe)", stroke: mode === "vault" ? "#fff" : "#f0b44a", strokeWidth: 2,
+            x: -42, y: -34, width: 84, height: 68, rx: 10,
+            fill: "url(#holoVaultGrad)", stroke: mode === "vault" ? "#fff" : "#f59e0b", strokeWidth: 2,
             filter: "url(#agGlow)",
             className: mode === "vault" ? "yg-vault-glow" : ""
           }),
-          // Heavy door rivets
-          h("circle", { cx: -32, cy: -24, r: 2.5, fill: "#874d00" }),
-          h("circle", { cx: 32, cy: -24, r: 2.5, fill: "#874d00" }),
-          h("circle", { cx: -32, cy: 24, r: 2.5, fill: "#874d00" }),
-          h("circle", { cx: 32, cy: 24, r: 2.5, fill: "#874d00" }),
-          // Combination dial
-          h("circle", { cx: 0, cy: 0, r: 16, fill: "#1a1202", stroke: "#ffd700", strokeWidth: 2 }),
-          h("circle", { cx: 0, cy: 0, r: 5, fill: "#ffd700" }),
-          h("line", { x1: 0, y1: -16, x2: 0, y2: -9, stroke: "#ffd700", strokeWidth: 2 }),
+          // Facet overlay
+          h("path", { d: "M -42 -10 L 0 -34 L 42 -10 L 0 34 Z", fill: "rgba(255,255,255,0.12)" }),
+          // Lock Core
+          h("circle", { cx: 0, cy: 0, r: 16, fill: "#1c1404", stroke: "#fde68a", strokeWidth: 2 }),
+          h("circle", { cx: 0, cy: 0, r: 5, fill: "#fde68a" }),
+          h("line", { x1: 0, y1: -16, x2: 0, y2: -9, stroke: "#fde68a", strokeWidth: 2 }),
           // Vault Counter Badge
-          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#ffd591", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#fde68a", fontSize: 11, fontWeight: 700 },
             (currentLang === "ru" ? "Сейф: " : "Vault: ") + (vaultCount + vaultBonus)),
           vaultBonus > 0 && mode === "vault" ? h("text", { x: 38, y: -24, fill: "#ffd700", fontSize: 12, fontWeight: 900 }, "+1") : null
         ),
 
         // RIGHT BOTTOM: External Internet Node
         h("g", { transform: "translate(750, 172)" },
-          h("circle", { cx: 0, cy: 0, r: 36, fill: "url(#agNet)", stroke: "#5b9dff", strokeWidth: 2, filter: "url(#agGlow)" }),
-          // Globe latitude/longitude
-          h("circle", { cx: 0, cy: 0, r: 24, fill: "none", stroke: "rgba(255,255,255,0.7)", strokeWidth: 1.5 }),
-          h("ellipse", { cx: 0, cy: 0, rx: 11, ry: 24, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 1.2 }),
-          h("line", { x1: -24, y1: 0, x2: 24, y2: 0, stroke: "rgba(255,255,255,0.6)", strokeWidth: 1.2 }),
+          h("circle", { cx: 0, cy: 0, r: 36, fill: "url(#holoNetGrad)", stroke: "#38bdf8", strokeWidth: 2, filter: "url(#agGlow)" }),
+          // Holographic globe lattice
+          h("circle", { cx: 0, cy: 0, r: 24, fill: "none", stroke: "rgba(255,255,255,0.75)", strokeWidth: 1.5 }),
+          h("ellipse", { cx: 0, cy: 0, rx: 11, ry: 24, fill: "none", stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.2 }),
+          h("line", { x1: -24, y1: 0, x2: 24, y2: 0, stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.2 }),
           // Destination labels
-          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#93c5fd", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#bae6fd", fontSize: 11, fontWeight: 700 },
             currentLang === "ru" ? "Интернет" : "Internet"),
-          h("text", { x: 0, y: 64, textAnchor: "middle", fill: "#8a97ab", fontSize: 9.5 },
+          h("text", { x: 0, y: 64, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
             dest.length > 20 ? dest.slice(0, 19) + "…" : dest)
         )
       ),

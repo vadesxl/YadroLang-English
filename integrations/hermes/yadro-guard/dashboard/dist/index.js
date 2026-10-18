@@ -606,145 +606,176 @@
         preserveAspectRatio: "xMidYMid meet"
       },
         h("defs", null,
-          h("linearGradient", { id: "agPatrol", x1: 0, y1: 0, x2: 1, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#00f0ff" }),
-            h("stop", { offset: "100%", stopColor: "#0077b6" })),
-          h("linearGradient", { id: "agVault", x1: 0, y1: 0, x2: 1, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#ffd700" }),
-            h("stop", { offset: "100%", stopColor: "#b8860b" })),
-          h("linearGradient", { id: "agDanger", x1: 0, y1: 0, x2: 1, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#ff4d4f" }),
-            h("stop", { offset: "100%", stopColor: "#990000" })),
-          h("linearGradient", { id: "agChat", x1: 0, y1: 0, x2: 0, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#3a4a75" }),
-            h("stop", { offset: "100%", stopColor: "#172033" })),
-          h("linearGradient", { id: "agSafe", x1: 0, y1: 0, x2: 0, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#ffd591" }),
-            h("stop", { offset: "100%", stopColor: "#874d00" })),
-          h("linearGradient", { id: "agNet", x1: 0, y1: 0, x2: 0, y2: 1 },
-            h("stop", { offset: "0%", stopColor: "#5b9dff" }),
-            h("stop", { offset: "100%", stopColor: "#10316b" })),
+          // Holographic Iridescent Border Gradient (Theme Hologram from Cline)
+          h("linearGradient", { id: "holoIridescentGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#f472b6" }),
+            h("stop", { offset: "25%", stopColor: "#38bdf8" }),
+            h("stop", { offset: "50%", stopColor: "#c084fc" }),
+            h("stop", { offset: "75%", stopColor: "#34d399" }),
+            h("stop", { offset: "100%", stopColor: "#ffffff" })),
+          // Squircle Dark Glass Fill
+          h("radialGradient", { id: "holoBgGrad", cx: "50%", cy: "50%", r: "65%" },
+            h("stop", { offset: "0%", stopColor: "#171d33" }),
+            h("stop", { offset: "100%", stopColor: "#080c16" })),
+          // Mascot Pearlescent Body Gradient
+          h("linearGradient", { id: "holoMascotGrad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#ffffff" }),
+            h("stop", { offset: "45%", stopColor: "#f1f5f9" }),
+            h("stop", { offset: "100%", stopColor: "#cbd5e1" })),
+          // Holographic Vault Crystal Gradient
+          h("linearGradient", { id: "holoVaultGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#fde68a" }),
+            h("stop", { offset: "50%", stopColor: "#f59e0b" }),
+            h("stop", { offset: "100%", stopColor: "#b45309" })),
+          // Global Network Hologram Gradient
+          h("linearGradient", { id: "holoNetGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#7dd3fc" }),
+            h("stop", { offset: "50%", stopColor: "#0284c7" }),
+            h("stop", { offset: "100%", stopColor: "#0c4a6e" })),
+          // Gateway Pedestal Gradient
+          h("linearGradient", { id: "holoGateGrad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+            h("stop", { offset: "0%", stopColor: "#334155" }),
+            h("stop", { offset: "100%", stopColor: "#0f172a" })),
           h("filter", { id: "agGlow" },
             h("feGaussianBlur", { stdDeviation: "4", result: "blur" }),
             h("feMerge", null,
               h("feMergeNode", { in: "blur" }),
               h("feMergeNode", { in: "SourceGraphic" }))),
-          h("filter", { id: "agShieldGlow" },
-            h("feDropShadow", { dx: 0, dy: 0, stdDeviation: "10", floodColor: coreColor, floodOpacity: "0.8" })),
+          h("filter", { id: "holoShieldGlow" },
+            h("feDropShadow", { dx: 0, dy: 0, stdDeviation: "12", floodColor: coreColor, floodOpacity: "0.85" })),
+          h("filter", { id: "holoMascotShadow" },
+            h("feDropShadow", { dx: 0, dy: 3, stdDeviation: "4", floodColor: "rgba(0,0,0,0.7)", floodOpacity: "0.8" })),
           h("pattern", { id: "agGrid", width: "30", height: "30", patternUnits: "userSpaceOnUse" },
-            h("path", { d: "M 30 0 L 0 0 0 30", fill: "none", stroke: "rgba(0, 240, 255, 0.05)", strokeWidth: "1" }))
+            h("path", { d: "M 30 0 L 0 0 0 30", fill: "none", stroke: "rgba(56, 189, 248, 0.06)", strokeWidth: "1" }))
         ),
 
         // Background Cyber Grid
         h("rect", { width: "900", height: "240", fill: "url(#agGrid)" }),
 
         // Neon Data Conduits
-        // Path 1: Gateway -> Pac-Agent
+        // Path 1: Gateway -> Cline Hologram Sentinel
         h("path", {
-          d: "M 175 120 L 390 120",
+          d: "M 175 120 L 380 120",
           fill: "none",
-          stroke: mode === "block" ? "rgba(255,77,79,0.5)" : "rgba(0,240,255,0.45)",
+          stroke: mode === "block" ? "rgba(239,68,68,0.5)" : "rgba(56,189,248,0.45)",
           strokeWidth: 4,
           className: "yg-conduit-active"
         }),
-        // Path 2: Pac-Agent -> Armored Vault
+        // Path 2: Sentinel -> Hologram Vault
         h("path", {
-          d: "M 465 105 C 540 60, 630 65, 705 68",
+          d: "M 480 100 C 550 55, 630 60, 705 68",
           fill: "none",
-          stroke: mode === "vault" ? "rgba(255,215,0,0.8)" : "rgba(240,180,74,0.35)",
+          stroke: mode === "vault" ? "rgba(251,191,36,0.85)" : "rgba(245,158,11,0.35)",
           strokeWidth: 3.5,
           className: mode === "vault" ? "yg-conduit-active" : "yg-flow-path"
         }),
-        // Path 3: Pac-Agent -> Internet
+        // Path 3: Sentinel -> Hologram Internet
         h("path", {
-          d: "M 465 135 C 540 175, 630 175, 705 172",
+          d: "M 480 140 C 550 180, 630 180, 705 172",
           fill: "none",
-          stroke: "rgba(91,157,255,0.4)",
+          stroke: "rgba(56,189,248,0.45)",
           strokeWidth: 3.5,
           className: "yg-conduit-active"
         }),
 
-        // Continuous patrol traffic particles (Safe packets chomped by Pac-Agent)
+        // Continuous Dynamic Traffic Streams (Glide into Sentinel)
         mode === "patrol" ? h("g", null,
-          h("circle", { cx: 220, cy: 120, r: 4.5, fill: "#00f0ff", filter: "url(#agGlow)" }),
-          h("circle", { cx: 280, cy: 120, r: 4, fill: "#3ec46d", filter: "url(#agGlow)" }),
-          h("circle", { cx: 340, cy: 120, r: 5, fill: "#00f0ff", filter: "url(#agGlow)" }),
-          // Verified stream to Internet
-          h("circle", { cx: 550, cy: 160, r: 4, fill: "#00f0ff", filter: "url(#agGlow)" }),
-          h("circle", { cx: 620, cy: 170, r: 4.5, fill: "#5b9dff", filter: "url(#agGlow)" })
+          h("circle", { cx: 180, cy: 120, r: 4.5, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-stream-pkt-1" }),
+          h("circle", { cx: 180, cy: 120, r: 4, fill: "#34d399", filter: "url(#agGlow)", className: "yg-stream-pkt-2" }),
+          h("circle", { cx: 180, cy: 120, r: 4.5, fill: "#c084fc", filter: "url(#agGlow)", className: "yg-stream-pkt-3" }),
+          // Outbound verified streams
+          h("circle", { cx: 480, cy: 140, r: 4, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-out-pkt-bot" })
         ) : null,
 
         // LEFT NODE: Active Chat Gateway
         h("g", { transform: "translate(90, 120)" },
-          h("circle", { cx: 0, cy: 0, r: 44, fill: "url(#agChat)", stroke: "#4a6296", strokeWidth: 2, filter: "url(#agGlow)" }),
-          h("circle", { cx: 0, cy: 0, r: 38, fill: "none", stroke: "rgba(0,240,255,0.3)", strokeWidth: 1.5, strokeDasharray: "4 3" }),
-          // Server stack icon
-          h("rect", { x: -16, y: -18, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: -14, r: 1.5, fill: "#3ec46d" }),
-          h("rect", { x: -16, y: -6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: -2, r: 1.5, fill: "#ffd700" }),
-          h("rect", { x: -16, y: 6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#00f0ff", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: 10, r: 1.5, fill: "#00f0ff" }),
+          h("circle", { cx: 0, cy: 0, r: 44, fill: "url(#holoGateGrad)", stroke: "#475569", strokeWidth: 2, filter: "url(#agGlow)" }),
+          h("circle", { cx: 0, cy: 0, r: 38, fill: "none", stroke: "rgba(56,189,248,0.35)", strokeWidth: 1.5, strokeDasharray: "4 3" }),
+          // Server stack terminal icon
+          h("rect", { x: -16, y: -18, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: -14, r: 1.5, fill: "#34d399" }),
+          h("rect", { x: -16, y: -6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: -2, r: 1.5, fill: "#fbbf24" }),
+          h("rect", { x: -16, y: 6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
+          h("circle", { cx: -10, cy: 10, r: 1.5, fill: "#38bdf8" }),
           // Chat Name Badge
-          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#e2e8f0", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#f1f5f9", fontSize: 11, fontWeight: 700 },
             chatName.length > 20 ? chatName.slice(0, 19) + "…" : chatName),
-          h("text", { x: 0, y: 72, textAnchor: "middle", fill: "#8a97ab", fontSize: 9.5 },
+          h("text", { x: 0, y: 72, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
             currentLang === "ru" ? "Шлюз ИИ-сеанса" : "Agent Gateway")
         ),
 
-        // CENTER: PAC-AGENT (The Cyber Sentinel)
-        h("g", { transform: "translate(430, 120)" },
-          // Outer Energy Shield Bubble
-          h("circle", {
-            cx: 0, cy: 0, r: 52,
-            fill: mode === "vault" ? "rgba(255,215,0,0.12)" : mode === "block" ? "rgba(255,77,79,0.18)" : "rgba(0,240,255,0.08)",
-            stroke: coreColor, strokeWidth: mode === "patrol" ? 1.5 : 3,
-            className: "yg-pac-shield",
-            filter: "url(#agShieldGlow)"
+        // CENTER: CLINE SENTINEL (The Holographic Agent)
+        h("g", { transform: "translate(430, 120)", className: "yg-holo-agent" },
+          // Holographic Ground Projection Ring
+          h("ellipse", {
+            cx: 0, cy: 50, rx: 46, ry: 12,
+            fill: "none", stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#holoIridescentGrad)",
+            strokeWidth: 1.5, className: "yg-holo-ring", filter: "url(#agGlow)"
           }),
-          // Threat Block Shockwave Rings
+
+          // Outer Shield Matrix (Vault or Threat Block)
+          mode === "vault" ? h("rect", {
+            x: -52, y: -52, width: 104, height: 104, rx: 26,
+            fill: "rgba(245,158,11,0.14)", stroke: "#fbbf24", strokeWidth: 2.5,
+            className: "yg-holo-shield-vault", filter: "url(#holoShieldGlow)"
+          }) : null,
+          mode === "block" ? h("rect", {
+            x: -52, y: -52, width: 104, height: 104, rx: 26,
+            fill: "rgba(239,68,68,0.2)", stroke: "#ef4444", strokeWidth: 3,
+            className: "yg-holo-shield-danger", filter: "url(#holoShieldGlow)"
+          }) : null,
+
+          // Threat Block Detonation Shockwaves
           exploded ? h("g", null,
-            h("circle", { cx: 0, cy: 0, r: 68, fill: "none", stroke: "#ff4d4f", strokeWidth: 3, opacity: 0.85 }),
-            h("circle", { cx: 0, cy: 0, r: 85, fill: "none", stroke: "#ff7875", strokeWidth: 2, opacity: 0.4 })
+            h("circle", { cx: 0, cy: 0, r: 70, fill: "none", stroke: "#ef4444", strokeWidth: 3, opacity: 0.9 }),
+            h("circle", { cx: 0, cy: 0, r: 88, fill: "none", stroke: "#fca5a5", strokeWidth: 2, opacity: 0.45 })
           ) : null,
-          // Pac-Agent Body & Dynamic Jaws
-          h("g", null,
-            // Top Jaw (faces LEFT towards incoming packets, rotates up)
-            h("path", {
-              d: "M 0 0 L -35 0 A 35 35 0 0 1 35 0 Z",
-              fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
-              stroke: coreColor, strokeWidth: 2,
-              className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-top",
-              style: { transformOrigin: "0px 0px" },
-              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(45)" : undefined
-            }),
-            // Bottom Jaw (faces LEFT, rotates down)
-            h("path", {
-              d: "M 0 0 L -35 0 A 35 35 0 0 0 35 0 Z",
-              fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
-              stroke: coreColor, strokeWidth: 2,
-              className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-bottom",
-              style: { transformOrigin: "0px 0px" },
-              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(-45)" : undefined
-            }),
-            // Cyber Scanner Eye Visor
-            h("circle", { cx: -10, cy: -18, r: 6, fill: "#030712", stroke: coreColor, strokeWidth: 1.5 }),
-            h("circle", { cx: -12, cy: -18, r: 3.2, fill: mode === "block" ? "#ff4d4f" : "#00f0ff", className: "yg-pac-scanner", filter: "url(#agGlow)" }),
-            h("circle", { cx: -13, cy: -19, r: 1.2, fill: "#ffffff" }),
-            // Forward scanner vision cone
-            h("polygon", {
-              points: "-12,-18 -70,-32 -70,-4",
-              fill: mode === "block" ? "rgba(255,77,79,0.12)" : "rgba(0,240,255,0.07)"
-            }),
-            // Micro-circuit etchings
-            h("circle", { cx: 16, cy: 6, r: 2, fill: "none", stroke: coreColor, strokeWidth: 1 }),
-            h("path", { d: "M 6 6 L 16 6", stroke: coreColor, strokeWidth: 1 })
-          ),
-          // Pac-Agent Badge / Title
-          h("text", { x: 0, y: 72, textAnchor: "middle", fill: coreColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em" },
+
+          // The Squircle Container (from Cline theme screenshot)
+          h("rect", {
+            x: -42, y: -42, width: 84, height: 84, rx: 20,
+            fill: "url(#holoBgGrad)",
+            stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#holoIridescentGrad)",
+            strokeWidth: 2.2,
+            filter: "url(#agGlow)",
+            className: mode === "patrol" ? "yg-holo-border" : undefined
+          }),
+
+          // Diagonal Glass Gloss Reflection
+          h("path", {
+            d: "M -38 -15 L -15 -38 L 10 -38 L -38 10 Z",
+            fill: "rgba(255, 255, 255, 0.08)"
+          }),
+
+          // Sweeping Laser Scanline
+          h("line", {
+            x1: -34, y1: 0, x2: 34, y2: 0,
+            stroke: mode === "block" ? "rgba(239,68,68,0.8)" : "rgba(56,189,248,0.75)",
+            strokeWidth: 1.5,
+            className: "yg-holo-scanline"
+          }),
+
+          // Cline Mascot Silhouette (Exact contour from screenshot)
+          h("path", {
+            d: "M -5 -19 A 5 5 0 0 1 5 -19 L 16 -19 A 5 5 0 0 1 21 -14 L 21 -5 L 28 0 L 21 5 L 21 14 A 5 5 0 0 1 16 19 L -16 19 A 5 5 0 0 1 -21 14 L -21 5 L -28 0 L -21 -5 L -21 -14 A 5 5 0 0 1 -16 -19 Z",
+            fill: mode === "block" ? "#fee2e2" : "url(#holoMascotGrad)",
+            stroke: mode === "block" ? "#ef4444" : "rgba(255,255,255,0.6)",
+            strokeWidth: 1.2,
+            filter: "url(#holoMascotShadow)"
+          }),
+
+          // Vertical Slit Eyes | |
+          h("rect", { x: -8.5, y: -6, width: 4.5, height: 13.5, rx: 2.25, fill: "#0b0f19" }),
+          h("circle", { cx: -6.25, cy: -2, r: 1.2, fill: mode === "block" ? "#ef4444" : "#38bdf8" }),
+          h("rect", { x: 4, y: -6, width: 4.5, height: 13.5, rx: 2.25, fill: "#0b0f19" }),
+          h("circle", { cx: 6.25, cy: -2, r: 1.2, fill: mode === "block" ? "#ef4444" : "#38bdf8" }),
+
+          // Agent Badge / Title
+          h("text", { x: 0, y: 68, textAnchor: "middle", fill: coreColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em" },
             mode === "vault" ? (currentLang === "ru" ? "🔒 ЗАХВАТ СЕКРЕТА" : "🔒 VAULTING SECRET")
               : mode === "block" ? (currentLang === "ru" ? "⛔ ОТРАЖЕНИЕ АТАКИ" : "⛔ THREAT BLOCKED")
-                : "PAC-AGENT SENTINEL")
+                : (currentLang === "ru" ? "CLINE-СТРАЖ · ГОЛОГРАММА" : "CLINE SENTINEL · HOLOGRAM"))
         ),
 
         // VAULT DEMO: Flying Secret Capsule & Masked Outbound Token
@@ -756,58 +787,55 @@
           h("circle", { cx: 0, cy: 0, r: 7, fill: "#ffd700", filter: "url(#agGlow)" })
         ) : null,
         mode === "vault" && progress > 0.6 ? h("g", { transform: "translate(" + tokenX + ", 155)" },
-          h("rect", { x: -44, y: -10, width: 88, height: 20, rx: 5, fill: "rgba(0,240,255,0.2)", stroke: "#00f0ff", strokeWidth: 1.5, filter: "url(#agGlow)" }),
-          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#00f0ff", fontSize: 8.5, fontWeight: 700 }, "msg_tok_***")
+          h("rect", { x: -44, y: -10, width: 88, height: 20, rx: 5, fill: "rgba(56,189,248,0.2)", stroke: "#38bdf8", strokeWidth: 1.5, filter: "url(#agGlow)" }),
+          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#38bdf8", fontSize: 8.5, fontWeight: 700 }, "msg_tok_***")
         ) : null,
 
         // BLOCK DEMO: Approaching Threat Mine & Pulverizing Sparks
         mode === "block" && !exploded ? h("g", { transform: "translate(" + mineX + ", 120)" },
-          h("circle", { cx: 0, cy: 0, r: 14, fill: "#990000", stroke: "#ff4d4f", strokeWidth: 2.5, filter: "url(#agGlow)" }),
+          h("circle", { cx: 0, cy: 0, r: 14, fill: "#990000", stroke: "#ef4444", strokeWidth: 2.5, filter: "url(#agGlow)" }),
           h("path", { d: "M -6 -6 L 6 6 M 6 -6 L -6 6", stroke: "#fff", strokeWidth: 2 }),
-          h("text", { x: 0, y: 24, textAnchor: "middle", fill: "#ff7875", fontSize: 9, fontWeight: 700 }, "curl | python")
+          h("text", { x: 0, y: 24, textAnchor: "middle", fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, "curl | python")
         ) : null,
         exploded ? h("g", { transform: "translate(410, 120)" },
           // Explosive sparks
-          h("circle", { cx: -20, cy: -18, r: 3, fill: "#ff4d4f", filter: "url(#agGlow)" }),
-          h("circle", { cx: -28, cy: 12, r: 2.5, fill: "#ffd700", filter: "url(#agGlow)" }),
-          h("circle", { cx: -15, cy: 22, r: 3.5, fill: "#ff4d4f", filter: "url(#agGlow)" }),
+          h("circle", { cx: -20, cy: -18, r: 3, fill: "#ef4444", filter: "url(#agGlow)" }),
+          h("circle", { cx: -28, cy: 12, r: 2.5, fill: "#fbbf24", filter: "url(#agGlow)" }),
+          h("circle", { cx: -15, cy: 22, r: 3.5, fill: "#ef4444", filter: "url(#agGlow)" }),
           h("circle", { cx: -34, cy: -6, r: 2, fill: "#fff", filter: "url(#agGlow)" })
         ) : null,
 
-        // RIGHT TOP: Armored Vault Node
+        // RIGHT TOP: Armored Holographic Vault Node
         h("g", { transform: "translate(750, 68)" },
           h("rect", {
-            x: -42, y: -34, width: 84, height: 68, rx: 8,
-            fill: "url(#agSafe)", stroke: mode === "vault" ? "#fff" : "#f0b44a", strokeWidth: 2,
+            x: -42, y: -34, width: 84, height: 68, rx: 10,
+            fill: "url(#holoVaultGrad)", stroke: mode === "vault" ? "#fff" : "#f59e0b", strokeWidth: 2,
             filter: "url(#agGlow)",
             className: mode === "vault" ? "yg-vault-glow" : ""
           }),
-          // Heavy door rivets
-          h("circle", { cx: -32, cy: -24, r: 2.5, fill: "#874d00" }),
-          h("circle", { cx: 32, cy: -24, r: 2.5, fill: "#874d00" }),
-          h("circle", { cx: -32, cy: 24, r: 2.5, fill: "#874d00" }),
-          h("circle", { cx: 32, cy: 24, r: 2.5, fill: "#874d00" }),
-          // Combination dial
-          h("circle", { cx: 0, cy: 0, r: 16, fill: "#1a1202", stroke: "#ffd700", strokeWidth: 2 }),
-          h("circle", { cx: 0, cy: 0, r: 5, fill: "#ffd700" }),
-          h("line", { x1: 0, y1: -16, x2: 0, y2: -9, stroke: "#ffd700", strokeWidth: 2 }),
+          // Facet overlay
+          h("path", { d: "M -42 -10 L 0 -34 L 42 -10 L 0 34 Z", fill: "rgba(255,255,255,0.12)" }),
+          // Lock Core
+          h("circle", { cx: 0, cy: 0, r: 16, fill: "#1c1404", stroke: "#fde68a", strokeWidth: 2 }),
+          h("circle", { cx: 0, cy: 0, r: 5, fill: "#fde68a" }),
+          h("line", { x1: 0, y1: -16, x2: 0, y2: -9, stroke: "#fde68a", strokeWidth: 2 }),
           // Vault Counter Badge
-          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#ffd591", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#fde68a", fontSize: 11, fontWeight: 700 },
             (currentLang === "ru" ? "Сейф: " : "Vault: ") + (vaultCount + vaultBonus)),
           vaultBonus > 0 && mode === "vault" ? h("text", { x: 38, y: -24, fill: "#ffd700", fontSize: 12, fontWeight: 900 }, "+1") : null
         ),
 
         // RIGHT BOTTOM: External Internet Node
         h("g", { transform: "translate(750, 172)" },
-          h("circle", { cx: 0, cy: 0, r: 36, fill: "url(#agNet)", stroke: "#5b9dff", strokeWidth: 2, filter: "url(#agGlow)" }),
-          // Globe latitude/longitude
-          h("circle", { cx: 0, cy: 0, r: 24, fill: "none", stroke: "rgba(255,255,255,0.7)", strokeWidth: 1.5 }),
-          h("ellipse", { cx: 0, cy: 0, rx: 11, ry: 24, fill: "none", stroke: "rgba(255,255,255,0.6)", strokeWidth: 1.2 }),
-          h("line", { x1: -24, y1: 0, x2: 24, y2: 0, stroke: "rgba(255,255,255,0.6)", strokeWidth: 1.2 }),
+          h("circle", { cx: 0, cy: 0, r: 36, fill: "url(#holoNetGrad)", stroke: "#38bdf8", strokeWidth: 2, filter: "url(#agGlow)" }),
+          // Holographic globe lattice
+          h("circle", { cx: 0, cy: 0, r: 24, fill: "none", stroke: "rgba(255,255,255,0.75)", strokeWidth: 1.5 }),
+          h("ellipse", { cx: 0, cy: 0, rx: 11, ry: 24, fill: "none", stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.2 }),
+          h("line", { x1: -24, y1: 0, x2: 24, y2: 0, stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.2 }),
           // Destination labels
-          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#93c5fd", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#bae6fd", fontSize: 11, fontWeight: 700 },
             currentLang === "ru" ? "Интернет" : "Internet"),
-          h("text", { x: 0, y: 64, textAnchor: "middle", fill: "#8a97ab", fontSize: 9.5 },
+          h("text", { x: 0, y: 64, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
             dest.length > 20 ? dest.slice(0, 19) + "…" : dest)
         )
       ),
