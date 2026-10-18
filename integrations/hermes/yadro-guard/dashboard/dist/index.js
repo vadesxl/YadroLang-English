@@ -709,28 +709,36 @@
           ) : null,
           // Pac-Agent Body & Dynamic Jaws
           h("g", null,
-            // Top Jaw
+            // Top Jaw (faces LEFT towards incoming packets, rotates up)
             h("path", {
-              d: "M 0 0 L 34 0 A 34 34 0 0 0 -34 0 Z",
+              d: "M 0 0 L -35 0 A 35 35 0 0 1 35 0 Z",
               fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
               stroke: coreColor, strokeWidth: 2,
               className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-top",
-              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(-45)" : undefined
+              style: { transformOrigin: "0px 0px" },
+              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(45)" : undefined
             }),
-            // Bottom Jaw
+            // Bottom Jaw (faces LEFT, rotates down)
             h("path", {
-              d: "M 0 0 L 34 0 A 34 34 0 0 1 -34 0 Z",
+              d: "M 0 0 L -35 0 A 35 35 0 0 0 35 0 Z",
               fill: mode === "vault" ? "url(#agVault)" : mode === "block" ? "url(#agDanger)" : "url(#agPatrol)",
               stroke: coreColor, strokeWidth: 2,
               className: mode === "vault" && progress > 0.3 && progress < 0.7 ? "" : "yg-pac-jaw-bottom",
-              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(45)" : undefined
+              style: { transformOrigin: "0px 0px" },
+              transform: mode === "vault" && progress > 0.3 && progress < 0.7 ? "rotate(-45)" : undefined
             }),
             // Cyber Scanner Eye Visor
-            h("rect", { x: -14, y: -16, width: 26, height: 6, rx: 3, fill: "#030712", stroke: coreColor, strokeWidth: 1.2 }),
-            h("rect", { x: -12, y: -15, width: 7, height: 4, rx: 2, fill: mode === "block" ? "#ff4d4f" : "#00f0ff", className: "yg-pac-scanner", filter: "url(#agGlow)" }),
+            h("circle", { cx: -10, cy: -18, r: 6, fill: "#030712", stroke: coreColor, strokeWidth: 1.5 }),
+            h("circle", { cx: -12, cy: -18, r: 3.2, fill: mode === "block" ? "#ff4d4f" : "#00f0ff", className: "yg-pac-scanner", filter: "url(#agGlow)" }),
+            h("circle", { cx: -13, cy: -19, r: 1.2, fill: "#ffffff" }),
+            // Forward scanner vision cone
+            h("polygon", {
+              points: "-12,-18 -70,-32 -70,-4",
+              fill: mode === "block" ? "rgba(255,77,79,0.12)" : "rgba(0,240,255,0.07)"
+            }),
             // Micro-circuit etchings
-            h("circle", { cx: -18, cy: 6, r: 2, fill: "none", stroke: coreColor, strokeWidth: 1 }),
-            h("path", { d: "M -16 6 L -6 6", stroke: coreColor, strokeWidth: 1 })
+            h("circle", { cx: 16, cy: 6, r: 2, fill: "none", stroke: coreColor, strokeWidth: 1 }),
+            h("path", { d: "M 6 6 L 16 6", stroke: coreColor, strokeWidth: 1 })
           ),
           // Pac-Agent Badge / Title
           h("text", { x: 0, y: 72, textAnchor: "middle", fill: coreColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em" },

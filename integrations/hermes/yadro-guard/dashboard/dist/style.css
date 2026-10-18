@@ -216,18 +216,18 @@ select.yg-input { appearance: auto; }
 .yg-arena-status-banner.danger { background: rgba(255,77,79,0.2); color: #ff7875; border: 1px solid rgba(255,77,79,0.45); }
 
 /* Pac-Agent Eye & Mouth Animations */
-@keyframes pacJawsTop { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-32deg); } }
-@keyframes pacJawsBottom { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(32deg); } }
-@keyframes pacScanEye { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(16px); } }
+@keyframes pacJawsTop { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(34deg); } }
+@keyframes pacJawsBottom { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-34deg); } }
+@keyframes pacScanEye { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(12px); } }
 @keyframes pacShieldBubble { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.18); opacity: 0.85; } }
 @keyframes pacRailDash { to { stroke-dashoffset: -40; } }
 @keyframes pacSparkExplode { 0% { transform: scale(0.2) rotate(0deg); opacity: 1; } 100% { transform: scale(2.2) rotate(45deg); opacity: 0; } }
 @keyframes pacVaultFlash { 0%, 100% { stroke: #f0b44a; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 4; filter: drop-shadow(0 0 12px #ffd700); } }
 
-.yg-pac-jaw-top { transform-origin: 430px 120px; animation: pacJawsTop 0.44s ease-in-out infinite; }
-.yg-pac-jaw-bottom { transform-origin: 430px 120px; animation: pacJawsBottom 0.44s ease-in-out infinite; }
+.yg-pac-jaw-top { transform-origin: 0px 0px; animation: pacJawsTop 0.36s ease-in-out infinite; }
+.yg-pac-jaw-bottom { transform-origin: 0px 0px; animation: pacJawsBottom 0.36s ease-in-out infinite; }
 .yg-pac-scanner { animation: pacScanEye 1.6s ease-in-out infinite; }
-.yg-pac-shield { transform-origin: 430px 120px; animation: pacShieldBubble 2s ease-in-out infinite; }
+.yg-pac-shield { transform-origin: 0px 0px; animation: pacShieldBubble 2s ease-in-out infinite; }
 .yg-conduit-active { stroke-dasharray: 8 6; animation: pacRailDash 1s linear infinite; }
 .yg-vault-glow { animation: pacVaultFlash 1.5s ease-in-out infinite; }
 

@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .agent/
 scratch/
+preview.html
+react.bundle.js
