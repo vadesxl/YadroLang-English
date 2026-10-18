@@ -21,9 +21,12 @@
   padding: 7px 10px; color: inherit; font: inherit; outline: none; }
 .yg-input:focus { border-color: var(--yg-accent); }
 .yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;
-  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }
+  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }
 .yg-btn:disabled { opacity: .35; cursor: default; }
-.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }
+.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); box-shadow: none; text-shadow: none; background-image: none; }
 .yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
 .yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }
@@ -42,7 +45,10 @@
 .yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }
 .yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }
 .yg-chips { margin-top: 8px; }
-.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }
+.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);
+  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }
 .yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }
 .yg-node.src { border-color: #8a5cf6; }
@@ -110,10 +116,10 @@ select.yg-input { appearance: auto; }
 /* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */
 .yg-root { display: flex; flex-direction: column; box-sizing: border-box; }
 .yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
-.yg-grid { flex: 1 0 auto; }
+.yg-grid { flex: 0 0 auto; }
 /* Live tab: history card takes all the remaining height instead of a squeezed strip */
 .yg-grid.live { display: flex; flex-direction: column; }
-.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }
+.yg-grid.live > .yg-card.grow { flex: 0 0 auto; display: flex; flex-direction: column; }
 .yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }
 .yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }
 
@@ -129,7 +135,7 @@ select.yg-input { appearance: auto; }
 .yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }
 
 /* Vault menu dropdown */
-.yg-vault-menu { display: inline-block; position: relative; }
+.yg-vault-menu { display: inline-block; position: relative; margin-left: auto; }
 .yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);
   border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }
 .yg-vault-menu-btn:hover { border-color: var(--yg-accent); }
@@ -141,9 +147,9 @@ select.yg-input { appearance: auto; }
   padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }
 .yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }
 .yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }
-.yg-vault-menu-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--yg-surface);
-  border: 1px solid var(--yg-border); border-radius: 6px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);
-  min-width: 180px; z-index: 100; }
+.yg-vault-menu-dropdown { position: absolute !important; top: calc(100% + 6px) !important; bottom: auto !important; right: 0 !important; z-index: 999 !important; background: linear-gradient(180deg, #1e2230 0%, #141722 100%);
+  border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1); padding: 6px; min-width: 180px; }
+.yg-inc, .yg-card, .yg-list { overflow: visible !important; }
 .yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;
   color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }
 .yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }
@@ -182,3 +188,11 @@ select.yg-input { appearance: auto; }
 .yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }
 .yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }
 .yg-passport .yg-btn { white-space: nowrap; }
+
+/* --- animations for VisualSecurityMap widget --- */
+@keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }
+@keyframes ygDashFlow { to { stroke-dashoffset: -70; } }
+.yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }
+.yg-shield-core { animation: ygShieldPulse 2.5s ease-in-out infinite; }
+.yg-flow-path { stroke-dasharray: 70; animation: ygDashFlow 2.2s linear infinite; }

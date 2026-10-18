@@ -102,5 +102,5 @@ def scan_actions(args: Any) -> List[RiskyAction]:
             if m and kind not in seen:
                 seen.add(kind)
                 start = max(0, m.start() - 20)
-                out.append(RiskyAction(kind, title, why, safer, path, text[start:m.end() + 20].strip()[:160]))
+                out.append(RiskyAction(kind, title, why, safer, path, text[start:m.end() + 20].strip()[:4096]))
     return out

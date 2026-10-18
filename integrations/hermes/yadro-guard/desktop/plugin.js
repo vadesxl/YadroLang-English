@@ -2,7 +2,7 @@
 import * as React from "react";
 import { host } from "@hermes/plugin-sdk";
 
-const CSS = "/* mcp-secrets-guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer; }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0; }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 1 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 260px; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n/* Trash button: hidden until its row is hovered; keep it subtle so the \u22ee remains primary. */\n.yg-vault-trash-btn { opacity: 0; transition: opacity 0.12s ease; max-width: 0; padding-left: 0; padding-right: 0;\n  border-color: transparent; overflow: hidden; }\n.yg-inc:hover .yg-vault-trash-btn, .yg-inc:focus-within .yg-vault-trash-btn { opacity: 1; max-width: 60px;\n  padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }\n.yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }\n.yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute; top: 100%; right: 0; margin-top: 4px; background: var(--yg-surface);\n  border: 1px solid var(--yg-border); border-radius: 6px; box-shadow: 0 4px 12px rgb(0 0 0 / 0.4);\n  min-width: 180px; z-index: 100; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }\n.yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }\n.yg-passport .yg-btn { white-space: nowrap; }\n";
+const CSS = "/* mcp-secrets-guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); box-shadow: none; text-shadow: none; background-image: none; }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 0 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 0 0 auto; display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; margin-left: auto; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n/* Trash button: hidden until its row is hovered; keep it subtle so the \u22ee remains primary. */\n.yg-vault-trash-btn { opacity: 0; transition: opacity 0.12s ease; max-width: 0; padding-left: 0; padding-right: 0;\n  border-color: transparent; overflow: hidden; }\n.yg-inc:hover .yg-vault-trash-btn, .yg-inc:focus-within .yg-vault-trash-btn { opacity: 1; max-width: 60px;\n  padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }\n.yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }\n.yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute !important; top: calc(100% + 6px) !important; bottom: auto !important; right: 0 !important; z-index: 999 !important; background: linear-gradient(180deg, #1e2230 0%, #141722 100%);\n  border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1); padding: 6px; min-width: 180px; }\n.yg-inc, .yg-card, .yg-list { overflow: visible !important; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }\n.yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }\n.yg-passport .yg-btn { white-space: nowrap; }\n\n/* --- animations for VisualSecurityMap widget --- */\n@keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }\n@keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }\n@keyframes ygDashFlow { to { stroke-dashoffset: -70; } }\n.yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }\n.yg-shield-core { animation: ygShieldPulse 2.5s ease-in-out infinite; }\n.yg-flow-path { stroke-dasharray: 70; animation: ygDashFlow 2.2s linear infinite; }\n";
 const API = "/api/plugins/yadro-guard";
 let rest = null;
 let GuardPage = null;
@@ -256,7 +256,7 @@ const makeGuardPage = function (SDK, onReady) {
     "Do not let an agent change antivirus settings.": "Не позволяйте агенту менять настройки антивируса.",
     "Do not retry until the user has decided, and never try to work around this block.": "Не повторяйте попытку, пока пользователь не принял решение, и никогда не пытайтесь обойти эту блокировку.",
     "Docker API without TLS": "Docker API без TLS",
-    "Download the script first, read it, then run it.": "Сначала скачайте скрипт, прочитайте его и только потом запускайте.",
+    "Download the script first, read it, then run it.": "Сначала сохраните файл на диск, проверьте его и только потом запускайте.",
     "Downloading and executing code in one step runs whatever the server sends, with your permissions.": "Скачивание и запуск кода одним действием выполняет всё, что пришлёт сервер, с вашими правами.",
     "E.Listener": "E.Listener",
     "Elasticsearch / OpenSearch": "Elasticsearch / OpenSearch",
@@ -629,7 +629,7 @@ const makeGuardPage = function (SDK, onReady) {
     "an agent": "агент",
     "and (r.get(": "and (r.get(",
     "and leaves through": "и покидают через",
-    "and never shown again here. Guard blocks any agent that tries to send it.": "и больше никогда не отображается здесь. Guard блокирует любого агента, который попытается отправить его.",
+    "and never shown again here. Guard blocks any agent that tries to send it.": "и больше никогда не отображается здесь. mcp-secrets-guard блокирует любого агента, который попытается отправить его.",
     "and store the secret encrypted": "и сохранить секрет в зашифрованном виде",
     "bad request": "некорректный запрос",
     "blocked before execution": "заблокировано до запуска",
@@ -642,6 +642,39 @@ const makeGuardPage = function (SDK, onReady) {
     "d ago": "дн назад",
     "docker -p without an address publishes the port to every network and bypasses Windows Firewall in many setups.": "docker -p без адреса публикует порт во всех сетях и во многих конфигурациях обходит брандмауэр Windows.",
     "file": "файл",
+    "Delete forever": "Удалить навсегда",
+    "Delete forever? This cannot be undone.": "Удалить навсегда? Это действие необратимо.",
+    "Move to trash": "Переместить в корзину",
+    "Move to trash? You can restore it later.": "Переместить в корзину? Позже вы сможете её восстановить.",
+    "Moved to the trash.": "Перемещено в корзину.",
+    "Deleted forever.": "Удалено навсегда.",
+    "Restored.": "Восстановлено.",
+    "Restore": "Восстановить",
+    "Rename": "Переименовать",
+    "Change kind": "Изменить категорию",
+    "New name": "Новое имя",
+    "New value": "Новое значение",
+    "Renamed.": "Переименовано.",
+    "Kind changed.": "Категория изменена.",
+    "Value replaced. Agents keep the same token.": "Значение заменено. У агентов остаётся тот же токен.",
+    "Replace value": "Заменить значение",
+    "Save a copy to Downloads": "Сохранить копию в «Загрузки»",
+    "Saved a copy to Downloads.": "Копия сохранена в «Загрузки».",
+    "Protect this secret": "Защитить этот секрет",
+    "Encrypting…": "Шифрование…",
+    "Add a file": "Добавить файл",
+    "Up to 10 MB: .env, keys, wallet files, documents.": "До 10 МБ: .env, ключи, файлы кошельков, документы.",
+    "Protected: ": "Защищено: ",
+    "Credentials": "Учётные данные",
+    "Financial": "Финансовые",
+    "PII": "Личные данные",
+    "Health": "Здоровье",
+    "Location": "Местоположение",
+    "Password, API key or token": "Пароль, API-ключ или токен",
+    "Card or bank account": "Карта или банковский счёт",
+    "Personal data (name, phone, email)": "Персональные данные (имя, телефон, email)",
+    "Medical data": "Медицинские данные",
+    "Location data": "Данные о местоположении",
     "firewall blocks it": "брандмауэр блокирует",
     "firewall is OFF": "брандмауэр выключен",
     "firewall lets it in": "брандмауэр пропускает",
@@ -808,7 +841,7 @@ const makeGuardPage = function (SDK, onReady) {
     return Promise.resolve("x" + h1.toString(16) + h2.toString(16));
   }
   function proofFooter(hash, when) {
-    return "\n\n───── Proof Seal ─────\nSHA-256: " + hash + "\nGenerated: " + when + "\nIntegrity: verified (local).\n";
+    return "\n\n———————————————— PROOF SEAL ————————————————\nSHA-256 отчёта: " + hash + "\nВремя генерации: " + when + "\nЦелостность: подтверждена (локально, без облака).\n";
   }
   // Per-incident mini-report (TXT/JSON) with Proof Seal footer. Client-side only — needs no
   // backend endpoint, works off the already-fetched incident object.
@@ -822,7 +855,7 @@ const makeGuardPage = function (SDK, onReady) {
           "ИД: " + inc.id,
           "Статус: " + (STATUS_TEXT[inc.status] || inc.status),
           "Время (локальное): " + fmtTs(inc.at),
-          "Агент: " + (inc.agent || ""),
+          "Агент: " + (inc.agent && inc.agent.session_id ? inc.agent.session_id : ""),
           "Инструмент: " + (inc.tool || ""),
           "Назначение: " + (inc.destination || ""),
         ].join("\n") + (inc.risks && inc.risks[0] ? "\nСниппет:\n" + (inc.risks[0].snippet || "") : "");
@@ -836,6 +869,27 @@ const makeGuardPage = function (SDK, onReady) {
     return String(s == null ? "" : s).replace(/[&<>]/g, function (c) {
       return c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;";
     });
+  }
+  // Resolve a human chat title for a session_id. Tries Hermes /api/sessions, then the sidebar
+  // DOM, then inc.agent.title/name. Falls back to a plain "Фоновый сеанс ИИ (№…)" label.
+  var _chatTitles = {};
+  function resolveChatTitle(sessionId) {
+    if (!sessionId) return { title: "Фоновый сеанс ИИ (№—)", id: "—" };
+    if (_chatTitles[sessionId]) return _chatTitles[sessionId];
+    var title = null;
+    try {
+      var els = document.querySelectorAll("[data-session-id], .session, .chat-item, [data-chat-id]");
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var sid = el.getAttribute("data-session-id") || el.getAttribute("data-chat-id") || el.dataset.sessionId || el.dataset.chatId;
+        var t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label") || "";
+        t = t.replace(/\s+/g, " ").trim();
+        if (sid && (sid === sessionId || sid.endsWith(sessionId)) && t) { title = t; break; }
+      }
+    } catch (e) {}
+    var out = title ? { title: "Чат \u00ab" + title + "\u00bb", id: sessionId } : { title: "Фоновый сеанс ИИ (\u2116" + String(sessionId).slice(-6) + ")", id: sessionId };
+    _chatTitles[sessionId] = out;
+    return out;
   }
   function passportText(inc, exp, vlt) {
     var L = [];
@@ -853,7 +907,8 @@ const makeGuardPage = function (SDK, onReady) {
     L.push("   Заблокировано/карантин: " + quar.length);
     L.push("   Разрешено/с защитой:    " + allo.length);
     L.push("");
-    L.push("2. ЭКСПОЗИЦИЯ — открытые сетевые порты");
+    L.push("2. ОТКРЫТЫЕ ПОРТЫ — сетевые порты");
+    var SEV_RU = { critical: "критический", high: "высокий", medium: "средний", low: "низкий" };
     if (exp && exp.status === "ok") {
       var c = exp.counts || {};
       L.push("   Оценка открытости:     " + (exp.score != null ? exp.score : "?") + "/100");
@@ -864,7 +919,7 @@ const makeGuardPage = function (SDK, onReady) {
         L.push("   Риски:");
         risky.forEach(function (l) {
           L.push("   - " + (l.proto || "?") + "/" + (l.port || "?") + "  " +
-            (l.service || l.process || "") + "  [" + (l.severity || "?") + "]");
+            (l.service || l.process || "") + "  [" + (SEV_RU[l.severity] || l.severity || "?") + "]");
         });
       } else { L.push("   Рисков не обнаружено."); }
     } else { L.push("   (сканер недоступен: " + ((exp && exp.message) || "нет данных") + ")"); }
@@ -872,15 +927,16 @@ const makeGuardPage = function (SDK, onReady) {
     L.push("3. СЕЙФ — зашифрованное хранилище секретов");
     var vitems = ((vlt && vlt.items) || []).filter(function (v) { return !v.deleted; });
     var byLabel = {};
-    vitems.forEach(function (v) { var k = v.label || "Прочее"; byLabel[k] = (byLabel[k] || 0) + 1; });
+    vitems.forEach(function (v) { var k = T(v.label || "Прочее"); byLabel[k] = (byLabel[k] || 0) + 1; });
     L.push("   Всего секретов: " + vitems.length);
     Object.keys(byLabel).forEach(function (k) { L.push("   - " + k + ": " + byLabel[k]); });
     L.push("");
     L.push("4. ЖУРНАЛ ИНЦИДЕНТОВ");
     if (items.length) {
       items.slice(0, 100).forEach(function (i) {
+        var dest = (i.destination || "?").replace(/\(via ([^)]+)\)/g, "(через $1)");
         L.push("   [" + fmtTs(i.at) + "] " + (STATUS_TEXT[i.status] || i.status) +
-          " — " + (i.tool || "?") + " → " + (i.destination || "?"));
+          " — " + (i.tool || "?") + " → " + dest);
       });
     } else { L.push("   (пусто)"); }
     L.push("");
@@ -912,19 +968,23 @@ const makeGuardPage = function (SDK, onReady) {
       "pre{white-space:pre-wrap;word-break:break-word;background:#f6f7f9;border:1px solid #e2e5ea;border-radius:8px;padding:14px;font:12px/1.5 ui-monospace,Consolas,monospace}" +
       ".seal{margin-top:18px;padding:10px 12px;border:1px dashed #8a5cf6;border-radius:8px;color:#4b2e83;font-size:12px}" +
       "@media print{body{margin:0} .noprint{display:none}}</style></head><body>" +
-      "<h1>🛡 mcp-secrets-guard — Паспорт безопасности ПК</h1>" +
-      "<div class='sub'>Сформирован: " + escHtml(when) + " · локально, без облака</div>" +
       "<button class='noprint' onclick='window.print()' style='margin-bottom:14px;padding:8px 14px;cursor:pointer'>Печать / Сохранить как PDF</button>" +
       "<pre>" + escHtml(body) + "</pre>" +
       "<div class='seal'>🔏 Proof Seal — SHA-256: " + escHtml(hash) + "<br>Сформирован: " + escHtml(when) + " · целостность подтверждена (локально)</div>" +
       "</body></html>";
-    var w = window.open("", "_blank");
-    if (!w) { blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", body, "text/plain;charset=utf-8"); return; }
-    w.document.open(); w.document.write(html); w.document.close();
+    var iframe = document.createElement("iframe");
+    iframe.style.cssText = "position:fixed;left:-10000px;top:0;width:100%;height:100%;border:0;";
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.onload = function () {
+      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+      catch (e) { iframe.remove(); blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", body, "text/plain;charset=utf-8"); }
+    };
+    iframe.srcdoc = html;
+    document.body.appendChild(iframe);
   }
   const LABEL_COLOR = { Credentials: "#8a5cf6", Financial: "#e8a33d", PII: "#e0533d", Health: "#d14fa0", Location: "#2f9fd8" };
-  const STATUS_TEXT = { pending: "Waiting for your decision", protected: "Sent with protection",
-    quarantined: "Blocked, secret quarantined", allowed: "Allowed once" };
+  const STATUS_TEXT = { pending: "Ожидает вашего решения", protected: "Отправлено с защитой",
+    quarantined: "Заблокировано, секрет в карантине", allowed: "Разрешено один раз", blocked: "Заблокировано" };
 
   function Card(p) {
     return h("div", { className: "yg-card " + (p.className || "") },
@@ -939,6 +999,38 @@ const makeGuardPage = function (SDK, onReady) {
     return h("span", { className: "yg-pill " + p.kind }, p.children);
   }
   function Empty(p) { return h("div", { className: "yg-dim" }, "● " + p.text); }
+  function VisualSecurityMap(p) {
+    var data = p.data || {}, items = (data.items || []), vaultCount = p.vaultCount || 0;
+    var blocked = items.some(function(i){ return i.status==="blocked"||i.status==="quarantined"; });
+    var intercepted = items.some(function(i){ return i.status==="protected"; });
+    var sc = blocked ? "#e25555" : intercepted ? "#b45bc4" : "#3ec46d";
+    var chatName = "Ожидание команд", chatId = "\u2014", dest = "Сеть под контролем";
+    items.forEach(function(i){ if (i.agent && i.agent.session_id) { var c = resolveChatTitle(i.agent.session_id); chatName = c.title; chatId = c.id; } if (i.destination) dest = i.destination; });
+    var s0 = useState(false), demo = s0[0], setDemo = s0[1];
+    var s1 = useState(0), demoT = s1[0], setDemoT = s1[1];
+    function startDemo(){ setDemo(true); setDemoT(0); var t = setInterval(function(){ setDemoT(function(v){ return v>=100 ? (clearInterval(t), setDemo(false), 100) : v+5; }); }, 50); }
+    var cx = 350, cy = 90, ip = demoT / 100, imp = demo ? "rgba(255,255,255,0.9)" : "rgba(120,160,255,0.55)";
+    return h("div", { className: "yg-card yg-vismap wide", style: { marginBottom: 10 } },
+      h("svg", { width: "100%", height: 180, viewBox: "0 0 700 180", style: { display: "block", background: "rgba(15,18,26,0.5)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.10)" } },
+        h("defs", null,
+          h("linearGradient", { id: "gSh", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:sc}), h("stop",{offset:"100%",stopColor:sc})),
+          h("linearGradient", { id: "gCh", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:"#8a5cf6"}), h("stop",{offset:"100%",stopColor:"#4a1d7a"})),
+          h("linearGradient", { id: "gVl", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:"#e8a33d"}), h("stop",{offset:"100%",stopColor:"#a66a1e"})),
+          h("filter", { id: "gl" }, h("feGaussianBlur", { stdDeviation: "3", result: "cb" }), h("feMerge", null, h("feMergeNode", { "in": "cb" }), h("feMergeNode", { "in": "SourceGraphic" })))),
+        h("path", { className: "yg-flow-path", d: "M 100 90 Q 190 50 300 75", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
+        h("path", { className: "yg-flow-path", d: "M 400 80 Q 500 40 555 62", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
+        h("path", { className: "yg-flow-path", d: "M 400 100 Q 500 140 555 118", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
+        h("circle", { cx: 100 + 200*ip, cy: 90 - 40*ip, r: 4, fill: imp, filter: "url(#gl)" }),
+        h("g", { transform: "translate(70,78)" }, h("circle", { r: 30, fill: "url(#gCh)", filter: "url(#gl)" }), h("text", { x: 0, y: 6, textAnchor: "middle", fill: "#fff", fontSize: 20 }, "\ud83e\udd16"), h("text", { x: 0, y: 36, textAnchor: "middle", fill: "#cfd8ea", fontSize: 10, fontWeight: 700 }, chatName.length>16?chatName.slice(0,15)+"…":chatName), h("text", { x: 0, y: 49, textAnchor: "middle", fill: "#8a97ab", fontSize: 9 }, chatId)),
+        h("g", { transform: "translate(" + (cx-34) + "," + (cy-34) + ")" }, h("path", { d: "M 0 42 L 17 -30 L 34 42 Z", fill: "url(#gSh)", stroke: "#fff", strokeWidth: 1.5, filter: "url(#gl)" }), h("circle", { cx: 17, cy: 6, r: 11, fill: sc, filter: "url(#gl)", className: "yg-shield-core" }), h("text", { x: 17, y: 10, textAnchor: "middle", fill: "#000", fontSize: 10, fontWeight: 700 }, "\u2713"), h("text", { x: 17, y: 48, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9.5, fontWeight: 700 }, "Щит-сканер")),
+        h("g", { transform: "translate(540,48)" }, h("rect", { x: 0, y: 0, width: 30, height: 24, rx: 4, fill: "url(#gVl)", filter: "url(#gl)" }), h("text", { x: 15, y: 16, textAnchor: "middle", fill: "#000", fontSize: 10, fontWeight: 700 }, "\ud83d\udd12"), h("text", { x: 15, y: 32, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9, fontWeight: 700 }, "Сейф: " + vaultCount)),
+        h("g", { transform: "translate(540,102)" }, h("circle", { cx: 15, cy: 12, r: 13, fill: "none", stroke: "#5b8def", strokeWidth: 2.5, filter: "url(#gl)" }), h("path", { d: "M 3 12 Q 15 2 27 12 T 15 22 Z", fill: "none", stroke: "#5b8def", strokeWidth: 2 }), h("text", { x: 15, y: 30, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9, fontWeight: 700 }, "Интернет"), h("text", { x: 15, y: 42, textAnchor: "middle", fill: "#8a97ab", fontSize: 8 }, dest.length>14?dest.slice(0,13)+"…":dest))
+      ),
+      h("div", { className: "yg-vismap-cards", style: { display: "flex", gap: 8, marginTop: 10 } },         h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Состояние компьютера"), h("div", { className: "yg-big", style: { color: sc, marginTop: 4 } }, blocked ? "\u26a0 Атака отражена" : intercepted ? "\ud83d\udcc8 Секрет замаскирован" : "\u2705 Защита работает"), h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } }, "Все действия ИИ проверяются до запуска.")),
+        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Последняя проверка"), h("div", { className: "yg-big", style: { marginTop: 4 } }, items.length ? ("\u201b" + chatName + "\u201d попытался \u2014 остановлено") : "\u2014"), h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } }, dest)),
+        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Демо"), h("button", { className: "yg-btn good", onClick: startDemo, disabled: demo, style: { width: "100%", marginTop: 5 } }, demo ? "\u23f1\ufe0f Идёт проверка…" : "\u26a1 Наглядная проверка защиты (Демо)"), h("div", { className: "yg-dim yg-small", style: { marginTop: 4 } }, demo ? "Пароль перехвачен и заменён маской." : "")) )
+    );
+  }
   // Masked secret with a hold-to-show eye. The full value is fetched only while the button is
   // held (audited on the server), lives only in this component's state and is dropped on release,
   // after 10 s, or on unmount.
@@ -993,7 +1085,8 @@ const makeGuardPage = function (SDK, onReady) {
         .catch(function () { setRuleBusy(""); setNote("Не удалось связаться с бэкендом Guard."); });
     }
     const domain = (inc.destination || "").replace(/^[a-z]+:\/\//i, "").split(/[/?#]/)[0] || "";
-    const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const chat = inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null;
+    const who = chat ? chat.title : (inc.agent && inc.agent.session_id ? "Фоновый сеанс ИИ (№" + String(inc.agent.session_id).slice(-6) + ")" : "ИИ-агент");
     const fullCmd = ((inc.tool || "") + " " + (inc.destination || "")).trim() +
       ((inc.risks || []).length ? "  # " + inc.risks[0].snippet : "") +
       ((inc.agent && inc.agent.session_id) ? "  // session " + inc.agent.session_id : "");
@@ -1019,19 +1112,17 @@ const makeGuardPage = function (SDK, onReady) {
               onClick: function () { makeRule("allow", "tool", inc.tool); } }, "✓ Всегда разрешать инструмент " + inc.tool) : null) : null),
         h("span", { style: { width: "0" } })),
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
-        "Агент ", h("b", null, who), " попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
+        "В чате ", h("b", null, who), " ИИ-помощник попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
         " для отправки данных в ", h("b", { className: "yg-mono" }, inc.destination), ".") : null,
       fullCmd ? h("div", { className: "yg-fullcmd" },
         h("div", { className: "yg-fullcmd-head" },
-          h("details", { className: "yg-gaps" },
-            h("summary", null, "Полная команда"),
-            h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCmd)),
+          h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCmd),
           h("button", { type: "button", className: "yg-btn ghost yg-copy", onClick: function () { copyText(fullCmd); } }, "⧉ Копировать команду"),
           h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "txt"); } }, "Отчёт TXT"),
           h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "json"); } }, "Отчёт JSON"))) : null,
       (inc.risks || []).map(function (r, i) {
         return h("div", { className: "yg-risk", key: "r" + i },
-          h("div", null, "Агент ", h("b", null, who), " попытался: ", h("b", null, r.title), "."),
+          h("div", null, "В чате ", h("b", null, who), " ИИ-помощник попытался: ", h("b", null, r.title), "."),
           h("div", { className: "yg-dim" }, r.why),
           h("div", { className: "yg-diff old" }, r.snippet),
           h("div", { className: "yg-ok yg-small" }, "Безопаснее: " + r.safer));
@@ -1046,8 +1137,7 @@ const makeGuardPage = function (SDK, onReady) {
             f.token ? h("span", { className: "yg-dim" }, "→ " + f.token.slice(0, 24) + "…") : null);
         })),
       inc.process ? h("div", { className: "yg-dim yg-small" },
-        "Процесс: " + (inc.process.name || "?") + " (pid " + inc.process.pid + ")" +
-        (inc.agent && inc.agent.task_id ? " · задача " + inc.agent.task_id.slice(0, 12) : "")) : null,
+        "Программа: " + (inc.process.name || "Hermes") + " · Сеанс №" + (inc.agent && inc.agent.session_id ? String(inc.agent.session_id).slice(-10) : "—") + " (системный процесс " + inc.process.pid + ")") : null,
       pending ? h("div", { className: "yg-actions" },
         (inc.findings || []).length && !(inc.risks || []).length ? h("button", { className: "yg-btn good", disabled: !!busy,
           onClick: function () { choose("protect"); },
@@ -1076,7 +1166,8 @@ const makeGuardPage = function (SDK, onReady) {
     textAlign: "center", letterSpacing: "0" };
   function GuardToast(p) {
     const inc = p.inc;
-    const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const chatT = inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null;
+    const who = chatT ? chatT.title : (inc.agent && inc.agent.session_id ? "Фоновый сеанс ИИ (№" + String(inc.agent.session_id).slice(-6) + ")" : "ИИ-агент");
     const findings = inc.findings || [];
     const f = findings.length ? findings[0] : null;
     return h("div", { className: "yg-toast", role: "alert", "aria-live": "assertive", style: TOAST_BOX },
@@ -1085,8 +1176,8 @@ const makeGuardPage = function (SDK, onReady) {
         h("span", { className: "yg-dim yg-small yg-right" }, p.count > 1 ? "1 of " + p.count + " waiting" : ago(inc.at)),
         h("button", { type: "button", className: "yg-btn ghost", style: { padding: "2px 7px", fontSize: "11px" },
           title: "Hide. The counter stays on the Guard tab.", onClick: p.onDismiss }, "✕")),
-      h("div", { className: "yg-inc-story" }, "Agent ", h("b", null, who), " tried to use the tool ",
-        h("b", { className: "yg-mono" }, inc.tool || "?"), " to send data to ",
+      h("div", { className: "yg-inc-story" }, "В чате ", h("b", null, who), " ИИ-помощник попытался использовать инструмент ",
+        h("b", { className: "yg-mono" }, inc.tool || "?"), " для отправки данных в ",
         h("b", { className: "yg-mono" }, inc.destination || "?"), "."),
       f ? h("div", { className: "yg-row" },
         h(Chip, { label: { id: f.label, label: f.title } }),
@@ -1141,6 +1232,7 @@ const makeGuardPage = function (SDK, onReady) {
     const FILTERS = [["all", "Все"], ["blocked", "Заблокировано"], ["allowed", "Разрешено"]];
     return h(React.Fragment, null,
       h(Card, { title: "live protection", className: "wide" },
+        h(VisualSecurityMap, { data: data }),
         h("div", { className: "yg-shield " + (pending.length ? "bad" : "ok") },
           h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Защищено"),
           h("span", { className: "yg-dim" }, pending.length
@@ -1408,7 +1500,7 @@ const makeGuardPage = function (SDK, onReady) {
       setBusy(true); setMsg(null);
       post("/vault", { secret: secret, label: label })
         .then(function (r) {
-          if (r.status === "ok") { setSecret(""); setMsg({ ok: true, text: "Saved. Agents now get the token " + r.token.slice(0, 26) + "… instead of the real value, and any attempt to send the real value is blocked." }); p.onChanged(); }
+          if (r.status === "ok") { setSecret(""); setMsg({ ok: true, text: T("Saved. Agents now get the token ") + r.token.slice(0, 26) + T("… instead of the real value, and any attempt to send the real value is blocked.") }); p.onChanged(); }
           else setMsg({ ok: false, text: r.message || "Could not save." });
         })
         .catch(function () { setMsg({ ok: false, text: "Could not reach the Guard backend." }); })
@@ -1445,8 +1537,8 @@ const makeGuardPage = function (SDK, onReady) {
       rd.readAsDataURL(f);
     }
     return h(Card, { title: "vault · your secrets, encrypted", className: "wide" },
-      h("div", { className: "yg-dim yg-small" }, "Add a secret you want to protect. It is encrypted with your Windows account " +
-        "and never shown again here. Guard blocks any agent that tries to send it."),
+      h("div", { className: "yg-dim yg-small" }, T("Add a secret you want to protect. It is encrypted with your Windows account ") +
+        T("and never shown again here. Guard blocks any agent that tries to send it.")),
       h("input", { className: "yg-input", type: "password", autoComplete: "off", placeholder: "Paste the secret value",
         value: secret, onChange: function (e) { setSecret(e.target.value); } }),
       // Buttons instead of a native <select>: its dropdown is drawn by the OS (white list,
@@ -1502,7 +1594,7 @@ const makeGuardPage = function (SDK, onReady) {
     return h("div", { className: "yg-inc done" },
       h("div", { className: "yg-inc-top" },
         h(Chip, { label: { id: v.label, label: v.title || v.filename || v.label } }),
-        h("span", { className: "yg-dim yg-small" }, v.kind === "file" ? T("file") + " · " + fmtSize(v.size || 0) : T("text")),
+        h("span", { className: "yg-dim yg-small" }, v.kind === "file" ? T("file") + " · " + fmtSize(v.size || 0) : (v.token ? v.token.slice(0, 12) + "…" : T("text"))),
         h("span", { className: "yg-dim yg-small" }, v.source === "runtime-quarantine" ? "quarantined from an agent" : "added by you"),
         h("span", { className: "yg-dim yg-small yg-right" }, ago(v.changed || v.created)),
         // One compact ⋮ per row; all four actions live in the dropdown.

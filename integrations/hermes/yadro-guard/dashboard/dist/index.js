@@ -241,7 +241,7 @@
     "Do not let an agent change antivirus settings.": "Не позволяйте агенту менять настройки антивируса.",
     "Do not retry until the user has decided, and never try to work around this block.": "Не повторяйте попытку, пока пользователь не принял решение, и никогда не пытайтесь обойти эту блокировку.",
     "Docker API without TLS": "Docker API без TLS",
-    "Download the script first, read it, then run it.": "Сначала скачайте скрипт, прочитайте его и только потом запускайте.",
+    "Download the script first, read it, then run it.": "Сначала сохраните файл на диск, проверьте его и только потом запускайте.",
     "Downloading and executing code in one step runs whatever the server sends, with your permissions.": "Скачивание и запуск кода одним действием выполняет всё, что пришлёт сервер, с вашими правами.",
     "E.Listener": "E.Listener",
     "Elasticsearch / OpenSearch": "Elasticsearch / OpenSearch",
@@ -614,7 +614,7 @@
     "an agent": "агент",
     "and (r.get(": "and (r.get(",
     "and leaves through": "и покидают через",
-    "and never shown again here. Guard blocks any agent that tries to send it.": "и больше никогда не отображается здесь. Guard блокирует любого агента, который попытается отправить его.",
+    "and never shown again here. Guard blocks any agent that tries to send it.": "и больше никогда не отображается здесь. mcp-secrets-guard блокирует любого агента, который попытается отправить его.",
     "and store the secret encrypted": "и сохранить секрет в зашифрованном виде",
     "bad request": "некорректный запрос",
     "blocked before execution": "заблокировано до запуска",
@@ -627,6 +627,39 @@
     "d ago": "дн назад",
     "docker -p without an address publishes the port to every network and bypasses Windows Firewall in many setups.": "docker -p без адреса публикует порт во всех сетях и во многих конфигурациях обходит брандмауэр Windows.",
     "file": "файл",
+    "Delete forever": "Удалить навсегда",
+    "Delete forever? This cannot be undone.": "Удалить навсегда? Это действие необратимо.",
+    "Move to trash": "Переместить в корзину",
+    "Move to trash? You can restore it later.": "Переместить в корзину? Позже вы сможете её восстановить.",
+    "Moved to the trash.": "Перемещено в корзину.",
+    "Deleted forever.": "Удалено навсегда.",
+    "Restored.": "Восстановлено.",
+    "Restore": "Восстановить",
+    "Rename": "Переименовать",
+    "Change kind": "Изменить категорию",
+    "New name": "Новое имя",
+    "New value": "Новое значение",
+    "Renamed.": "Переименовано.",
+    "Kind changed.": "Категория изменена.",
+    "Value replaced. Agents keep the same token.": "Значение заменено. У агентов остаётся тот же токен.",
+    "Replace value": "Заменить значение",
+    "Save a copy to Downloads": "Сохранить копию в «Загрузки»",
+    "Saved a copy to Downloads.": "Копия сохранена в «Загрузки».",
+    "Protect this secret": "Защитить этот секрет",
+    "Encrypting…": "Шифрование…",
+    "Add a file": "Добавить файл",
+    "Up to 10 MB: .env, keys, wallet files, documents.": "До 10 МБ: .env, ключи, файлы кошельков, документы.",
+    "Protected: ": "Защищено: ",
+    "Credentials": "Учётные данные",
+    "Financial": "Финансовые",
+    "PII": "Личные данные",
+    "Health": "Здоровье",
+    "Location": "Местоположение",
+    "Password, API key or token": "Пароль, API-ключ или токен",
+    "Card or bank account": "Карта или банковский счёт",
+    "Personal data (name, phone, email)": "Персональные данные (имя, телефон, email)",
+    "Medical data": "Медицинские данные",
+    "Location data": "Данные о местоположении",
     "firewall blocks it": "брандмауэр блокирует",
     "firewall is OFF": "брандмауэр выключен",
     "firewall lets it in": "брандмауэр пропускает",
@@ -793,7 +826,7 @@
     return Promise.resolve("x" + h1.toString(16) + h2.toString(16));
   }
   function proofFooter(hash, when) {
-    return "\n\n───── Proof Seal ─────\nSHA-256: " + hash + "\nGenerated: " + when + "\nIntegrity: verified (local).\n";
+    return "\n\n———————————————— PROOF SEAL ————————————————\nSHA-256 отчёта: " + hash + "\nВремя генерации: " + when + "\nЦелостность: подтверждена (локально, без облака).\n";
   }
   // Per-incident mini-report (TXT/JSON) with Proof Seal footer. Client-side only — needs no
   // backend endpoint, works off the already-fetched incident object.
@@ -807,7 +840,7 @@
           "ИД: " + inc.id,
           "Статус: " + (STATUS_TEXT[inc.status] || inc.status),
           "Время (локальное): " + fmtTs(inc.at),
-          "Агент: " + (inc.agent || ""),
+          "Агент: " + (inc.agent && inc.agent.session_id ? inc.agent.session_id : ""),
           "Инструмент: " + (inc.tool || ""),
           "Назначение: " + (inc.destination || ""),
         ].join("\n") + (inc.risks && inc.risks[0] ? "\nСниппет:\n" + (inc.risks[0].snippet || "") : "");
@@ -821,6 +854,27 @@
     return String(s == null ? "" : s).replace(/[&<>]/g, function (c) {
       return c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;";
     });
+  }
+  // Resolve a human chat title for a session_id. Tries Hermes /api/sessions, then the sidebar
+  // DOM, then inc.agent.title/name. Falls back to a plain "Фоновый сеанс ИИ (№…)" label.
+  var _chatTitles = {};
+  function resolveChatTitle(sessionId) {
+    if (!sessionId) return { title: "Фоновый сеанс ИИ (№—)", id: "—" };
+    if (_chatTitles[sessionId]) return _chatTitles[sessionId];
+    var title = null;
+    try {
+      var els = document.querySelectorAll("[data-session-id], .session, .chat-item, [data-chat-id]");
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var sid = el.getAttribute("data-session-id") || el.getAttribute("data-chat-id") || el.dataset.sessionId || el.dataset.chatId;
+        var t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label") || "";
+        t = t.replace(/\s+/g, " ").trim();
+        if (sid && (sid === sessionId || sid.endsWith(sessionId)) && t) { title = t; break; }
+      }
+    } catch (e) {}
+    var out = title ? { title: "Чат \u00ab" + title + "\u00bb", id: sessionId } : { title: "Фоновый сеанс ИИ (\u2116" + String(sessionId).slice(-6) + ")", id: sessionId };
+    _chatTitles[sessionId] = out;
+    return out;
   }
   function passportText(inc, exp, vlt) {
     var L = [];
@@ -838,7 +892,8 @@
     L.push("   Заблокировано/карантин: " + quar.length);
     L.push("   Разрешено/с защитой:    " + allo.length);
     L.push("");
-    L.push("2. ЭКСПОЗИЦИЯ — открытые сетевые порты");
+    L.push("2. ОТКРЫТЫЕ ПОРТЫ — сетевые порты");
+    var SEV_RU = { critical: "критический", high: "высокий", medium: "средний", low: "низкий" };
     if (exp && exp.status === "ok") {
       var c = exp.counts || {};
       L.push("   Оценка открытости:     " + (exp.score != null ? exp.score : "?") + "/100");
@@ -849,7 +904,7 @@
         L.push("   Риски:");
         risky.forEach(function (l) {
           L.push("   - " + (l.proto || "?") + "/" + (l.port || "?") + "  " +
-            (l.service || l.process || "") + "  [" + (l.severity || "?") + "]");
+            (l.service || l.process || "") + "  [" + (SEV_RU[l.severity] || l.severity || "?") + "]");
         });
       } else { L.push("   Рисков не обнаружено."); }
     } else { L.push("   (сканер недоступен: " + ((exp && exp.message) || "нет данных") + ")"); }
@@ -857,15 +912,16 @@
     L.push("3. СЕЙФ — зашифрованное хранилище секретов");
     var vitems = ((vlt && vlt.items) || []).filter(function (v) { return !v.deleted; });
     var byLabel = {};
-    vitems.forEach(function (v) { var k = v.label || "Прочее"; byLabel[k] = (byLabel[k] || 0) + 1; });
+    vitems.forEach(function (v) { var k = T(v.label || "Прочее"); byLabel[k] = (byLabel[k] || 0) + 1; });
     L.push("   Всего секретов: " + vitems.length);
     Object.keys(byLabel).forEach(function (k) { L.push("   - " + k + ": " + byLabel[k]); });
     L.push("");
     L.push("4. ЖУРНАЛ ИНЦИДЕНТОВ");
     if (items.length) {
       items.slice(0, 100).forEach(function (i) {
+        var dest = (i.destination || "?").replace(/\(via ([^)]+)\)/g, "(через $1)");
         L.push("   [" + fmtTs(i.at) + "] " + (STATUS_TEXT[i.status] || i.status) +
-          " — " + (i.tool || "?") + " → " + (i.destination || "?"));
+          " — " + (i.tool || "?") + " → " + dest);
       });
     } else { L.push("   (пусто)"); }
     L.push("");
@@ -897,19 +953,23 @@
       "pre{white-space:pre-wrap;word-break:break-word;background:#f6f7f9;border:1px solid #e2e5ea;border-radius:8px;padding:14px;font:12px/1.5 ui-monospace,Consolas,monospace}" +
       ".seal{margin-top:18px;padding:10px 12px;border:1px dashed #8a5cf6;border-radius:8px;color:#4b2e83;font-size:12px}" +
       "@media print{body{margin:0} .noprint{display:none}}</style></head><body>" +
-      "<h1>🛡 mcp-secrets-guard — Паспорт безопасности ПК</h1>" +
-      "<div class='sub'>Сформирован: " + escHtml(when) + " · локально, без облака</div>" +
       "<button class='noprint' onclick='window.print()' style='margin-bottom:14px;padding:8px 14px;cursor:pointer'>Печать / Сохранить как PDF</button>" +
       "<pre>" + escHtml(body) + "</pre>" +
       "<div class='seal'>🔏 Proof Seal — SHA-256: " + escHtml(hash) + "<br>Сформирован: " + escHtml(when) + " · целостность подтверждена (локально)</div>" +
       "</body></html>";
-    var w = window.open("", "_blank");
-    if (!w) { blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", body, "text/plain;charset=utf-8"); return; }
-    w.document.open(); w.document.write(html); w.document.close();
+    var iframe = document.createElement("iframe");
+    iframe.style.cssText = "position:fixed;left:-10000px;top:0;width:100%;height:100%;border:0;";
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.onload = function () {
+      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+      catch (e) { iframe.remove(); blobDownload("security-passport-" + Math.floor(Date.now() / 1000) + ".txt", body, "text/plain;charset=utf-8"); }
+    };
+    iframe.srcdoc = html;
+    document.body.appendChild(iframe);
   }
   const LABEL_COLOR = { Credentials: "#8a5cf6", Financial: "#e8a33d", PII: "#e0533d", Health: "#d14fa0", Location: "#2f9fd8" };
-  const STATUS_TEXT = { pending: "Waiting for your decision", protected: "Sent with protection",
-    quarantined: "Blocked, secret quarantined", allowed: "Allowed once" };
+  const STATUS_TEXT = { pending: "Ожидает вашего решения", protected: "Отправлено с защитой",
+    quarantined: "Заблокировано, секрет в карантине", allowed: "Разрешено один раз", blocked: "Заблокировано" };
 
   function Card(p) {
     return h("div", { className: "yg-card " + (p.className || "") },
@@ -924,6 +984,38 @@
     return h("span", { className: "yg-pill " + p.kind }, p.children);
   }
   function Empty(p) { return h("div", { className: "yg-dim" }, "● " + p.text); }
+  function VisualSecurityMap(p) {
+    var data = p.data || {}, items = (data.items || []), vaultCount = p.vaultCount || 0;
+    var blocked = items.some(function(i){ return i.status==="blocked"||i.status==="quarantined"; });
+    var intercepted = items.some(function(i){ return i.status==="protected"; });
+    var sc = blocked ? "#e25555" : intercepted ? "#b45bc4" : "#3ec46d";
+    var chatName = "Ожидание команд", chatId = "\u2014", dest = "Сеть под контролем";
+    items.forEach(function(i){ if (i.agent && i.agent.session_id) { var c = resolveChatTitle(i.agent.session_id); chatName = c.title; chatId = c.id; } if (i.destination) dest = i.destination; });
+    var s0 = useState(false), demo = s0[0], setDemo = s0[1];
+    var s1 = useState(0), demoT = s1[0], setDemoT = s1[1];
+    function startDemo(){ setDemo(true); setDemoT(0); var t = setInterval(function(){ setDemoT(function(v){ return v>=100 ? (clearInterval(t), setDemo(false), 100) : v+5; }); }, 50); }
+    var cx = 350, cy = 90, ip = demoT / 100, imp = demo ? "rgba(255,255,255,0.9)" : "rgba(120,160,255,0.55)";
+    return h("div", { className: "yg-card yg-vismap wide", style: { marginBottom: 10 } },
+      h("svg", { width: "100%", height: 180, viewBox: "0 0 700 180", style: { display: "block", background: "rgba(15,18,26,0.5)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.10)" } },
+        h("defs", null,
+          h("linearGradient", { id: "gSh", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:sc}), h("stop",{offset:"100%",stopColor:sc})),
+          h("linearGradient", { id: "gCh", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:"#8a5cf6"}), h("stop",{offset:"100%",stopColor:"#4a1d7a"})),
+          h("linearGradient", { id: "gVl", x1:0,y1:0,x2:0,y2:1 }, h("stop",{offset:"0%",stopColor:"#e8a33d"}), h("stop",{offset:"100%",stopColor:"#a66a1e"})),
+          h("filter", { id: "gl" }, h("feGaussianBlur", { stdDeviation: "3", result: "cb" }), h("feMerge", null, h("feMergeNode", { "in": "cb" }), h("feMergeNode", { "in": "SourceGraphic" })))),
+        h("path", { className: "yg-flow-path", d: "M 100 90 Q 190 50 300 75", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
+        h("path", { className: "yg-flow-path", d: "M 400 80 Q 500 40 555 62", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
+        h("path", { className: "yg-flow-path", d: "M 400 100 Q 500 140 555 118", fill: "none", stroke: "rgba(255,255,255,0.14)", strokeWidth: 2 }),
+        h("circle", { cx: 100 + 200*ip, cy: 90 - 40*ip, r: 4, fill: imp, filter: "url(#gl)" }),
+        h("g", { transform: "translate(70,78)" }, h("circle", { r: 30, fill: "url(#gCh)", filter: "url(#gl)" }), h("text", { x: 0, y: 6, textAnchor: "middle", fill: "#fff", fontSize: 20 }, "\ud83e\udd16"), h("text", { x: 0, y: 36, textAnchor: "middle", fill: "#cfd8ea", fontSize: 10, fontWeight: 700 }, chatName.length>16?chatName.slice(0,15)+"…":chatName), h("text", { x: 0, y: 49, textAnchor: "middle", fill: "#8a97ab", fontSize: 9 }, chatId)),
+        h("g", { transform: "translate(" + (cx-34) + "," + (cy-34) + ")" }, h("path", { d: "M 0 42 L 17 -30 L 34 42 Z", fill: "url(#gSh)", stroke: "#fff", strokeWidth: 1.5, filter: "url(#gl)" }), h("circle", { cx: 17, cy: 6, r: 11, fill: sc, filter: "url(#gl)", className: "yg-shield-core" }), h("text", { x: 17, y: 10, textAnchor: "middle", fill: "#000", fontSize: 10, fontWeight: 700 }, "\u2713"), h("text", { x: 17, y: 48, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9.5, fontWeight: 700 }, "Щит-сканер")),
+        h("g", { transform: "translate(540,48)" }, h("rect", { x: 0, y: 0, width: 30, height: 24, rx: 4, fill: "url(#gVl)", filter: "url(#gl)" }), h("text", { x: 15, y: 16, textAnchor: "middle", fill: "#000", fontSize: 10, fontWeight: 700 }, "\ud83d\udd12"), h("text", { x: 15, y: 32, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9, fontWeight: 700 }, "Сейф: " + vaultCount)),
+        h("g", { transform: "translate(540,102)" }, h("circle", { cx: 15, cy: 12, r: 13, fill: "none", stroke: "#5b8def", strokeWidth: 2.5, filter: "url(#gl)" }), h("path", { d: "M 3 12 Q 15 2 27 12 T 15 22 Z", fill: "none", stroke: "#5b8def", strokeWidth: 2 }), h("text", { x: 15, y: 30, textAnchor: "middle", fill: "#cfd8ea", fontSize: 9, fontWeight: 700 }, "Интернет"), h("text", { x: 15, y: 42, textAnchor: "middle", fill: "#8a97ab", fontSize: 8 }, dest.length>14?dest.slice(0,13)+"…":dest))
+      ),
+      h("div", { className: "yg-vismap-cards", style: { display: "flex", gap: 8, marginTop: 10 } },         h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Состояние компьютера"), h("div", { className: "yg-big", style: { color: sc, marginTop: 4 } }, blocked ? "\u26a0 Атака отражена" : intercepted ? "\ud83d\udcc8 Секрет замаскирован" : "\u2705 Защита работает"), h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } }, "Все действия ИИ проверяются до запуска.")),
+        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Последняя проверка"), h("div", { className: "yg-big", style: { marginTop: 4 } }, items.length ? ("\u201b" + chatName + "\u201d попытался \u2014 остановлено") : "\u2014"), h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } }, dest)),
+        h("div", { className: "yg-card", style: { flex: 1, padding: 8 } }, h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } }, "Демо"), h("button", { className: "yg-btn good", onClick: startDemo, disabled: demo, style: { width: "100%", marginTop: 5 } }, demo ? "\u23f1\ufe0f Идёт проверка…" : "\u26a1 Наглядная проверка защиты (Демо)"), h("div", { className: "yg-dim yg-small", style: { marginTop: 4 } }, demo ? "Пароль перехвачен и заменён маской." : "")) )
+    );
+  }
   // Masked secret with a hold-to-show eye. The full value is fetched only while the button is
   // held (audited on the server), lives only in this component's state and is dropped on release,
   // after 10 s, or on unmount.
@@ -978,7 +1070,8 @@
         .catch(function () { setRuleBusy(""); setNote("Не удалось связаться с бэкендом Guard."); });
     }
     const domain = (inc.destination || "").replace(/^[a-z]+:\/\//i, "").split(/[/?#]/)[0] || "";
-    const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const chat = inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null;
+    const who = chat ? chat.title : (inc.agent && inc.agent.session_id ? "Фоновый сеанс ИИ (№" + String(inc.agent.session_id).slice(-6) + ")" : "ИИ-агент");
     const fullCmd = ((inc.tool || "") + " " + (inc.destination || "")).trim() +
       ((inc.risks || []).length ? "  # " + inc.risks[0].snippet : "") +
       ((inc.agent && inc.agent.session_id) ? "  // session " + inc.agent.session_id : "");
@@ -1004,19 +1097,17 @@
               onClick: function () { makeRule("allow", "tool", inc.tool); } }, "✓ Всегда разрешать инструмент " + inc.tool) : null) : null),
         h("span", { style: { width: "0" } })),
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
-        "Агент ", h("b", null, who), " попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
+        "В чате ", h("b", null, who), " ИИ-помощник попытался использовать инструмент ", h("b", { className: "yg-mono" }, inc.tool),
         " для отправки данных в ", h("b", { className: "yg-mono" }, inc.destination), ".") : null,
       fullCmd ? h("div", { className: "yg-fullcmd" },
         h("div", { className: "yg-fullcmd-head" },
-          h("details", { className: "yg-gaps" },
-            h("summary", null, "Полная команда"),
-            h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCmd)),
+          h("pre", { className: "yg-mono yg-fullcmd-pre" }, fullCmd),
           h("button", { type: "button", className: "yg-btn ghost yg-copy", onClick: function () { copyText(fullCmd); } }, "⧉ Копировать команду"),
           h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "txt"); } }, "Отчёт TXT"),
           h("button", { type: "button", className: "yg-btn ghost", onClick: function () { miniReport(inc, "json"); } }, "Отчёт JSON"))) : null,
       (inc.risks || []).map(function (r, i) {
         return h("div", { className: "yg-risk", key: "r" + i },
-          h("div", null, "Агент ", h("b", null, who), " попытался: ", h("b", null, r.title), "."),
+          h("div", null, "В чате ", h("b", null, who), " ИИ-помощник попытался: ", h("b", null, r.title), "."),
           h("div", { className: "yg-dim" }, r.why),
           h("div", { className: "yg-diff old" }, r.snippet),
           h("div", { className: "yg-ok yg-small" }, "Безопаснее: " + r.safer));
@@ -1031,8 +1122,7 @@
             f.token ? h("span", { className: "yg-dim" }, "→ " + f.token.slice(0, 24) + "…") : null);
         })),
       inc.process ? h("div", { className: "yg-dim yg-small" },
-        "Процесс: " + (inc.process.name || "?") + " (pid " + inc.process.pid + ")" +
-        (inc.agent && inc.agent.task_id ? " · задача " + inc.agent.task_id.slice(0, 12) : "")) : null,
+        "Программа: " + (inc.process.name || "Hermes") + " · Сеанс №" + (inc.agent && inc.agent.session_id ? String(inc.agent.session_id).slice(-10) : "—") + " (системный процесс " + inc.process.pid + ")") : null,
       pending ? h("div", { className: "yg-actions" },
         (inc.findings || []).length && !(inc.risks || []).length ? h("button", { className: "yg-btn good", disabled: !!busy,
           onClick: function () { choose("protect"); },
@@ -1061,7 +1151,8 @@
     textAlign: "center", letterSpacing: "0" };
   function GuardToast(p) {
     const inc = p.inc;
-    const who = inc.agent && inc.agent.session_id ? "session " + inc.agent.session_id.slice(0, 12) : "an agent";
+    const chatT = inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null;
+    const who = chatT ? chatT.title : (inc.agent && inc.agent.session_id ? "Фоновый сеанс ИИ (№" + String(inc.agent.session_id).slice(-6) + ")" : "ИИ-агент");
     const findings = inc.findings || [];
     const f = findings.length ? findings[0] : null;
     return h("div", { className: "yg-toast", role: "alert", "aria-live": "assertive", style: TOAST_BOX },
@@ -1070,8 +1161,8 @@
         h("span", { className: "yg-dim yg-small yg-right" }, p.count > 1 ? "1 of " + p.count + " waiting" : ago(inc.at)),
         h("button", { type: "button", className: "yg-btn ghost", style: { padding: "2px 7px", fontSize: "11px" },
           title: "Hide. The counter stays on the Guard tab.", onClick: p.onDismiss }, "✕")),
-      h("div", { className: "yg-inc-story" }, "Agent ", h("b", null, who), " tried to use the tool ",
-        h("b", { className: "yg-mono" }, inc.tool || "?"), " to send data to ",
+      h("div", { className: "yg-inc-story" }, "В чате ", h("b", null, who), " ИИ-помощник попытался использовать инструмент ",
+        h("b", { className: "yg-mono" }, inc.tool || "?"), " для отправки данных в ",
         h("b", { className: "yg-mono" }, inc.destination || "?"), "."),
       f ? h("div", { className: "yg-row" },
         h(Chip, { label: { id: f.label, label: f.title } }),
@@ -1126,6 +1217,7 @@
     const FILTERS = [["all", "Все"], ["blocked", "Заблокировано"], ["allowed", "Разрешено"]];
     return h(React.Fragment, null,
       h(Card, { title: "live protection", className: "wide" },
+        h(VisualSecurityMap, { data: data }),
         h("div", { className: "yg-shield " + (pending.length ? "bad" : "ok") },
           h("span", { className: "yg-big" }, pending.length ? "⛔ " + pending.length + " action" + (pending.length > 1 ? "s" : "") + " blocked" : "✓ Защищено"),
           h("span", { className: "yg-dim" }, pending.length
@@ -1393,7 +1485,7 @@
       setBusy(true); setMsg(null);
       post("/vault", { secret: secret, label: label })
         .then(function (r) {
-          if (r.status === "ok") { setSecret(""); setMsg({ ok: true, text: "Saved. Agents now get the token " + r.token.slice(0, 26) + "… instead of the real value, and any attempt to send the real value is blocked." }); p.onChanged(); }
+          if (r.status === "ok") { setSecret(""); setMsg({ ok: true, text: T("Saved. Agents now get the token ") + r.token.slice(0, 26) + T("… instead of the real value, and any attempt to send the real value is blocked.") }); p.onChanged(); }
           else setMsg({ ok: false, text: r.message || "Could not save." });
         })
         .catch(function () { setMsg({ ok: false, text: "Could not reach the Guard backend." }); })
@@ -1430,8 +1522,8 @@
       rd.readAsDataURL(f);
     }
     return h(Card, { title: "vault · your secrets, encrypted", className: "wide" },
-      h("div", { className: "yg-dim yg-small" }, "Add a secret you want to protect. It is encrypted with your Windows account " +
-        "and never shown again here. Guard blocks any agent that tries to send it."),
+      h("div", { className: "yg-dim yg-small" }, T("Add a secret you want to protect. It is encrypted with your Windows account ") +
+        T("and never shown again here. Guard blocks any agent that tries to send it.")),
       h("input", { className: "yg-input", type: "password", autoComplete: "off", placeholder: "Paste the secret value",
         value: secret, onChange: function (e) { setSecret(e.target.value); } }),
       // Buttons instead of a native <select>: its dropdown is drawn by the OS (white list,
@@ -1487,7 +1579,7 @@
     return h("div", { className: "yg-inc done" },
       h("div", { className: "yg-inc-top" },
         h(Chip, { label: { id: v.label, label: v.title || v.filename || v.label } }),
-        h("span", { className: "yg-dim yg-small" }, v.kind === "file" ? T("file") + " · " + fmtSize(v.size || 0) : T("text")),
+        h("span", { className: "yg-dim yg-small" }, v.kind === "file" ? T("file") + " · " + fmtSize(v.size || 0) : (v.token ? v.token.slice(0, 12) + "…" : T("text"))),
         h("span", { className: "yg-dim yg-small" }, v.source === "runtime-quarantine" ? "quarantined from an agent" : "added by you"),
         h("span", { className: "yg-dim yg-small yg-right" }, ago(v.changed || v.created)),
         // One compact ⋮ per row; all four actions live in the dropdown.
