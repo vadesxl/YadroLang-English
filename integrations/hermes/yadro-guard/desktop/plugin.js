@@ -2,7 +2,7 @@
 import * as React from "react";
 import { host } from "@hermes/plugin-sdk";
 
-const CSS = "/* mcp-secrets-guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); box-shadow: none; text-shadow: none; background-image: none; }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 0 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 0 0 auto; display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; margin-left: auto; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n/* Trash button: hidden until its row is hovered; keep it subtle so the \u22ee remains primary. */\n.yg-vault-trash-btn { opacity: 0; transition: opacity 0.12s ease; max-width: 0; padding-left: 0; padding-right: 0;\n  border-color: transparent; overflow: hidden; }\n.yg-inc:hover .yg-vault-trash-btn, .yg-inc:focus-within .yg-vault-trash-btn { opacity: 1; max-width: 60px;\n  padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }\n.yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }\n.yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute !important; top: calc(100% + 6px) !important; bottom: auto !important; right: 0 !important; z-index: 999 !important; background: linear-gradient(180deg, #1e2230 0%, #141722 100%);\n  border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1); padding: 6px; min-width: 180px; }\n.yg-inc, .yg-card, .yg-list { overflow: visible !important; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }\n.yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }\n.yg-passport .yg-btn { white-space: nowrap; }\n\n/* --- animations for VisualSecurityMap & Pac-Agent Cyber Arena --- */\n@keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }\n@keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }\n.yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }\n.yg-shield-core { animation: ygShieldPulse 2.5s ease-in-out infinite; }\n.yg-flow-path { stroke-dasharray: 14 10; animation: ygDashFlow 2.2s linear infinite; }\n.yg-flow-rev { animation: ygDashFlowRev 2.2s linear infinite; }\n@keyframes ygDashFlow { to { stroke-dashoffset: -72; } }\n@keyframes ygDashFlowRev { from { stroke-dashoffset: 72; } to { stroke-dashoffset: 0; } }\n\n/* --- Hologram Cline Sentinel Cyber Arena Styles --- */\n.yg-arena-card { padding: 12px; margin-bottom: 12px; position: relative; overflow: hidden; }\n.yg-arena-svg { display: block; width: 100%; height: auto; border-radius: 12px; background: radial-gradient(circle at 50% 50%, #0f1629 0%, #060810 100%); border: 1px solid rgba(165, 243, 252, 0.25); box-shadow: 0 12px 36px rgba(0,0,0,0.75), inset 0 0 28px rgba(165,243,252,0.05); }\n.yg-arena-toolbar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }\n.yg-arena-btn { font-size: 11px; padding: 7px 15px; border-radius: 6px; cursor: pointer; font-weight: 700; letter-spacing: .06em; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.18); font-family: inherit; }\n.yg-arena-btn.vault { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border-color: #fde68a; }\n.yg-arena-btn.vault:hover { box-shadow: 0 0 14px rgba(245, 158, 11, 0.65); transform: translateY(-1px); }\n.yg-arena-btn.block { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; border-color: #fca5a5; }\n.yg-arena-btn.block:hover { box-shadow: 0 0 14px rgba(239, 68, 68, 0.65); transform: translateY(-1px); }\n.yg-arena-btn.live { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }\n.yg-arena-btn.live:hover { background: rgba(56, 189, 248, 0.22); box-shadow: 0 0 14px rgba(56, 189, 248, 0.5); transform: translateY(-1px); }\n.yg-arena-status-banner { margin-top: 8px; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 11.5px; text-align: center; letter-spacing: .04em; }\n.yg-arena-status-banner.ok { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.35); }\n.yg-arena-status-banner.vault { background: rgba(245,158,11,0.18); color: #fde68a; border: 1px solid rgba(245,158,11,0.45); }\n.yg-arena-status-banner.danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); }\n\n/* Hologram Cline Mascot & Matrix Animations */\n@keyframes holoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }\n@keyframes holoScanline { 0% { transform: translateY(-38px); opacity: 0; } 15% { opacity: 0.85; } 85% { opacity: 0.85; } 100% { transform: translateY(38px); opacity: 0; } }\n@keyframes holoRingPulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.08); opacity: 0.85; } }\n@keyframes holoShieldPulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.12); opacity: 0.85; } }\n@keyframes holoIridShimmer { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }\n@keyframes holoPacketStream { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(245px); opacity: 0; } }\n@keyframes holoOutStreamTop { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(245px, -45px); opacity: 0; } }\n@keyframes holoOutStreamBot { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(240px, 40px); opacity: 0; } }\n@keyframes holoRailDash { to { stroke-dashoffset: -36; } }\n@keyframes holoVaultFlash { 0%, 100% { stroke: #f59e0b; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 3.5; filter: drop-shadow(0 0 14px #fbbf24); } }\n\n.yg-holo-agent { transform-origin: 0px 0px; animation: holoFloat 3.4s ease-in-out infinite; }\n.yg-center-shield { transform-origin: 0px 0px; animation: holoFloat 3.8s ease-in-out infinite; }\n.yg-shield-glow { filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.65)); }\n.yg-holo-scanline { animation: holoScanline 2.2s linear infinite; }\n.yg-holo-ring { transform-origin: 0px 50px; animation: holoRingPulse 2.6s ease-in-out infinite; }\n.yg-holo-shield-vault { transform-origin: 0px 0px; animation: holoShieldPulse 1.8s ease-in-out infinite; }\n.yg-holo-shield-danger { transform-origin: 0px 0px; animation: holoShieldPulse 1.2s ease-in-out infinite; }\n.yg-holo-border { animation: holoIridShimmer 10s linear infinite; }\n.yg-stream-pkt-1 { animation: holoPacketStream 2.2s linear infinite; }\n.yg-stream-pkt-2 { animation: holoPacketStream 2.2s linear 0.73s infinite; }\n.yg-stream-pkt-3 { animation: holoPacketStream 2.2s linear 1.46s infinite; }\n.yg-out-pkt-bot { animation: holoOutStreamBot 2.2s linear infinite; }\n.yg-conduit-active { stroke-dasharray: 8 6; animation: holoRailDash 1s linear infinite; }\n.yg-vault-glow { animation: holoVaultFlash 1.5s ease-in-out infinite; }\n\n/* Language Switcher */\n.yg-lang-switch { display: inline-flex; border: 1px solid var(--yg-border); border-radius: 6px; overflow: hidden; margin-left: 8px; background: rgba(0,0,0,0.35); }\n.yg-lang-btn { background: transparent; border: none; color: var(--yg-accent-dim); padding: 5px 11px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }\n.yg-lang-btn:hover { color: #fff; }\n.yg-lang-btn.on { background: var(--yg-accent); color: #000; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3); }\n\n/* Settings & Multi-Agent Hub */\n.yg-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; margin-top: 10px; }\n.yg-hub-card { background: rgba(0,0,0,0.25); border: 1px solid var(--yg-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }\n.yg-hub-title { font-weight: 700; font-size: 13px; color: var(--yg-accent); display: flex; align-items: center; gap: 6px; }\n.yg-hub-desc { font-size: 11px; color: var(--color-muted-foreground, #8a97ab); margin: 6px 0; }\n.yg-hub-pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 6px 8px; font-size: 10px; font-family: monospace; white-space: pre-wrap; word-break: break-all; margin: 4px 0 8px; color: #a5f3fc; }\n\n/* Rules Table */\n.yg-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }\n.yg-table th, .yg-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--yg-border); }\n.yg-table th { font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: .08em; color: var(--yg-accent-dim); }\n\n/* Incident clean code block & single row actions */\n.yg-fullcmd { margin: 8px 0; border: 1px solid var(--yg-border); border-radius: 6px; background: rgba(0,0,0,0.4); overflow: hidden; }\n.yg-fullcmd-pre { padding: 10px 12px; margin: 0; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; color: #67e8f9; line-height: 1.5; font-family: ui-monospace, Consolas, monospace; }\n.yg-fullcmd-actions { display: flex; gap: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-top: 1px solid var(--yg-border); align-items: center; flex-wrap: nowrap; overflow-x: auto; }\n.yg-fullcmd-actions .yg-btn { white-space: nowrap; font-size: 10px; }\n";
+const CSS = "/* mcp-secrets-guard \u2014 \u0441\u0442\u0438\u043b\u044c \u0432 \u0434\u0443\u0445\u0435 Hermes Home: \u043c\u043e\u043d\u043e\u0448\u0438\u0440\u0438\u043d\u043d\u044b\u0439 \u0448\u0440\u0438\u0444\u0442, \u0441\u0442\u0435\u043a\u043b\u044f\u043d\u043d\u044b\u0435\n * \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438, \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043a\u0438 \"\u2500\u2500 title \u2500\u2500\", \u0446\u0432\u0435\u0442\u0430 \u043e\u0442 \u0442\u0435\u043c\u044b \u0445\u043e\u0441\u0442\u0430 (--color-primary). */\n.yg-root {\n  --yg-accent: var(--color-primary, var(--ui-accent, #9aa7ff));\n  --yg-accent-dim: color-mix(in srgb, var(--yg-accent) 55%, #000);\n  --yg-surface: color-mix(in srgb, var(--yg-accent) 6%, var(--ui-editor-surface-background, rgb(10 10 14 / 0.55)));\n  --yg-border: color-mix(in srgb, var(--yg-accent) 18%, transparent);\n  --yg-bad: var(--color-destructive, #e25555);\n  --yg-good: #3ec46d;\n  height: 100%; overflow: auto; padding: 18px;\n  font-family: var(--theme-font-mono, ui-monospace, Consolas, monospace);\n  font-size: 12px; line-height: 1.55;\n  color: var(--color-foreground, var(--ui-text-primary, #d8dce6));\n}\n.yg-top { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }\n.yg-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: .18em; font-size: 11px; white-space: nowrap; }\n.yg-dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }\n.yg-dot.ok { color: var(--yg-good); background: var(--yg-good); }\n.yg-dot.bad { color: var(--yg-bad); background: var(--yg-bad); }\n.yg-input { flex: 1; background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 6px;\n  padding: 7px 10px; color: inherit; font: inherit; outline: none; }\n.yg-input:focus { border-color: var(--yg-accent); }\n.yg-btn { background: var(--yg-accent); color: #000; border: none; border-radius: 6px; padding: 7px 14px;\n  font: inherit; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: 10px; cursor: pointer;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-btn:disabled { opacity: .35; cursor: default; }\n.yg-btn.ghost { background: transparent; color: var(--yg-accent); border: 1px solid var(--yg-border); box-shadow: none; text-shadow: none; background-image: none; }\n.yg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }\n.yg-card { background: var(--yg-surface); border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px;\n  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgb(0 0 0 / .5); min-width: 0; }\n.yg-card.wide { grid-column: 1 / -1; }\n.yg-hd { display: block; font-size: 9px; letter-spacing: .18em; margin-bottom: 8px; font-weight: 700;\n  text-transform: uppercase; color: var(--yg-accent-dim); white-space: nowrap; overflow: hidden; }\n.yg-hd::before { content: \"\u2500\u2500 \"; opacity: .5; }\n.yg-hd::after { content: \" \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\"; opacity: .3; }\n.yg-dim { color: var(--color-muted-foreground, #7d8496); }\n.yg-err { color: var(--yg-bad); }\n.yg-ok { color: var(--yg-good); }\n.yg-warn { color: #e8a33d; }\n.yg-verdict .yg-big { font-size: 26px; font-weight: 700; letter-spacing: .06em; }\n.yg-verdict.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-bad) 50%, transparent); }\n.yg-verdict.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 18px color-mix(in srgb, var(--yg-good) 50%, transparent); }\n.yg-code { margin-left: 12px; font-size: 10px; padding: 2px 7px; border: 1px solid var(--yg-border); border-radius: 4px; }\n.yg-why { margin-top: 4px; color: var(--color-muted-foreground, #aab1c2); }\n.yg-chips { margin-top: 8px; }\n.yg-chip { display: inline-block; padding: 2px 9px; border-radius: 999px; color: #fff; font-size: 10.5px; font-weight: 600; margin: 0 6px 4px 0;\n  box-shadow: inset 0 1px 1px rgba(255,255,255,0.28), inset 0 -1px 2px rgba(0,0,0,0.4), 0 3px 8px rgba(0,0,0,0.45);\n  border: 1px solid rgba(255,255,255,0.16); text-shadow: 0 1px 2px rgba(0,0,0,0.6);\n  background-image: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0.22) 100%); }\n.yg-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }\n.yg-node { border: 1px solid var(--yg-border); border-radius: 6px; padding: 6px 9px; min-width: 120px; }\n.yg-node.src { border-color: #8a5cf6; }\n.yg-node.sink { border-color: var(--yg-bad); }\n.yg-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--yg-accent-dim); }\n.yg-mono { font-weight: 700; margin: 2px 0 4px; }\n.yg-arrow { color: var(--yg-bad); font-size: 16px; font-weight: 700; padding: 0 2px; }\n.yg-row { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; border-bottom: 1px solid rgb(255 255 255 / .04); }\n.yg-row:last-child { border-bottom: none; }\n.yg-k { font-weight: 700; color: var(--yg-good); white-space: nowrap; }\n.yg-click { cursor: pointer; } .yg-click:hover { color: var(--yg-accent); }\n.yg-path { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-tok { font-size: 10.5px; }\n.yg-note { margin-top: 6px; font-size: 10px; }\n.yg-diff { padding: 3px 8px; border-radius: 4px; margin: 4px 0; white-space: pre-wrap; word-break: break-all; }\n.yg-diff.old { background: color-mix(in srgb, var(--yg-bad) 14%, transparent); color: #ff9c8c; }\n.yg-diff.new { background: color-mix(in srgb, var(--yg-good) 14%, transparent); color: #8ff0b0; }\n.yg-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }\n.yg-tabs { display: flex; gap: 4px; margin-left: auto; }\n.yg-tab { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent-dim); border-radius: 6px;\n  padding: 6px 12px; font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }\n.yg-tab:hover { color: var(--yg-accent); }\n.yg-tab.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-btn.good { background: var(--yg-good); }\n.yg-btn.bad { background: var(--yg-bad); color: #fff; }\n.yg-shield { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }\n.yg-shield .yg-big { font-size: 22px; font-weight: 700; }\n.yg-shield.ok .yg-big { color: var(--yg-good); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-good) 45%, transparent); }\n.yg-shield.bad .yg-big { color: var(--yg-bad); text-shadow: 0 0 16px color-mix(in srgb, var(--yg-bad) 45%, transparent); }\n.yg-inc { border: 1px solid var(--yg-border); border-radius: 8px; padding: 10px 12px; margin: 8px 0;\n  background: color-mix(in srgb, var(--yg-surface) 70%, transparent); }\n.yg-inc.pending { border-color: var(--yg-bad); box-shadow: 0 0 0 1px color-mix(in srgb, var(--yg-bad) 35%, transparent); }\n.yg-inc-top { display: flex; gap: 10px; align-items: center; margin-bottom: 6px; }\n.yg-inc-id { font-weight: 700; letter-spacing: .08em; }\n.yg-right { margin-left: auto; }\n.yg-inc-story { margin: 6px 0; line-height: 1.6; font-size: 12.5px; }\n.yg-inc-what { margin: 6px 0; }\n.yg-pill { font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid; }\n.yg-pill.bad { color: var(--yg-bad); border-color: var(--yg-bad); }\n.yg-pill.ok { color: var(--yg-good); border-color: var(--yg-good); }\n.yg-pill.warn { color: #e8a33d; border-color: #e8a33d; }\n.yg-small { font-size: 11px; margin: 4px 0; }\n.yg-sub { margin: 12px 0 4px; font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--yg-accent-dim); font-weight: 700; }\n.yg-gap { margin-top: 12px; }\n.yg-note-line { margin-top: 8px; padding: 6px 9px; border-radius: 6px; background: color-mix(in srgb, var(--yg-accent) 10%, transparent); }\n.yg-code-in { width: 100%; min-height: 150px; margin: 8px 0; resize: vertical; background: rgb(0 0 0 / .35);\n  border: 1px solid var(--yg-border); border-radius: 6px; padding: 10px; color: inherit; font: inherit; font-size: 12px; outline: none; }\n.yg-code-in:focus { border-color: var(--yg-accent); }\n.yg-card .yg-input { display: block; width: 100%; margin: 6px 0; }\nselect.yg-input { appearance: auto; }\n.yg-gaps { margin-top: 12px; color: var(--color-muted-foreground, #7d8496); }\n.yg-gaps summary { cursor: pointer; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }\n.yg-gaps ul { margin: 6px 0 0; padding-left: 18px; }\n.yg-foot { margin-top: 18px; font-size: 10.5px; color: var(--color-muted-foreground, #7d8496); }\n.yg-risk { margin: 6px 0; padding: 8px 10px; border-left: 3px solid var(--yg-bad); background: color-mix(in srgb, var(--yg-bad) 6%, transparent); border-radius: 4px; }\n.yg-report { margin-top: 12px; }\n.yg-frame { display: block; width: 100%; height: 75vh; min-height: 420px; border: 1px solid var(--yg-border); border-radius: 10px; background: #0b0e14; }\n.yg-kinds { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }\n.yg-kind { background: transparent; color: inherit; border: 1px solid var(--yg-border); border-radius: 999px;\n  padding: 5px 12px; font: inherit; font-size: 11px; cursor: pointer; }\n.yg-kind:hover { border-color: var(--yg-accent); }\n.yg-kind.on { background: var(--yg-accent); color: #000; border-color: var(--yg-accent); font-weight: 700; }\n.yg-root { color-scheme: dark; }\n\n/* Layout: content column capped at 1280px (= Tailwind max-w-7xl mx-auto), centred on wide screens */\n.yg-root { display: flex; flex-direction: column; box-sizing: border-box; }\n.yg-top, .yg-grid, .yg-foot { width: 100%; max-width: 1280px; margin-left: auto; margin-right: auto; box-sizing: border-box; }\n.yg-grid { flex: 0 0 auto; }\n/* Live tab: history card takes all the remaining height instead of a squeezed strip */\n.yg-grid.live { display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow { flex: 0 0 auto; display: flex; flex-direction: column; }\n.yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }\n.yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }\n\n/* Masked secret + hold-to-show eye */\n.yg-reveal { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }\n.yg-reveal-val { padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--yg-accent) 8%, transparent);\n  letter-spacing: .02em; word-break: break-all; }\n.yg-reveal.yg-reveal-on .yg-reveal-val { background: color-mix(in srgb, var(--yg-bad) 14%, transparent);\n  color: var(--color-foreground, #e8ebf2); user-select: all; }\n.yg-reveal-btn { background: transparent; border: 1px solid var(--yg-border); border-radius: 4px; color: var(--yg-accent);\n  font-size: 11px; line-height: 1; padding: 3px 5px; cursor: pointer; user-select: none; touch-action: none; }\n.yg-reveal-btn:hover, .yg-reveal-btn:focus-visible { border-color: var(--yg-accent); outline: none; }\n.yg-reveal.yg-reveal-on .yg-reveal-btn { background: var(--yg-accent); color: #000; }\n\n/* Vault menu dropdown */\n.yg-vault-menu { display: inline-block; position: relative; margin-left: auto; }\n.yg-vault-menu-btn { background: transparent; border: 1px solid var(--yg-border); color: var(--yg-accent);\n  border-radius: 4px; padding: 3px 7px; font-size: 14px; cursor: pointer; line-height: 1; }\n.yg-vault-menu-btn:hover { border-color: var(--yg-accent); }\n.yg-vault-menu-btn:disabled { opacity: 0.35; cursor: default; }\n/* Trash button: hidden until its row is hovered; keep it subtle so the \u22ee remains primary. */\n.yg-vault-trash-btn { opacity: 0; transition: opacity 0.12s ease; max-width: 0; padding-left: 0; padding-right: 0;\n  border-color: transparent; overflow: hidden; }\n.yg-inc:hover .yg-vault-trash-btn, .yg-inc:focus-within .yg-vault-trash-btn { opacity: 1; max-width: 60px;\n  padding-left: 7px; padding-right: 7px; border-color: var(--yg-border); }\n.yg-vault-trash-btn:hover { border-color: var(--yg-bad); color: var(--yg-bad); }\n.yg-vault-trash-btn:disabled { opacity: 0.35; cursor: default; }\n.yg-vault-menu-dropdown { position: absolute !important; top: calc(100% + 6px) !important; bottom: auto !important; right: 0 !important; z-index: 999 !important; background: linear-gradient(180deg, #1e2230 0%, #141722 100%);\n  border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.1); padding: 6px; min-width: 180px; }\n.yg-inc, .yg-card, .yg-list { overflow: visible !important; }\n.yg-vault-menu-item { display: block; width: 100%; padding: 8px 12px; border: none; background: transparent;\n  color: inherit; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }\n.yg-vault-menu-item:first-child { border-radius: 5px 5px 0 0; }\n.yg-vault-menu-item:last-child { border-radius: 0 0 5px 5px; }\n.yg-vault-menu-item:hover { background: color-mix(in srgb, var(--yg-accent) 12%, transparent); }\n.yg-vault-menu-item.bad { color: var(--yg-bad); }\n.yg-vault-menu-item.bad:hover { background: color-mix(in srgb, var(--yg-bad) 12%, transparent); }\n\n/* Incident full-command block + per-incident report buttons (Blocks 1-2) */\n.yg-fullcmd { margin: 8px 0 4px; }\n.yg-fullcmd-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }\n.yg-fullcmd-pre { white-space: pre-wrap; word-break: break-all; margin: 6px 0 0; padding: 8px 10px;\n  background: color-mix(in srgb, var(--yg-accent) 5%, transparent); border: 1px solid var(--yg-border);\n  border-radius: 6px; font-size: 10.5px; max-height: 260px; overflow: auto; }\n.yg-copy { font-size: 10px; }\n.yg-trash { padding: 3px 7px; }\n\n/* History toolbar: search + filters (Block 2) */\n.yg-hst-tools { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }\n.yg-hst-search { flex: 1 1 220px; }\n\n/* History accordion: resolved incidents collapse to one line, expand on click (Block 2) */\n.yg-acc { border: 1px solid var(--yg-border); border-radius: 6px; margin-bottom: 6px;\n  background: color-mix(in srgb, var(--yg-accent) 3%, transparent); }\n.yg-acc > .yg-inc { border: none; box-shadow: none; margin: 0; }\n.yg-acc summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 10px;\n  padding: 7px 12px; flex-wrap: wrap; }\n.yg-acc summary::-webkit-details-marker { display: none; }\n.yg-acc summary::before { content: \"\u25b6\"; opacity: .5; font-size: 9px; }\n.yg-acc[open] summary::before { content: \"\u25bc\"; }\n.yg-acc-sum:focus-visible { outline: 1px solid var(--yg-accent); }\n.yg-acc-id { font-weight: 700; color: var(--yg-accent-dim); }\n.yg-acc-status { font-size: 10.5px; font-weight: 700; }\n.yg-acc-time { margin-left: auto; white-space: nowrap; }\n.yg-acc-how { font-size: 10.5px; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.yg-acc-del { margin-left: 8px; padding: 2px 8px; font-size: 11px; opacity: .7; }\n.yg-acc-del:hover { opacity: 1; color: var(--yg-bad, #e25555); border-color: var(--yg-bad, #e25555); }\n.yg-passport .yg-btn { white-space: nowrap; }\n\n/* --- animations for VisualSecurityMap & Pac-Agent Cyber Arena --- */\n@keyframes ygSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }\n@keyframes ygShieldPulse { 0% { box-shadow: 0 0 0 0 rgba(62,196,109,0.7); } 70% { box-shadow: 0 0 0 14px rgba(62,196,109,0); } 100% { box-shadow: 0 0 0 0 rgba(62,196,109,0); } }\n.yg-scan-ring { animation: ygSpin 14s linear infinite; transform-origin: 50% 50%; }\n.yg-shield-core { animation: ygShieldPulse 2.5s ease-in-out infinite; }\n.yg-flow-path { stroke-dasharray: 14 10; animation: ygDashFlow 2.2s linear infinite; }\n.yg-flow-rev { animation: ygDashFlowRev 2.2s linear infinite; }\n@keyframes ygDashFlow { to { stroke-dashoffset: -72; } }\n@keyframes ygDashFlowRev { from { stroke-dashoffset: 72; } to { stroke-dashoffset: 0; } }\n\n/* --- Hologram Cline Sentinel Cyber Arena Styles --- */\n.yg-arena-card { padding: 12px; margin-bottom: 12px; position: relative; overflow: hidden; }\n.yg-arena-svg { display: block; width: 100%; height: auto; border-radius: 12px; background: radial-gradient(circle at 50% 50%, #0f1629 0%, #060810 100%); border: 1px solid rgba(165, 243, 252, 0.25); box-shadow: 0 12px 36px rgba(0,0,0,0.75), inset 0 0 28px rgba(165,243,252,0.05); }\n.yg-arena-toolbar { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }\n.yg-arena-btn { font-size: 11px; padding: 7px 15px; border-radius: 6px; cursor: pointer; font-weight: 700; letter-spacing: .06em; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.18); font-family: inherit; }\n.yg-arena-btn.vault { background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; border-color: #fde68a; }\n.yg-arena-btn.vault:hover { box-shadow: 0 0 14px rgba(245, 158, 11, 0.65); transform: translateY(-1px); }\n.yg-arena-btn.block { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; border-color: #fca5a5; }\n.yg-arena-btn.block:hover { box-shadow: 0 0 14px rgba(239, 68, 68, 0.65); transform: translateY(-1px); }\n.yg-arena-btn.live { background: rgba(56, 189, 248, 0.12); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }\n.yg-arena-btn.live:hover { background: rgba(56, 189, 248, 0.22); box-shadow: 0 0 14px rgba(56, 189, 248, 0.5); transform: translateY(-1px); }\n.yg-arena-status-banner { margin-top: 8px; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 11.5px; text-align: center; letter-spacing: .04em; }\n.yg-arena-status-banner.ok { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.35); }\n.yg-arena-status-banner.vault { background: rgba(245,158,11,0.18); color: #fde68a; border: 1px solid rgba(245,158,11,0.45); }\n.yg-arena-status-banner.danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); }\n\n/* Hologram Cline Mascot & Matrix Animations */\n@keyframes holoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }\n@keyframes holoScanline { 0% { transform: translateY(-38px); opacity: 0; } 15% { opacity: 0.85; } 85% { opacity: 0.85; } 100% { transform: translateY(38px); opacity: 0; } }\n@keyframes holoRingPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.85; } }\n@keyframes holoShieldPulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.12); opacity: 0.85; } }\n@keyframes holoIridShimmer { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }\n@keyframes holoPacketStream { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(245px); opacity: 0; } }\n@keyframes holoOutStreamTop { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(245px, -45px); opacity: 0; } }\n@keyframes holoOutStreamBot { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(240px, 40px); opacity: 0; } }\n@keyframes holoRailDash { to { stroke-dashoffset: -36; } }\n@keyframes holoVaultFlash { 0%, 100% { stroke: #f59e0b; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 3.5; filter: drop-shadow(0 0 14px #fbbf24); } }\n\n.yg-shield-glow { filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.65)); }\n.yg-holo-scanline { animation: holoScanline 2.2s linear infinite; }\n.yg-holo-ring { transform-origin: 0px 50px; animation: holoRingPulse 2.6s ease-in-out infinite; }\n.yg-holo-shield-vault { transform-origin: 0px 0px; animation: holoShieldPulse 1.8s ease-in-out infinite; }\n.yg-holo-shield-danger { transform-origin: 0px 0px; animation: holoShieldPulse 1.2s ease-in-out infinite; }\n.yg-holo-border { animation: holoIridShimmer 10s linear infinite; }\n.yg-stream-pkt-1 { animation: holoPacketStream 2.2s linear infinite; }\n.yg-stream-pkt-2 { animation: holoPacketStream 2.2s linear 0.73s infinite; }\n.yg-stream-pkt-3 { animation: holoPacketStream 2.2s linear 1.46s infinite; }\n.yg-out-pkt-bot { animation: holoOutStreamBot 2.2s linear infinite; }\n.yg-conduit-active { stroke-dasharray: 8 6; animation: holoRailDash 1s linear infinite; }\n.yg-vault-glow { animation: holoVaultFlash 1.5s ease-in-out infinite; }\n\n/* Language Switcher */\n.yg-lang-switch { display: inline-flex; border: 1px solid var(--yg-border); border-radius: 6px; overflow: hidden; margin-left: 8px; background: rgba(0,0,0,0.35); }\n.yg-lang-btn { background: transparent; border: none; color: var(--yg-accent-dim); padding: 5px 11px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; }\n.yg-lang-btn:hover { color: #fff; }\n.yg-lang-btn.on { background: var(--yg-accent); color: #000; box-shadow: inset 0 1px 1px rgba(255,255,255,0.3); }\n\n/* Settings & Multi-Agent Hub */\n.yg-hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; margin-top: 10px; }\n.yg-hub-card { background: rgba(0,0,0,0.25); border: 1px solid var(--yg-border); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }\n.yg-hub-title { font-weight: 700; font-size: 13px; color: var(--yg-accent); display: flex; align-items: center; gap: 6px; }\n.yg-hub-desc { font-size: 11px; color: var(--color-muted-foreground, #8a97ab); margin: 6px 0; }\n.yg-hub-pre { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; padding: 6px 8px; font-size: 10px; font-family: monospace; white-space: pre-wrap; word-break: break-all; margin: 4px 0 8px; color: #a5f3fc; }\n\n/* Rules Table */\n.yg-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11.5px; }\n.yg-table th, .yg-table td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--yg-border); }\n.yg-table th { font-weight: 700; text-transform: uppercase; font-size: 9.5px; letter-spacing: .08em; color: var(--yg-accent-dim); }\n\n/* Incident clean code block & single row actions */\n.yg-fullcmd { margin: 8px 0; border: 1px solid var(--yg-border); border-radius: 6px; background: rgba(0,0,0,0.4); overflow: hidden; }\n.yg-fullcmd-pre { padding: 10px 12px; margin: 0; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; color: #67e8f9; line-height: 1.5; font-family: ui-monospace, Consolas, monospace; }\n.yg-fullcmd-actions { display: flex; gap: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-top: 1px solid var(--yg-border); align-items: center; flex-wrap: nowrap; overflow-x: auto; }\n.yg-fullcmd-actions .yg-btn { white-space: nowrap; font-size: 10px; }\n\n/* Fail-safe: Purge floating bottom-right blocked count button */\n.yg-toast-count { display: none !important; }\n";
 const API = "/api/plugins/yadro-guard";
 let rest = null;
 let GuardPage = null;
@@ -534,7 +534,12 @@ const makeGuardPage = function (SDK, onReady) {
         } else {
           lines.push(cur);
           cur = w;
-          if (lines.length >= maxLines - 1) break;
+          if (lines.length >= maxLines - 1) {
+            for (var k = i + 1; k < words.length; k++) {
+              cur += " " + words[k];
+            }
+            break;
+          }
         }
       }
       if (cur && lines.length < maxLines) lines.push(cur);
@@ -679,7 +684,10 @@ const makeGuardPage = function (SDK, onReady) {
       }
       if (i.destination) dest = i.destination;
     });
-    rawChat = String(rawChat || "").replace(/^(?:чат|chat)\s*[:«"']?\s*/i, "").replace(/[»"']$/i, "").trim();
+    rawChat = String(rawChat || "")
+      .replace(/^(?:архивный\s+)?(?:чат|chat)\s*(?:№|#)?\s*[:«"']?\s*/i, "")
+      .replace(/[»"']$/i, "")
+      .trim();
     var chatName = rawChat
       ? (currentLang === "ru" ? "«" + rawChat + "»" : "\"" + rawChat + "\"")
       : (currentLang === "ru" ? "Ожидание команд" : "Awaiting agent commands");
@@ -734,29 +742,30 @@ const makeGuardPage = function (SDK, onReady) {
     var coreColor = mode === "block" ? "#ef4444" : mode === "vault" ? "#f59e0b" : blocked ? "#ef4444" : intercepted ? "#a855f7" : "#38bdf8";
     var progress = animStep / 100;
 
-    // Secret capsule coordinates in vault demo
-    var secretX = mode === "vault" ? (140 + Math.min(progress, 0.5) * 680) : -999;
-    var vaultFlyProgress = progress > 0.5 ? Math.min((progress - 0.5) / 0.35, 1) : 0;
-    var crystalX = mode === "vault" && progress > 0.5 && progress <= 0.88 ? (480 + vaultFlyProgress * 320) : -999;
-    var crystalY = mode === "vault" && progress > 0.5 && progress <= 0.88 ? (115 - vaultFlyProgress * 47) : -999;
+    // Flying capsule coordinates (between left node (95,62) and center shield (318,40))
+    var secretX = mode === "vault" ? (95 + Math.min(progress / 0.5, 1) * 223) : -999;
+    var secretY = mode === "vault" ? (62 - Math.min(progress / 0.5, 1) * 22) : -999;
 
-    var tokenFlyProgress = progress > 0.55 ? Math.min((progress - 0.55) / 0.45, 1) : 0;
-    var tokenX = mode === "vault" && progress > 0.55 ? (480 + tokenFlyProgress * 300) : -999;
-    var tokenY = mode === "vault" && progress > 0.55 ? (115 + tokenFlyProgress * 55) : -999;
+    var crystalX = mode === "vault" && progress > 0.5 && progress <= 0.88 ? (318 + Math.min((progress - 0.5) / 0.35, 1) * 252) : -999;
+    var crystalY = mode === "vault" && progress > 0.5 && progress <= 0.88 ? (40 + Math.min((progress - 0.5) / 0.35, 1) * 8) : -999;
 
-    // Threat mine coordinates in block demo
-    var mineX = mode === "block" ? (140 + Math.min(progress, 0.6) * 500) : -999;
+    var tokenX = mode === "vault" && progress > 0.55 ? (318 + Math.min((progress - 0.55) / 0.45, 1) * 252) : -999;
+    var tokenY = mode === "vault" && progress > 0.55 ? (50 + Math.min((progress - 0.55) / 0.45, 1) * 76) : -999;
+
+    // Threat mine (from left node (95,62) to shield perimeter (296,40))
+    var mineX = mode === "block" ? (95 + Math.min(progress / 0.6, 1) * 201) : -999;
+    var mineY = mode === "block" ? (62 - Math.min(progress / 0.6, 1) * 22) : -999;
     var exploded = mode === "block" && progress >= 0.6;
 
     return h("div", { className: "yg-card yg-arena-card wide" },
       h("svg", {
         className: "yg-arena-svg",
-        viewBox: "0 0 960 260",
+        viewBox: "0 0 700 180",
         preserveAspectRatio: "xMidYMid meet"
       },
         h("defs", null,
-          // Central Shield Dynamic Shading
-          h("linearGradient", { id: "cyberShieldGrad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+          // Central Shield Shading (gShield)
+          h("linearGradient", { id: "gShield", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
             mode === "block" ? [
               h("stop", { offset: "0%", stopColor: "#f87171", key: "s1" }),
               h("stop", { offset: "50%", stopColor: "#ef4444", key: "s2" }),
@@ -770,6 +779,12 @@ const makeGuardPage = function (SDK, onReady) {
               h("stop", { offset: "50%", stopColor: "#0284c7", key: "s2" }),
               h("stop", { offset: "100%", stopColor: "#0c4a6e", key: "s3" })
             ]
+          ),
+          h("filter", { id: "glowStrong" },
+            h("feGaussianBlur", { stdDeviation: "5", result: "blur" }),
+            h("feMerge", null,
+              h("feMergeNode", { in: "blur" }),
+              h("feMergeNode", { in: "SourceGraphic" }))
           ),
           // Holographic Iridescent Border Gradient (Theme Hologram from Cline)
           h("linearGradient", { id: "holoIridescentGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
@@ -802,8 +817,6 @@ const makeGuardPage = function (SDK, onReady) {
             h("feMerge", null,
               h("feMergeNode", { in: "blur" }),
               h("feMergeNode", { in: "SourceGraphic" }))),
-          h("filter", { id: "holoShieldGlow" },
-            h("feDropShadow", { dx: 0, dy: 0, stdDeviation: "12", floodColor: coreColor, floodOpacity: "0.85" })),
           h("filter", { id: "holoMascotShadow" },
             h("feDropShadow", { dx: 0, dy: 3, stdDeviation: "4", floodColor: "rgba(0,0,0,0.7)", floodOpacity: "0.8" })),
           h("pattern", { id: "agGrid", width: "30", height: "30", patternUnits: "userSpaceOnUse" },
@@ -811,173 +824,176 @@ const makeGuardPage = function (SDK, onReady) {
         ),
 
         // Background Cyber Grid
-        h("rect", { width: "960", height: "260", fill: "url(#agGrid)" }),
+        h("rect", { width: "700", height: "180", fill: "url(#agGrid)" }),
 
         // Neon Data Conduits
         // Path 1: Agent Gateway -> Central Shield
         h("path", {
-          d: "M 175 115 L 430 115",
+          d: "M 95 62 C 160 62, 230 45, 298 40",
           fill: "none",
           stroke: mode === "block" ? "rgba(239,68,68,0.5)" : "rgba(56,189,248,0.45)",
-          strokeWidth: 4,
+          strokeWidth: 3.5,
           className: "yg-conduit-active"
         }),
         // Path 2: Central Shield -> Hologram Vault
         h("path", {
-          d: "M 530 95 C 610 55, 700 60, 775 68",
+          d: "M 338 40 C 400 38, 470 42, 530 48",
           fill: "none",
           stroke: mode === "vault" ? "rgba(251,191,36,0.85)" : "rgba(245,158,11,0.35)",
-          strokeWidth: 3.5,
+          strokeWidth: 3,
           className: mode === "vault" ? "yg-conduit-active" : "yg-flow-path"
         }),
         // Path 3: Central Shield -> Hologram Internet
         h("path", {
-          d: "M 530 135 C 610 175, 700 175, 775 175",
+          d: "M 338 50 C 400 85, 470 115, 530 130",
           fill: "none",
           stroke: "rgba(56,189,248,0.45)",
-          strokeWidth: 3.5,
+          strokeWidth: 3,
           className: "yg-conduit-active"
         }),
 
         // Continuous Dynamic Traffic Streams (Glide into Central Shield)
         mode === "patrol" ? h("g", null,
-          h("circle", { cx: 180, cy: 115, r: 4.5, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-stream-pkt-1" }),
-          h("circle", { cx: 180, cy: 115, r: 4, fill: "#34d399", filter: "url(#agGlow)", className: "yg-stream-pkt-2" }),
-          h("circle", { cx: 180, cy: 115, r: 4.5, fill: "#c084fc", filter: "url(#agGlow)", className: "yg-stream-pkt-3" }),
-          // Outbound verified streams
-          h("circle", { cx: 530, cy: 135, r: 4, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-out-pkt-bot" })
+          h("circle", { cx: 120, cy: 60, r: 4, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-stream-pkt-1" }),
+          h("circle", { cx: 120, cy: 60, r: 3.5, fill: "#34d399", filter: "url(#agGlow)", className: "yg-stream-pkt-2" }),
+          h("circle", { cx: 120, cy: 60, r: 4, fill: "#c084fc", filter: "url(#agGlow)", className: "yg-stream-pkt-3" }),
+          h("circle", { cx: 345, cy: 55, r: 3.5, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-out-pkt-bot" })
         ) : null,
 
-        // LEFT NODE: Active AI Session Gateway with Hologram Cline Mascot (Fully padded, no clipping!)
-        h("g", { transform: "translate(125, 115)" },
+        // LEFT NODE: Active AI Session Gateway (<g transform="translate(65,62)">)
+        h("g", { transform: "translate(65,62)" },
           // Holographic Ground Projection Ring
           h("ellipse", {
-            cx: 0, cy: 46, rx: 42, ry: 10,
+            cx: 0, cy: 38, rx: 34, ry: 8,
             fill: "none", stroke: "url(#holoIridescentGrad)",
-            strokeWidth: 1.5, className: "yg-holo-ring", filter: "url(#agGlow)"
+            strokeWidth: 1.2, className: "yg-holo-ring", filter: "url(#agGlow)"
           }),
 
-          // The Squircle Container (Hologram Theme from Cline)
+          // Vector Squircle & Bot Silhouette (renders as base and fallback)
           h("rect", {
-            x: -38, y: -38, width: 76, height: 76, rx: 18,
+            x: -30, y: -30, width: 60, height: 60, rx: 14,
             fill: "url(#holoBgGrad)",
             stroke: "url(#holoIridescentGrad)",
-            strokeWidth: 2.2,
+            strokeWidth: 1.8,
             filter: "url(#agGlow)",
             className: "yg-holo-border"
           }),
 
           // Diagonal Glass Gloss Reflection
           h("path", {
-            d: "M -34 -12 L -12 -34 L 8 -34 L -34 8 Z",
+            d: "M -26 -10 L -10 -26 L 6 -26 L -26 6 Z",
             fill: "rgba(255, 255, 255, 0.08)"
           }),
 
           // Sweeping Laser Scanline
           h("line", {
-            x1: -30, y1: 0, x2: 30, y2: 0,
+            x1: -24, y1: 0, x2: 24, y2: 0,
             stroke: "rgba(56,189,248,0.75)",
-            strokeWidth: 1.5,
+            strokeWidth: 1.2,
             className: "yg-holo-scanline"
           }),
 
           // Cline Mascot Silhouette (Pearlescent Bot Head)
           h("path", {
-            d: "M -5 -17 A 4.5 4.5 0 0 1 5 -17 L 14 -17 A 4.5 4.5 0 0 1 19 -12.5 L 19 -4.5 L 25 0 L 19 4.5 L 19 12.5 A 4.5 4.5 0 0 1 14 17 L -14 17 A 4.5 4.5 0 0 1 -19 12.5 L -19 4.5 L -25 0 L -19 -4.5 L -19 -12.5 A 4.5 4.5 0 0 1 -14 -17 Z",
+            d: "M -4 -13 A 3.5 3.5 0 0 1 4 -13 L 11 -13 A 3.5 3.5 0 0 1 15 -9.5 L 15 -3.5 L 20 0 L 15 3.5 L 15 9.5 A 3.5 3.5 0 0 1 11 13 L -11 13 A 3.5 3.5 0 0 1 -15 9.5 L -15 3.5 L -20 0 L -15 -3.5 L -15 -9.5 A 3.5 3.5 0 0 1 -11 -13 Z",
             fill: "url(#holoMascotGrad)",
             stroke: "rgba(255,255,255,0.7)",
-            strokeWidth: 1.2,
+            strokeWidth: 1,
             filter: "url(#holoMascotShadow)"
           }),
 
           // Vertical Slit Eyes | |
-          h("rect", { x: -7.5, y: -5.5, width: 4, height: 12, rx: 2, fill: "#0b0f19" }),
-          h("circle", { cx: -5.5, cy: -2, r: 1.2, fill: "#38bdf8" }),
-          h("rect", { x: 3.5, y: -5.5, width: 4, height: 12, rx: 2, fill: "#0b0f19" }),
-          h("circle", { cx: 5.5, cy: -2, r: 1.2, fill: "#38bdf8" }),
+          h("rect", { x: -6, y: -4, width: 3, height: 9, rx: 1.5, fill: "#0b0f19" }),
+          h("circle", { cx: -4.5, cy: -1.5, r: 0.9, fill: "#38bdf8" }),
+          h("rect", { x: 3, y: -4, width: 3, height: 9, rx: 1.5, fill: "#0b0f19" }),
+          h("circle", { cx: 4.5, cy: -1.5, r: 0.9, fill: "#38bdf8" }),
 
-          // Wrapped Chat Name Badge (No technical word 'HOLOGRAM')
-          renderWrappedText(chatName, 0, 56, 18, 2, 10.5, "#f1f5f9", 700),
+          // User's requested agent image tag: <image href="agent-icon.png" x="-30" y="-30" width="60" height="60" />
+          h("image", {
+            href: "agent-icon.png",
+            x: -30, y: -30, width: 60, height: 60,
+            preserveAspectRatio: "xMidYMid meet"
+          }),
+
+          // Wrapped Chat Name Badge (without .slice() cutoff, no dangling technical word)
+          renderWrappedText(chatName, 0, 48, 20, 3, 9.5, "#f1f5f9", 700),
           h("text", {
-            x: 0, y: chatName.length > 18 ? 84 : 70,
-            textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5
+            x: 0, y: chatName.length > 20 ? 74 : 62,
+            textAnchor: "middle", fill: "#94a3b8", fontSize: 8.5
           }, currentLang === "ru" ? "Шлюз ИИ-сеанса" : "Agent Gateway")
         ),
 
-        // CENTER NODE: CENTRAL SECURITY SHIELD (mcp-secrets-guard Core Interceptor)
-        h("g", { transform: "translate(480, 115)", className: "yg-center-shield" },
-          // Ground Projection Ring
+        // CENTER NODE: CENTRAL SECURITY SHIELD (<g transform="translate(318,40)" filter="url(#glowStrong)">)
+        h("g", { transform: "translate(318,40)", filter: "url(#glowStrong)", className: "yg-center-shield" },
+          // Ground Ring
           h("ellipse", {
-            cx: 0, cy: 56, rx: 48, ry: 12,
+            cx: 0, cy: 54, rx: 40, ry: 10,
             fill: "none",
-            stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#cyberShieldGrad)",
-            strokeWidth: 1.6, className: "yg-holo-ring", filter: "url(#agGlow)"
+            stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#gShield)",
+            strokeWidth: 1.4, className: "yg-holo-ring"
           }),
 
           // Detonation Shockwaves on Threat Block
           exploded ? h("g", null,
-            h("circle", { cx: -35, cy: 0, r: 46, fill: "none", stroke: "#ef4444", strokeWidth: 3, opacity: 0.95 }),
-            h("circle", { cx: -35, cy: 0, r: 68, fill: "none", stroke: "#fca5a5", strokeWidth: 2, opacity: 0.5 })
+            h("circle", { cx: -25, cy: 0, r: 36, fill: "none", stroke: "#ef4444", strokeWidth: 2.5, opacity: 0.95 }),
+            h("circle", { cx: -25, cy: 0, r: 52, fill: "none", stroke: "#fca5a5", strokeWidth: 1.8, opacity: 0.5 })
           ) : null,
 
-          // The Majestic Vector Cyber Shield Crest
+          // Exact Vector Shield Path specified by user
           h("path", {
-            d: "M 0 -48 C 36 -48 48 -28 48 4 C 48 38 24 60 0 74 C -24 60 -48 38 -48 4 C -48 -28 -36 -48 0 -48 Z",
-            fill: "url(#cyberShieldGrad)",
-            stroke: mode === "block" ? "#fca5a5" : mode === "vault" ? "#fffbeb" : "#a5f3fc",
-            strokeWidth: 2.4,
-            filter: "url(#holoShieldGlow)",
-            className: mode === "patrol" ? "yg-shield-glow" : undefined
+            d: "M 0 -36 C -18 -30 -22 -10 -16 8 C -14 14 -18 36 0 52 C 18 36 14 14 16 8 C 22 -10 18 -30 0 -36 Z",
+            fill: "url(#gShield)",
+            stroke: "#fff",
+            strokeWidth: 2
           }),
 
           // Inner Bevel Facet
           h("path", {
-            d: "M 0 -42 C 30 -42 40 -24 40 4 C 40 32 20 51 0 63 C -20 51 -40 32 -40 4 C -40 -24 -30 -42 0 -42 Z",
-            fill: "rgba(10, 15, 30, 0.75)",
-            stroke: "rgba(255, 255, 255, 0.22)",
-            strokeWidth: 1.2
+            d: "M 0 -30 C -14 -25 -17 -8 -12 6 C -10 11 -14 28 0 42 C 14 28 10 11 12 6 C 17 -8 14 -25 0 -30 Z",
+            fill: "rgba(10, 15, 30, 0.65)",
+            stroke: "rgba(255, 255, 255, 0.2)",
+            strokeWidth: 1
           }),
 
           // Diagonal Glass Gloss Reflection
           h("path", {
-            d: "M -36 -12 L -12 -38 L 8 -38 L -36 12 Z",
+            d: "M -20 -5 L -8 -26 L 5 -26 L -20 10 Z",
             fill: "rgba(255, 255, 255, 0.12)"
           }),
 
           // Sweeping Laser Scanline
           h("line", {
-            x1: -32, y1: 0, x2: 32, y2: 0,
-            stroke: mode === "block" ? "rgba(239,68,68,0.9)" : mode === "vault" ? "rgba(251,191,36,0.9)" : "rgba(56,189,248,0.8)",
-            strokeWidth: 1.5,
+            x1: -22, y1: 4, x2: 22, y2: 4,
+            stroke: mode === "block" ? "rgba(239,68,68,0.9)" : mode === "vault" ? "rgba(251,191,36,0.9)" : "rgba(56,189,248,0.85)",
+            strokeWidth: 1.2,
             className: "yg-holo-scanline"
           }),
 
           // Inner Core Emblem
           mode === "vault" ? h("g", null,
-            h("circle", { cx: 0, cy: 6, r: 15, fill: "rgba(245,158,11,0.25)", stroke: "#fbbf24", strokeWidth: 2 }),
-            h("path", { d: "M -6 4 L -2 9 L 7 0", fill: "none", stroke: "#fff", strokeWidth: 2.2, strokeLinecap: "round" })
+            h("circle", { cx: 0, cy: 8, r: 12, fill: "rgba(245,158,11,0.3)", stroke: "#fbbf24", strokeWidth: 1.8 }),
+            h("path", { d: "M -5 7 L -1 11 L 6 3", fill: "none", stroke: "#fff", strokeWidth: 2, strokeLinecap: "round" })
           ) : mode === "block" ? h("g", null,
-            h("circle", { cx: 0, cy: 6, r: 16, fill: "rgba(239,68,68,0.3)", stroke: "#ef4444", strokeWidth: 2 }),
-            h("path", { d: "M -7 -1 L 7 13 M 7 -1 L -7 13", stroke: "#fee2e2", strokeWidth: 2.4, strokeLinecap: "round" })
+            h("circle", { cx: 0, cy: 8, r: 13, fill: "rgba(239,68,68,0.35)", stroke: "#ef4444", strokeWidth: 2 }),
+            h("path", { d: "M -6 2 L 6 14 M 6 2 L -6 14", stroke: "#fee2e2", strokeWidth: 2.2, strokeLinecap: "round" })
           ) : h("g", null,
-            // Cyber Lock Core
-            h("path", { d: "M -8 -2 C -8 -9 8 -9 8 -2 L 8 4 L -8 4 Z", fill: "none", stroke: "#e0f2fe", strokeWidth: 2.4 }),
-            h("rect", { x: -12, y: 4, width: 24, height: 18, rx: 3.5, fill: "url(#cyberShieldGrad)", stroke: "#e0f2fe", strokeWidth: 1.5 }),
-            h("circle", { cx: 0, cy: 12, r: 2.5, fill: "#0b0f19" }),
-            h("line", { x1: 0, y1: 14.5, x2: 0, y2: 18, stroke: "#0b0f19", strokeWidth: 1.8, strokeLinecap: "round" })
+            h("path", { d: "M -7 2 C -7 -4 7 -4 7 2 L 7 7 L -7 7 Z", fill: "none", stroke: "#e0f2fe", strokeWidth: 2 }),
+            h("rect", { x: -10, y: 7, width: 20, height: 14, rx: 2.5, fill: "url(#gShield)", stroke: "#e0f2fe", strokeWidth: 1.2 }),
+            h("circle", { cx: 0, cy: 13, r: 2, fill: "#0b0f19" }),
+            h("line", { x1: 0, y1: 15, x2: 0, y2: 18, stroke: "#0b0f19", strokeWidth: 1.5, strokeLinecap: "round" })
           ),
 
-          // Titles under Shield (NO WORD 'HOLOGRAM'!)
+          // Titles under Shield
           h("text", {
-            x: 0, y: 92, textAnchor: "middle",
+            x: 0, y: 70, textAnchor: "middle",
             fill: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "#38bdf8",
-            fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em"
+            fontSize: 10.5, fontWeight: 700, letterSpacing: "0.05em"
           },
             mode === "vault" ? (currentLang === "ru" ? "🔒 СЕКРЕТ ПЕРЕХВАЧЕН" : "🔒 SECRET VAULTED")
               : mode === "block" ? (currentLang === "ru" ? "⛔ УГРОЗА ЗАБЛОКИРОВАНА" : "⛔ THREAT BLOCKED")
                 : "mcp-secrets-guard"
           ),
-          h("text", { x: 0, y: 106, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
+          h("text", { x: 0, y: 83, textAnchor: "middle", fill: "#94a3b8", fontSize: 8.5 },
             mode === "vault" ? (currentLang === "ru" ? "Изоляция и замена на токен" : "Isolated & masked with token")
               : mode === "block" ? (currentLang === "ru" ? "Опасное действие нейтрализовано" : "Dangerous payload neutralized")
                 : (currentLang === "ru" ? "Защита в реальном времени" : "Real-time zero-leak barrier")
@@ -985,65 +1001,65 @@ const makeGuardPage = function (SDK, onReady) {
         ),
 
         // VAULT DEMO: Flying Secret Capsule & Masked Outbound Token
-        mode === "vault" && progress <= 0.5 ? h("g", { transform: "translate(" + secretX + ", 115)" },
-          h("rect", { x: -28, y: -11, width: 56, height: 22, rx: 11, fill: "#7c3aed", stroke: "#ffd700", strokeWidth: 2, filter: "url(#agGlow)" }),
-          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#fff", fontSize: 9.5, fontWeight: 700 }, "🔑 sk-ant…")
+        mode === "vault" && progress <= 0.5 ? h("g", { transform: "translate(" + secretX + ", " + secretY + ")" },
+          h("rect", { x: -24, y: -9, width: 48, height: 18, rx: 9, fill: "#7c3aed", stroke: "#ffd700", strokeWidth: 1.8, filter: "url(#agGlow)" }),
+          h("text", { x: 0, y: 3.5, textAnchor: "middle", fill: "#fff", fontSize: 8.5, fontWeight: 700 }, "🔑 sk-ant…")
         ) : null,
         mode === "vault" && progress > 0.5 && progress <= 0.88 ? h("g", { transform: "translate(" + crystalX + ", " + crystalY + ")" },
-          h("circle", { cx: 0, cy: 0, r: 7, fill: "#ffd700", filter: "url(#agGlow)" })
+          h("circle", { cx: 0, cy: 0, r: 6, fill: "#ffd700", filter: "url(#agGlow)" })
         ) : null,
         mode === "vault" && progress > 0.55 ? h("g", { transform: "translate(" + tokenX + ", " + tokenY + ")" },
-          h("rect", { x: -44, y: -10, width: 88, height: 20, rx: 5, fill: "rgba(56,189,248,0.2)", stroke: "#38bdf8", strokeWidth: 1.5, filter: "url(#agGlow)" }),
-          h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#38bdf8", fontSize: 8.5, fontWeight: 700 }, "msg_tok_***")
+          h("rect", { x: -36, y: -8, width: 72, height: 16, rx: 4, fill: "rgba(56,189,248,0.2)", stroke: "#38bdf8", strokeWidth: 1.2, filter: "url(#agGlow)" }),
+          h("text", { x: 0, y: 3.5, textAnchor: "middle", fill: "#38bdf8", fontSize: 7.5, fontWeight: 700 }, "msg_tok_***")
         ) : null,
 
         // BLOCK DEMO: Approaching Threat Mine & Pulverizing Sparks
-        mode === "block" && !exploded ? h("g", { transform: "translate(" + mineX + ", 115)" },
-          h("circle", { cx: 0, cy: 0, r: 14, fill: "#990000", stroke: "#ef4444", strokeWidth: 2.5, filter: "url(#agGlow)" }),
-          h("path", { d: "M -6 -6 L 6 6 M 6 -6 L -6 6", stroke: "#fff", strokeWidth: 2 }),
-          h("text", { x: 0, y: 24, textAnchor: "middle", fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, "curl | python")
+        mode === "block" && !exploded ? h("g", { transform: "translate(" + mineX + ", " + mineY + ")" },
+          h("circle", { cx: 0, cy: 0, r: 12, fill: "#990000", stroke: "#ef4444", strokeWidth: 2, filter: "url(#agGlow)" }),
+          h("path", { d: "M -5 -5 L 5 5 M 5 -5 L -5 5", stroke: "#fff", strokeWidth: 1.8 }),
+          h("text", { x: 0, y: 20, textAnchor: "middle", fill: "#fca5a5", fontSize: 8, fontWeight: 700 }, "curl | python")
         ) : null,
-        exploded ? h("g", { transform: "translate(440, 115)" },
-          // Explosive sparks
-          h("circle", { cx: -20, cy: -18, r: 3.5, fill: "#ef4444", filter: "url(#agGlow)" }),
-          h("circle", { cx: -28, cy: 12, r: 3, fill: "#fbbf24", filter: "url(#agGlow)" }),
-          h("circle", { cx: -15, cy: 22, r: 3.5, fill: "#ef4444", filter: "url(#agGlow)" }),
-          h("circle", { cx: -34, cy: -6, r: 2.5, fill: "#fff", filter: "url(#agGlow)" })
+        exploded ? h("g", { transform: "translate(296, 40)" },
+          // Explosive sparks at shield impact point
+          h("circle", { cx: -16, cy: -14, r: 3, fill: "#ef4444", filter: "url(#agGlow)" }),
+          h("circle", { cx: -22, cy: 10, r: 2.5, fill: "#fbbf24", filter: "url(#agGlow)" }),
+          h("circle", { cx: -12, cy: 18, r: 3, fill: "#ef4444", filter: "url(#agGlow)" }),
+          h("circle", { cx: -28, cy: -4, r: 2, fill: "#fff", filter: "url(#agGlow)" })
         ) : null,
 
         // RIGHT TOP: Armored Holographic Vault Node
-        h("g", { transform: "translate(820, 68)" },
+        h("g", { transform: "translate(570, 48)" },
           h("rect", {
-            x: -40, y: -30, width: 80, height: 60, rx: 10,
-            fill: "url(#holoVaultGrad)", stroke: mode === "vault" ? "#fff" : "#f59e0b", strokeWidth: 2,
+            x: -35, y: -25, width: 70, height: 50, rx: 8,
+            fill: "url(#holoVaultGrad)", stroke: mode === "vault" ? "#fff" : "#f59e0b", strokeWidth: 1.8,
             filter: "url(#agGlow)",
             className: mode === "vault" ? "yg-vault-glow" : ""
           }),
           // Facet overlay
-          h("path", { d: "M -40 -8 L 0 -30 L 40 -8 L 0 30 Z", fill: "rgba(255,255,255,0.12)" }),
+          h("path", { d: "M -35 -6 L 0 -25 L 35 -6 L 0 25 Z", fill: "rgba(255,255,255,0.12)" }),
           // Lock Core
-          h("circle", { cx: 0, cy: 0, r: 14, fill: "#1c1404", stroke: "#fde68a", strokeWidth: 1.8 }),
-          h("circle", { cx: 0, cy: 0, r: 4.5, fill: "#fde68a" }),
-          h("line", { x1: 0, y1: -14, x2: 0, y2: -8, stroke: "#fde68a", strokeWidth: 2 }),
+          h("circle", { cx: 0, cy: 0, r: 12, fill: "#1c1404", stroke: "#fde68a", strokeWidth: 1.5 }),
+          h("circle", { cx: 0, cy: 0, r: 3.5, fill: "#fde68a" }),
+          h("line", { x1: 0, y1: -12, x2: 0, y2: -6, stroke: "#fde68a", strokeWidth: 1.8 }),
           // Vault Counter Badge
-          h("text", { x: 0, y: 46, textAnchor: "middle", fill: "#fde68a", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 38, textAnchor: "middle", fill: "#fde68a", fontSize: 10, fontWeight: 700 },
             (currentLang === "ru" ? "Сейф: " : "Vault: ") + (vaultCount + vaultBonus)),
-          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
+          h("text", { x: 0, y: 49, textAnchor: "middle", fill: "#94a3b8", fontSize: 8 },
             currentLang === "ru" ? "Шифрование AES" : "Hardware AES"),
-          vaultBonus > 0 && mode === "vault" ? h("text", { x: 38, y: -20, fill: "#ffd700", fontSize: 12, fontWeight: 900 }, "+1") : null
+          vaultBonus > 0 && mode === "vault" ? h("text", { x: 32, y: -16, fill: "#ffd700", fontSize: 11, fontWeight: 900 }, "+1") : null
         ),
 
         // RIGHT BOTTOM: External Internet Node
-        h("g", { transform: "translate(820, 175)" },
-          h("circle", { cx: 0, cy: 0, r: 34, fill: "url(#holoNetGrad)", stroke: "#38bdf8", strokeWidth: 2, filter: "url(#agGlow)" }),
+        h("g", { transform: "translate(570, 130)" },
+          h("circle", { cx: 0, cy: 0, r: 28, fill: "url(#holoNetGrad)", stroke: "#38bdf8", strokeWidth: 1.8, filter: "url(#agGlow)" }),
           // Holographic globe lattice
-          h("circle", { cx: 0, cy: 0, r: 23, fill: "none", stroke: "rgba(255,255,255,0.75)", strokeWidth: 1.4 }),
-          h("ellipse", { cx: 0, cy: 0, rx: 10, ry: 23, fill: "none", stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.1 }),
-          h("line", { x1: -23, y1: 0, x2: 23, y2: 0, stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.1 }),
+          h("circle", { cx: 0, cy: 0, r: 19, fill: "none", stroke: "rgba(255,255,255,0.75)", strokeWidth: 1.2 }),
+          h("ellipse", { cx: 0, cy: 0, rx: 8, ry: 19, fill: "none", stroke: "rgba(255,255,255,0.65)", strokeWidth: 1 }),
+          h("line", { x1: -19, y1: 0, x2: 19, y2: 0, stroke: "rgba(255,255,255,0.65)", strokeWidth: 1 }),
           // Destination labels - Wrapped without clipping!
-          h("text", { x: 0, y: 48, textAnchor: "middle", fill: "#bae6fd", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 40, textAnchor: "middle", fill: "#bae6fd", fontSize: 10, fontWeight: 700 },
             currentLang === "ru" ? "Интернет" : "Internet"),
-          renderWrappedText(dest, 0, 62, 18, 2, 9.5, "#94a3b8")
+          renderWrappedText(dest, 0, 53, 18, 2, 8.5, "#94a3b8")
         )
       ),
 
@@ -1183,7 +1199,13 @@ const makeGuardPage = function (SDK, onReady) {
       var resolved = resolveChatTitle(inc.agent.session_id);
       rawTitle = resolved.raw || resolved.title;
     }
-    rawTitle = String(rawTitle || "").replace(/^(?:чат|chat)\s*[:«"']?\s*/i, "").replace(/[»"']$/i, "").trim();
+    rawTitle = String(rawTitle || "")
+      .replace(/^(?:архивный\s+)?(?:чат|chat)\s*(?:№|#)?\s*[:«"']?\s*/i, "")
+      .replace(/[»"']$/i, "")
+      .trim();
+    if (/^[0-9]+$/.test(rawTitle)) {
+      rawTitle = (currentLang === "ru" ? "Сеанс #" : "Session #") + rawTitle;
+    }
     const who = rawTitle
       ? (currentLang === "ru" ? "«" + rawTitle + "»" : "\"" + rawTitle + "\"")
       : (inc.agent && inc.agent.session_id
@@ -1232,7 +1254,10 @@ const makeGuardPage = function (SDK, onReady) {
         currentLang === "ru" ? "В чате " : "In chat ",
         h("b", null, who),
         currentLang === "ru" ? " ИИ-помощник попытался передать данные через инструмент: " : " agent attempted to send data via tool: ",
-        h("b", { className: "yg-mono" }, (inc.destination ? T(inc.destination).replace(/^команда:\s*/i, "").replace(/^shell:\s*/i, "") : (inc.tool || "terminal"))),
+        h("b", { className: "yg-mono" },
+          inc.destination && !inc.destination.startsWith("http")
+            ? String(inc.destination).replace(/^(?:shell|команда|command):\s*/i, "")
+            : (inc.tool || "terminal")),
         inc.destination && inc.destination.startsWith("http") ? (currentLang === "ru" ? " на адрес " : " to ") : null,
         inc.destination && inc.destination.startsWith("http") ? h("b", { className: "yg-mono" }, inc.destination) : null,
         ".") : null,

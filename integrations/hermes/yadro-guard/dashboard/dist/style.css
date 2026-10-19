@@ -218,7 +218,7 @@ select.yg-input { appearance: auto; }
 /* Hologram Cline Mascot & Matrix Animations */
 @keyframes holoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes holoScanline { 0% { transform: translateY(-38px); opacity: 0; } 15% { opacity: 0.85; } 85% { opacity: 0.85; } 100% { transform: translateY(38px); opacity: 0; } }
-@keyframes holoRingPulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.08); opacity: 0.85; } }
+@keyframes holoRingPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.85; } }
 @keyframes holoShieldPulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.12); opacity: 0.85; } }
 @keyframes holoIridShimmer { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 @keyframes holoPacketStream { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(245px); opacity: 0; } }
@@ -227,8 +227,6 @@ select.yg-input { appearance: auto; }
 @keyframes holoRailDash { to { stroke-dashoffset: -36; } }
 @keyframes holoVaultFlash { 0%, 100% { stroke: #f59e0b; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 3.5; filter: drop-shadow(0 0 14px #fbbf24); } }
 
-.yg-holo-agent { transform-origin: 0px 0px; animation: holoFloat 3.4s ease-in-out infinite; }
-.yg-center-shield { transform-origin: 0px 0px; animation: holoFloat 3.8s ease-in-out infinite; }
 .yg-shield-glow { filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.65)); }
 .yg-holo-scanline { animation: holoScanline 2.2s linear infinite; }
 .yg-holo-ring { transform-origin: 0px 50px; animation: holoRingPulse 2.6s ease-in-out infinite; }
@@ -265,3 +263,6 @@ select.yg-input { appearance: auto; }
 .yg-fullcmd-pre { padding: 10px 12px; margin: 0; font-size: 11px; white-space: pre-wrap; word-break: break-all; max-height: 280px; overflow-y: auto; color: #67e8f9; line-height: 1.5; font-family: ui-monospace, Consolas, monospace; }
 .yg-fullcmd-actions { display: flex; gap: 8px; padding: 6px 10px; background: rgba(255,255,255,0.03); border-top: 1px solid var(--yg-border); align-items: center; flex-wrap: nowrap; overflow-x: auto; }
 .yg-fullcmd-actions .yg-btn { white-space: nowrap; font-size: 10px; }
+
+/* Fail-safe: Purge floating bottom-right blocked count button */
+.yg-toast-count { display: none !important; }
