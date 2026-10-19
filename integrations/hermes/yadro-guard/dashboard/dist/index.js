@@ -390,28 +390,152 @@
     });
   }
 
-  var _chatTitles = {};
-  function resolveChatTitle(sessionId) {
-    if (!sessionId) return { title: currentLang === "ru" ? "Архивный чат (№—)" : "Archived chat (#—)", id: "—" };
-    if (_chatTitles[sessionId]) return _chatTitles[sessionId];
-    var title = null;
+  // ---- DYNAMIC HERMES SESSION RESOLVER (ZERO HARDCODING) ----
+  var _sessionTitlesCache = {};
+  var _titleListeners = new Set();
+  var _titlesFetched = false;
+
+  function loadDynamicSessionTitles() {
     try {
-      var els = document.querySelectorAll("[data-session-id], .session, .chat-item, [data-chat-id], .conversation-item, .sidebar-item, [data-testid*='session'], [data-testid*='chat']");
-      for (var i = 0; i < els.length; i++) {
-        var el = els[i];
-        var sid = el.getAttribute("data-session-id") || el.getAttribute("data-chat-id") || (el.dataset && (el.dataset.sessionId || el.dataset.chatId));
-        var t = el.textContent || el.getAttribute("title") || el.getAttribute("aria-label") || "";
-        t = t.replace(/\s+/g, " ").trim();
-        if (sid && (sid === sessionId || sid.endsWith(sessionId) || sessionId.endsWith(sid)) && t) { title = t; break; }
-      }
+      if (!SDK || !SDK.fetchJSON) return;
+      SDK.fetchJSON("/sessions/titles")
+        .then(function (r) {
+          if (r && r.status === "ok" && r.titles) {
+            Object.keys(r.titles).forEach(function (k) {
+              var t = String(r.titles[k] || "").trim();
+              if (t) {
+                _sessionTitlesCache[k] = t;
+                var shortK = String(k).slice(-6);
+                _sessionTitlesCache[shortK] = t;
+              }
+            });
+            _titlesFetched = true;
+            _titleListeners.forEach(function (fn) { try { fn(_sessionTitlesCache); } catch (e) {} });
+          }
+        })
+        .catch(function () {});
     } catch (e) {}
-    var shortId = String(sessionId).slice(-6);
-    var prefix = currentLang === "ru" ? "Чат «" : "Chat \"";
-    var suffix = currentLang === "ru" ? "»" : "\"";
-    var fallback = currentLang === "ru" ? ("Архивный чат №" + shortId) : ("Archived chat #" + shortId);
-    var out = title ? { title: prefix + title + suffix, id: sessionId } : { title: fallback, id: sessionId };
-    _chatTitles[sessionId] = out;
-    return out;
+  }
+
+  function parseHermesSidebarTitles() {
+    var found = {};
+    function scan(doc) {
+      if (!doc) return;
+      try {
+        var sel = [
+          "a[href*='/chat/']",
+          "a[href*='/session/']",
+          "a[href*='chat']",
+          "[data-session-id]",
+          "[data-chat-id]",
+          "[data-id]",
+          ".session-item",
+          ".chat-item",
+          ".sidebar-item",
+          "nav a",
+          "[role='navigation'] a",
+          "[data-testid*='session']",
+          "[data-testid*='chat']"
+        ].join(", ");
+        var els = doc.querySelectorAll(sel);
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          var href = el.getAttribute("href") || "";
+          var sid = el.getAttribute("data-session-id") || el.getAttribute("data-chat-id") || el.getAttribute("data-id") || (el.dataset && (el.dataset.sessionId || el.dataset.chatId || el.dataset.id)) || "";
+          if (!sid && href) {
+            var m = href.match(/(?:chat|session)[s]?\/([a-zA-Z0-9_\-]+)/);
+            if (m) sid = m[1];
+          }
+          var raw = el.innerText || el.textContent || el.getAttribute("title") || el.getAttribute("aria-label") || "";
+          var text = raw.replace(/\s+/g, " ").trim();
+          text = text.replace(/^(?:chat|чат)\s*[:«"']?\s*/i, "").replace(/[»"']$/i, "").trim();
+          if (sid && text) {
+            found[sid] = text;
+            found[String(sid).slice(-6)] = text;
+          }
+        }
+      } catch (e) {}
+    }
+    scan(document);
+    try { if (window.parent && window.parent !== window && window.parent.document) scan(window.parent.document); } catch (e) {}
+    try { if (window.top && window.top !== window && window.top.document) scan(window.top.document); } catch (e) {}
+    return found;
+  }
+
+  function resolveChatTitle(sessionId) {
+    if (!sessionId) {
+      return {
+        title: currentLang === "ru" ? "«Архивный сеанс»" : "\"Archived session\"",
+        raw: currentLang === "ru" ? "Архивный сеанс" : "Archived session",
+        id: "—"
+      };
+    }
+    var sidStr = String(sessionId);
+    var shortId = sidStr.slice(-6);
+
+    // 1. Check in-memory SQLite / API cache
+    var title = _sessionTitlesCache[sidStr] || _sessionTitlesCache[shortId];
+
+    // 2. If not yet cached, attempt live DOM parsing of Hermes sidebar
+    if (!title) {
+      var domTitles = parseHermesSidebarTitles();
+      Object.assign(_sessionTitlesCache, domTitles);
+      title = _sessionTitlesCache[sidStr] || _sessionTitlesCache[shortId];
+    }
+
+    // 3. If still not cached, trigger async background fetch from /sessions/titles
+    if (!title && !_titlesFetched) {
+      loadDynamicSessionTitles();
+    }
+
+    var cleanTitle = title ? String(title).replace(/^(?:чат|chat)\s*[:«"']?\s*/i, "").replace(/[»"']$/i, "").trim() : "";
+    var fallback = currentLang === "ru" ? ("Сеанс #" + shortId) : ("Session #" + shortId);
+    var outRaw = cleanTitle || fallback;
+    var outTitle = currentLang === "ru" ? ("«" + outRaw + "»") : ("\"" + outRaw + "\"");
+
+    return { title: outTitle, raw: outRaw, id: sidStr };
+  }
+
+  // Multi-line SVG text wrapper to prevent clipping or ellipsis
+  function renderWrappedText(text, x, y, maxLineLen, maxLines, fontSize, fill, fontWeight) {
+    if (!text) return null;
+    var raw = String(text);
+    var lines = [];
+    if (raw.indexOf("/") !== -1 && raw.length > maxLineLen) {
+      var parts = raw.split("/");
+      if (parts.length >= 3 && parts[0].indexOf("http") !== -1) {
+        lines = [parts[0] + "//" + parts[2], "/" + parts.slice(3).join("/")];
+      }
+    }
+    if (lines.length === 0) {
+      var words = raw.split(" ");
+      var cur = "";
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        if (!cur) {
+          cur = w;
+        } else if ((cur + " " + w).length <= maxLineLen) {
+          cur += " " + w;
+        } else {
+          lines.push(cur);
+          cur = w;
+          if (lines.length >= maxLines - 1) break;
+        }
+      }
+      if (cur && lines.length < maxLines) lines.push(cur);
+      if (lines.length === 0 && raw) {
+        for (var j = 0; j < raw.length && lines.length < maxLines; j += maxLineLen) {
+          lines.push(raw.slice(j, j + maxLineLen));
+        }
+      }
+    }
+    var lineH = fontSize * 1.35;
+    return h("text", {
+      x: x, y: y, textAnchor: "middle", fill: fill,
+      fontSize: fontSize, fontWeight: fontWeight || 400
+    }, lines.map(function (ln, idx) {
+      return h("tspan", { x: x, dy: idx === 0 ? 0 : lineH, key: idx }, ln);
+    }));
   }
 
   function passportText(inc, exp, vlt) {
@@ -527,19 +651,23 @@
     var blocked = items.some(function (i) { return i.status === "blocked" || i.status === "quarantined"; });
     var intercepted = items.some(function (i) { return i.status === "protected"; });
 
-    var chatName = currentLang === "ru" ? "Ожидание команд" : "Awaiting agent commands";
-    var chatId = "—", dest = currentLang === "ru" ? "Шлюз защищён" : "Gateway protected";
+    var rawChat = "";
+    var dest = currentLang === "ru" ? "Шлюз защищён" : "Gateway protected";
     items.forEach(function (i) {
-      if (i.agent && (i.agent.chat_title || i.agent.session_title)) {
-        var rawT = i.agent.chat_title || i.agent.session_title;
-        chatName = (currentLang === "ru" ? "Чат «" : "Chat \"") + rawT + (currentLang === "ru" ? "»" : "\"");
-        chatId = i.agent.session_id ? String(i.agent.session_id).slice(-8) : "—";
-      } else if (i.agent && i.agent.session_id) {
-        var c = resolveChatTitle(i.agent.session_id);
-        chatName = c.title; chatId = String(c.id).slice(-8);
+      if (!rawChat && i.agent) {
+        if (i.agent.chat_title || i.agent.session_title) {
+          rawChat = i.agent.chat_title || i.agent.session_title;
+        } else if (i.agent.session_id) {
+          var c = resolveChatTitle(i.agent.session_id);
+          rawChat = c.raw || c.title;
+        }
       }
       if (i.destination) dest = i.destination;
     });
+    rawChat = String(rawChat || "").replace(/^(?:чат|chat)\s*[:«"']?\s*/i, "").replace(/[»"']$/i, "").trim();
+    var chatName = rawChat
+      ? (currentLang === "ru" ? "«" + rawChat + "»" : "\"" + rawChat + "\"")
+      : (currentLang === "ru" ? "Ожидание команд" : "Awaiting agent commands");
 
     // Arena animation mode: "patrol" (idle 60 FPS), "vault" (mask & send demo), "block" (strike & destroy demo)
     var st0 = useState("patrol"), mode = st0[0], setMode = st0[1];
@@ -588,24 +716,46 @@
 
     useEffect(function () { return function () { if (timerRef.current) clearInterval(timerRef.current); }; }, []);
 
-    var coreColor = mode === "block" ? "#ff4d4f" : mode === "vault" ? "#f0b44a" : blocked ? "#ff4d4f" : intercepted ? "#b026ff" : "#00f0ff";
+    var coreColor = mode === "block" ? "#ef4444" : mode === "vault" ? "#f59e0b" : blocked ? "#ef4444" : intercepted ? "#a855f7" : "#38bdf8";
     var progress = animStep / 100;
 
     // Secret capsule coordinates in vault demo
-    var secretX = mode === "vault" ? (160 + progress * 260) : -999;
-    var tokenX = mode === "vault" && progress > 0.5 ? (450 + (progress - 0.5) * 2 * 250) : -999;
+    var secretX = mode === "vault" ? (140 + Math.min(progress, 0.5) * 680) : -999;
+    var vaultFlyProgress = progress > 0.5 ? Math.min((progress - 0.5) / 0.35, 1) : 0;
+    var crystalX = mode === "vault" && progress > 0.5 && progress <= 0.88 ? (480 + vaultFlyProgress * 320) : -999;
+    var crystalY = mode === "vault" && progress > 0.5 && progress <= 0.88 ? (115 - vaultFlyProgress * 47) : -999;
+
+    var tokenFlyProgress = progress > 0.55 ? Math.min((progress - 0.55) / 0.45, 1) : 0;
+    var tokenX = mode === "vault" && progress > 0.55 ? (480 + tokenFlyProgress * 300) : -999;
+    var tokenY = mode === "vault" && progress > 0.55 ? (115 + tokenFlyProgress * 55) : -999;
 
     // Threat mine coordinates in block demo
-    var mineX = mode === "block" ? (160 + progress * 240) : -999;
+    var mineX = mode === "block" ? (140 + Math.min(progress, 0.6) * 500) : -999;
     var exploded = mode === "block" && progress >= 0.6;
 
     return h("div", { className: "yg-card yg-arena-card wide" },
       h("svg", {
         className: "yg-arena-svg",
-        viewBox: "0 0 900 240",
+        viewBox: "0 0 960 260",
         preserveAspectRatio: "xMidYMid meet"
       },
         h("defs", null,
+          // Central Shield Dynamic Shading
+          h("linearGradient", { id: "cyberShieldGrad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
+            mode === "block" ? [
+              h("stop", { offset: "0%", stopColor: "#f87171", key: "s1" }),
+              h("stop", { offset: "50%", stopColor: "#ef4444", key: "s2" }),
+              h("stop", { offset: "100%", stopColor: "#7f1d1d", key: "s3" })
+            ] : mode === "vault" ? [
+              h("stop", { offset: "0%", stopColor: "#fde68a", key: "s1" }),
+              h("stop", { offset: "50%", stopColor: "#f59e0b", key: "s2" }),
+              h("stop", { offset: "100%", stopColor: "#92400e", key: "s3" })
+            ] : [
+              h("stop", { offset: "0%", stopColor: "#38bdf8", key: "s1" }),
+              h("stop", { offset: "50%", stopColor: "#0284c7", key: "s2" }),
+              h("stop", { offset: "100%", stopColor: "#0c4a6e", key: "s3" })
+            ]
+          ),
           // Holographic Iridescent Border Gradient (Theme Hologram from Cline)
           h("linearGradient", { id: "holoIridescentGrad", x1: "0%", y1: "0%", x2: "100%", y2: "100%" },
             h("stop", { offset: "0%", stopColor: "#f472b6" }),
@@ -632,10 +782,6 @@
             h("stop", { offset: "0%", stopColor: "#7dd3fc" }),
             h("stop", { offset: "50%", stopColor: "#0284c7" }),
             h("stop", { offset: "100%", stopColor: "#0c4a6e" })),
-          // Gateway Pedestal Gradient
-          h("linearGradient", { id: "holoGateGrad", x1: "0%", y1: "0%", x2: "0%", y2: "100%" },
-            h("stop", { offset: "0%", stopColor: "#334155" }),
-            h("stop", { offset: "100%", stopColor: "#0f172a" })),
           h("filter", { id: "agGlow" },
             h("feGaussianBlur", { stdDeviation: "4", result: "blur" }),
             h("feMerge", null,
@@ -650,193 +796,239 @@
         ),
 
         // Background Cyber Grid
-        h("rect", { width: "900", height: "240", fill: "url(#agGrid)" }),
+        h("rect", { width: "960", height: "260", fill: "url(#agGrid)" }),
 
         // Neon Data Conduits
-        // Path 1: Gateway -> Cline Hologram Sentinel
+        // Path 1: Agent Gateway -> Central Shield
         h("path", {
-          d: "M 175 120 L 380 120",
+          d: "M 175 115 L 430 115",
           fill: "none",
           stroke: mode === "block" ? "rgba(239,68,68,0.5)" : "rgba(56,189,248,0.45)",
           strokeWidth: 4,
           className: "yg-conduit-active"
         }),
-        // Path 2: Sentinel -> Hologram Vault
+        // Path 2: Central Shield -> Hologram Vault
         h("path", {
-          d: "M 480 100 C 550 55, 630 60, 705 68",
+          d: "M 530 95 C 610 55, 700 60, 775 68",
           fill: "none",
           stroke: mode === "vault" ? "rgba(251,191,36,0.85)" : "rgba(245,158,11,0.35)",
           strokeWidth: 3.5,
           className: mode === "vault" ? "yg-conduit-active" : "yg-flow-path"
         }),
-        // Path 3: Sentinel -> Hologram Internet
+        // Path 3: Central Shield -> Hologram Internet
         h("path", {
-          d: "M 480 140 C 550 180, 630 180, 705 172",
+          d: "M 530 135 C 610 175, 700 175, 775 175",
           fill: "none",
           stroke: "rgba(56,189,248,0.45)",
           strokeWidth: 3.5,
           className: "yg-conduit-active"
         }),
 
-        // Continuous Dynamic Traffic Streams (Glide into Sentinel)
+        // Continuous Dynamic Traffic Streams (Glide into Central Shield)
         mode === "patrol" ? h("g", null,
-          h("circle", { cx: 180, cy: 120, r: 4.5, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-stream-pkt-1" }),
-          h("circle", { cx: 180, cy: 120, r: 4, fill: "#34d399", filter: "url(#agGlow)", className: "yg-stream-pkt-2" }),
-          h("circle", { cx: 180, cy: 120, r: 4.5, fill: "#c084fc", filter: "url(#agGlow)", className: "yg-stream-pkt-3" }),
+          h("circle", { cx: 180, cy: 115, r: 4.5, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-stream-pkt-1" }),
+          h("circle", { cx: 180, cy: 115, r: 4, fill: "#34d399", filter: "url(#agGlow)", className: "yg-stream-pkt-2" }),
+          h("circle", { cx: 180, cy: 115, r: 4.5, fill: "#c084fc", filter: "url(#agGlow)", className: "yg-stream-pkt-3" }),
           // Outbound verified streams
-          h("circle", { cx: 480, cy: 140, r: 4, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-out-pkt-bot" })
+          h("circle", { cx: 530, cy: 135, r: 4, fill: "#38bdf8", filter: "url(#agGlow)", className: "yg-out-pkt-bot" })
         ) : null,
 
-        // LEFT NODE: Active Chat Gateway
-        h("g", { transform: "translate(90, 120)" },
-          h("circle", { cx: 0, cy: 0, r: 44, fill: "url(#holoGateGrad)", stroke: "#475569", strokeWidth: 2, filter: "url(#agGlow)" }),
-          h("circle", { cx: 0, cy: 0, r: 38, fill: "none", stroke: "rgba(56,189,248,0.35)", strokeWidth: 1.5, strokeDasharray: "4 3" }),
-          // Server stack terminal icon
-          h("rect", { x: -16, y: -18, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: -14, r: 1.5, fill: "#34d399" }),
-          h("rect", { x: -16, y: -6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: -2, r: 1.5, fill: "#fbbf24" }),
-          h("rect", { x: -16, y: 6, width: 32, height: 8, rx: 2, fill: "rgba(0,0,0,0.5)", stroke: "#38bdf8", strokeWidth: 1.5 }),
-          h("circle", { cx: -10, cy: 10, r: 1.5, fill: "#38bdf8" }),
-          // Chat Name Badge
-          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#f1f5f9", fontSize: 11, fontWeight: 700 },
-            chatName.length > 20 ? chatName.slice(0, 19) + "…" : chatName),
-          h("text", { x: 0, y: 72, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
-            currentLang === "ru" ? "Шлюз ИИ-сеанса" : "Agent Gateway")
-        ),
-
-        // CENTER: CLINE SENTINEL (The Holographic Agent)
-        h("g", { transform: "translate(430, 120)", className: "yg-holo-agent" },
+        // LEFT NODE: Active AI Session Gateway with Hologram Cline Mascot (Fully padded, no clipping!)
+        h("g", { transform: "translate(125, 115)" },
           // Holographic Ground Projection Ring
           h("ellipse", {
-            cx: 0, cy: 50, rx: 46, ry: 12,
-            fill: "none", stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#holoIridescentGrad)",
+            cx: 0, cy: 46, rx: 42, ry: 10,
+            fill: "none", stroke: "url(#holoIridescentGrad)",
             strokeWidth: 1.5, className: "yg-holo-ring", filter: "url(#agGlow)"
           }),
 
-          // Outer Shield Matrix (Vault or Threat Block)
-          mode === "vault" ? h("rect", {
-            x: -52, y: -52, width: 104, height: 104, rx: 26,
-            fill: "rgba(245,158,11,0.14)", stroke: "#fbbf24", strokeWidth: 2.5,
-            className: "yg-holo-shield-vault", filter: "url(#holoShieldGlow)"
-          }) : null,
-          mode === "block" ? h("rect", {
-            x: -52, y: -52, width: 104, height: 104, rx: 26,
-            fill: "rgba(239,68,68,0.2)", stroke: "#ef4444", strokeWidth: 3,
-            className: "yg-holo-shield-danger", filter: "url(#holoShieldGlow)"
-          }) : null,
-
-          // Threat Block Detonation Shockwaves
-          exploded ? h("g", null,
-            h("circle", { cx: 0, cy: 0, r: 70, fill: "none", stroke: "#ef4444", strokeWidth: 3, opacity: 0.9 }),
-            h("circle", { cx: 0, cy: 0, r: 88, fill: "none", stroke: "#fca5a5", strokeWidth: 2, opacity: 0.45 })
-          ) : null,
-
-          // The Squircle Container (from Cline theme screenshot)
+          // The Squircle Container (Hologram Theme from Cline)
           h("rect", {
-            x: -42, y: -42, width: 84, height: 84, rx: 20,
+            x: -38, y: -38, width: 76, height: 76, rx: 18,
             fill: "url(#holoBgGrad)",
-            stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#holoIridescentGrad)",
+            stroke: "url(#holoIridescentGrad)",
             strokeWidth: 2.2,
             filter: "url(#agGlow)",
-            className: mode === "patrol" ? "yg-holo-border" : undefined
+            className: "yg-holo-border"
           }),
 
           // Diagonal Glass Gloss Reflection
           h("path", {
-            d: "M -38 -15 L -15 -38 L 10 -38 L -38 10 Z",
+            d: "M -34 -12 L -12 -34 L 8 -34 L -34 8 Z",
             fill: "rgba(255, 255, 255, 0.08)"
           }),
 
           // Sweeping Laser Scanline
           h("line", {
-            x1: -34, y1: 0, x2: 34, y2: 0,
-            stroke: mode === "block" ? "rgba(239,68,68,0.8)" : "rgba(56,189,248,0.75)",
+            x1: -30, y1: 0, x2: 30, y2: 0,
+            stroke: "rgba(56,189,248,0.75)",
             strokeWidth: 1.5,
             className: "yg-holo-scanline"
           }),
 
-          // Cline Mascot Silhouette (Exact contour from screenshot)
+          // Cline Mascot Silhouette (Pearlescent Bot Head)
           h("path", {
-            d: "M -5 -19 A 5 5 0 0 1 5 -19 L 16 -19 A 5 5 0 0 1 21 -14 L 21 -5 L 28 0 L 21 5 L 21 14 A 5 5 0 0 1 16 19 L -16 19 A 5 5 0 0 1 -21 14 L -21 5 L -28 0 L -21 -5 L -21 -14 A 5 5 0 0 1 -16 -19 Z",
-            fill: mode === "block" ? "#fee2e2" : "url(#holoMascotGrad)",
-            stroke: mode === "block" ? "#ef4444" : "rgba(255,255,255,0.6)",
+            d: "M -5 -17 A 4.5 4.5 0 0 1 5 -17 L 14 -17 A 4.5 4.5 0 0 1 19 -12.5 L 19 -4.5 L 25 0 L 19 4.5 L 19 12.5 A 4.5 4.5 0 0 1 14 17 L -14 17 A 4.5 4.5 0 0 1 -19 12.5 L -19 4.5 L -25 0 L -19 -4.5 L -19 -12.5 A 4.5 4.5 0 0 1 -14 -17 Z",
+            fill: "url(#holoMascotGrad)",
+            stroke: "rgba(255,255,255,0.7)",
             strokeWidth: 1.2,
             filter: "url(#holoMascotShadow)"
           }),
 
           // Vertical Slit Eyes | |
-          h("rect", { x: -8.5, y: -6, width: 4.5, height: 13.5, rx: 2.25, fill: "#0b0f19" }),
-          h("circle", { cx: -6.25, cy: -2, r: 1.2, fill: mode === "block" ? "#ef4444" : "#38bdf8" }),
-          h("rect", { x: 4, y: -6, width: 4.5, height: 13.5, rx: 2.25, fill: "#0b0f19" }),
-          h("circle", { cx: 6.25, cy: -2, r: 1.2, fill: mode === "block" ? "#ef4444" : "#38bdf8" }),
+          h("rect", { x: -7.5, y: -5.5, width: 4, height: 12, rx: 2, fill: "#0b0f19" }),
+          h("circle", { cx: -5.5, cy: -2, r: 1.2, fill: "#38bdf8" }),
+          h("rect", { x: 3.5, y: -5.5, width: 4, height: 12, rx: 2, fill: "#0b0f19" }),
+          h("circle", { cx: 5.5, cy: -2, r: 1.2, fill: "#38bdf8" }),
 
-          // Agent Badge / Title
-          h("text", { x: 0, y: 68, textAnchor: "middle", fill: coreColor, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em" },
-            mode === "vault" ? (currentLang === "ru" ? "🔒 ЗАХВАТ СЕКРЕТА" : "🔒 VAULTING SECRET")
-              : mode === "block" ? (currentLang === "ru" ? "⛔ ОТРАЖЕНИЕ АТАКИ" : "⛔ THREAT BLOCKED")
-                : (currentLang === "ru" ? "CLINE-СТРАЖ · ГОЛОГРАММА" : "CLINE SENTINEL · HOLOGRAM"))
+          // Wrapped Chat Name Badge (No technical word 'HOLOGRAM')
+          renderWrappedText(chatName, 0, 56, 18, 2, 10.5, "#f1f5f9", 700),
+          h("text", {
+            x: 0, y: chatName.length > 18 ? 84 : 70,
+            textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5
+          }, currentLang === "ru" ? "Шлюз ИИ-сеанса" : "Agent Gateway")
+        ),
+
+        // CENTER NODE: CENTRAL SECURITY SHIELD (mcp-secrets-guard Core Interceptor)
+        h("g", { transform: "translate(480, 115)", className: "yg-center-shield" },
+          // Ground Projection Ring
+          h("ellipse", {
+            cx: 0, cy: 56, rx: 48, ry: 12,
+            fill: "none",
+            stroke: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "url(#cyberShieldGrad)",
+            strokeWidth: 1.6, className: "yg-holo-ring", filter: "url(#agGlow)"
+          }),
+
+          // Detonation Shockwaves on Threat Block
+          exploded ? h("g", null,
+            h("circle", { cx: -35, cy: 0, r: 46, fill: "none", stroke: "#ef4444", strokeWidth: 3, opacity: 0.95 }),
+            h("circle", { cx: -35, cy: 0, r: 68, fill: "none", stroke: "#fca5a5", strokeWidth: 2, opacity: 0.5 })
+          ) : null,
+
+          // The Majestic Vector Cyber Shield Crest
+          h("path", {
+            d: "M 0 -48 C 36 -48 48 -28 48 4 C 48 38 24 60 0 74 C -24 60 -48 38 -48 4 C -48 -28 -36 -48 0 -48 Z",
+            fill: "url(#cyberShieldGrad)",
+            stroke: mode === "block" ? "#fca5a5" : mode === "vault" ? "#fffbeb" : "#a5f3fc",
+            strokeWidth: 2.4,
+            filter: "url(#holoShieldGlow)",
+            className: mode === "patrol" ? "yg-shield-glow" : undefined
+          }),
+
+          // Inner Bevel Facet
+          h("path", {
+            d: "M 0 -42 C 30 -42 40 -24 40 4 C 40 32 20 51 0 63 C -20 51 -40 32 -40 4 C -40 -24 -30 -42 0 -42 Z",
+            fill: "rgba(10, 15, 30, 0.75)",
+            stroke: "rgba(255, 255, 255, 0.22)",
+            strokeWidth: 1.2
+          }),
+
+          // Diagonal Glass Gloss Reflection
+          h("path", {
+            d: "M -36 -12 L -12 -38 L 8 -38 L -36 12 Z",
+            fill: "rgba(255, 255, 255, 0.12)"
+          }),
+
+          // Sweeping Laser Scanline
+          h("line", {
+            x1: -32, y1: 0, x2: 32, y2: 0,
+            stroke: mode === "block" ? "rgba(239,68,68,0.9)" : mode === "vault" ? "rgba(251,191,36,0.9)" : "rgba(56,189,248,0.8)",
+            strokeWidth: 1.5,
+            className: "yg-holo-scanline"
+          }),
+
+          // Inner Core Emblem
+          mode === "vault" ? h("g", null,
+            h("circle", { cx: 0, cy: 6, r: 15, fill: "rgba(245,158,11,0.25)", stroke: "#fbbf24", strokeWidth: 2 }),
+            h("path", { d: "M -6 4 L -2 9 L 7 0", fill: "none", stroke: "#fff", strokeWidth: 2.2, strokeLinecap: "round" })
+          ) : mode === "block" ? h("g", null,
+            h("circle", { cx: 0, cy: 6, r: 16, fill: "rgba(239,68,68,0.3)", stroke: "#ef4444", strokeWidth: 2 }),
+            h("path", { d: "M -7 -1 L 7 13 M 7 -1 L -7 13", stroke: "#fee2e2", strokeWidth: 2.4, strokeLinecap: "round" })
+          ) : h("g", null,
+            // Cyber Lock Core
+            h("path", { d: "M -8 -2 C -8 -9 8 -9 8 -2 L 8 4 L -8 4 Z", fill: "none", stroke: "#e0f2fe", strokeWidth: 2.4 }),
+            h("rect", { x: -12, y: 4, width: 24, height: 18, rx: 3.5, fill: "url(#cyberShieldGrad)", stroke: "#e0f2fe", strokeWidth: 1.5 }),
+            h("circle", { cx: 0, cy: 12, r: 2.5, fill: "#0b0f19" }),
+            h("line", { x1: 0, y1: 14.5, x2: 0, y2: 18, stroke: "#0b0f19", strokeWidth: 1.8, strokeLinecap: "round" })
+          ),
+
+          // Titles under Shield (NO WORD 'HOLOGRAM'!)
+          h("text", {
+            x: 0, y: 92, textAnchor: "middle",
+            fill: mode === "block" ? "#ef4444" : mode === "vault" ? "#fbbf24" : "#38bdf8",
+            fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em"
+          },
+            mode === "vault" ? (currentLang === "ru" ? "🔒 СЕКРЕТ ПЕРЕХВАЧЕН" : "🔒 SECRET VAULTED")
+              : mode === "block" ? (currentLang === "ru" ? "⛔ УГРОЗА ЗАБЛОКИРОВАНА" : "⛔ THREAT BLOCKED")
+                : "mcp-secrets-guard"
+          ),
+          h("text", { x: 0, y: 106, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
+            mode === "vault" ? (currentLang === "ru" ? "Изоляция и замена на токен" : "Isolated & masked with token")
+              : mode === "block" ? (currentLang === "ru" ? "Опасное действие нейтрализовано" : "Dangerous payload neutralized")
+                : (currentLang === "ru" ? "Защита в реальном времени" : "Real-time zero-leak barrier")
+          )
         ),
 
         // VAULT DEMO: Flying Secret Capsule & Masked Outbound Token
-        mode === "vault" && progress <= 0.5 ? h("g", { transform: "translate(" + secretX + ", 120)" },
+        mode === "vault" && progress <= 0.5 ? h("g", { transform: "translate(" + secretX + ", 115)" },
           h("rect", { x: -28, y: -11, width: 56, height: 22, rx: 11, fill: "#7c3aed", stroke: "#ffd700", strokeWidth: 2, filter: "url(#agGlow)" }),
           h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#fff", fontSize: 9.5, fontWeight: 700 }, "🔑 sk-ant…")
         ) : null,
-        mode === "vault" && progress > 0.5 && progress <= 0.85 ? h("g", { transform: "translate(" + (450 + (progress - 0.5) * 500) + ", " + (105 - (progress - 0.5) * 75) + ")" },
+        mode === "vault" && progress > 0.5 && progress <= 0.88 ? h("g", { transform: "translate(" + crystalX + ", " + crystalY + ")" },
           h("circle", { cx: 0, cy: 0, r: 7, fill: "#ffd700", filter: "url(#agGlow)" })
         ) : null,
-        mode === "vault" && progress > 0.6 ? h("g", { transform: "translate(" + tokenX + ", 155)" },
+        mode === "vault" && progress > 0.55 ? h("g", { transform: "translate(" + tokenX + ", " + tokenY + ")" },
           h("rect", { x: -44, y: -10, width: 88, height: 20, rx: 5, fill: "rgba(56,189,248,0.2)", stroke: "#38bdf8", strokeWidth: 1.5, filter: "url(#agGlow)" }),
           h("text", { x: 0, y: 4, textAnchor: "middle", fill: "#38bdf8", fontSize: 8.5, fontWeight: 700 }, "msg_tok_***")
         ) : null,
 
         // BLOCK DEMO: Approaching Threat Mine & Pulverizing Sparks
-        mode === "block" && !exploded ? h("g", { transform: "translate(" + mineX + ", 120)" },
+        mode === "block" && !exploded ? h("g", { transform: "translate(" + mineX + ", 115)" },
           h("circle", { cx: 0, cy: 0, r: 14, fill: "#990000", stroke: "#ef4444", strokeWidth: 2.5, filter: "url(#agGlow)" }),
           h("path", { d: "M -6 -6 L 6 6 M 6 -6 L -6 6", stroke: "#fff", strokeWidth: 2 }),
           h("text", { x: 0, y: 24, textAnchor: "middle", fill: "#fca5a5", fontSize: 9, fontWeight: 700 }, "curl | python")
         ) : null,
-        exploded ? h("g", { transform: "translate(410, 120)" },
+        exploded ? h("g", { transform: "translate(440, 115)" },
           // Explosive sparks
-          h("circle", { cx: -20, cy: -18, r: 3, fill: "#ef4444", filter: "url(#agGlow)" }),
-          h("circle", { cx: -28, cy: 12, r: 2.5, fill: "#fbbf24", filter: "url(#agGlow)" }),
+          h("circle", { cx: -20, cy: -18, r: 3.5, fill: "#ef4444", filter: "url(#agGlow)" }),
+          h("circle", { cx: -28, cy: 12, r: 3, fill: "#fbbf24", filter: "url(#agGlow)" }),
           h("circle", { cx: -15, cy: 22, r: 3.5, fill: "#ef4444", filter: "url(#agGlow)" }),
-          h("circle", { cx: -34, cy: -6, r: 2, fill: "#fff", filter: "url(#agGlow)" })
+          h("circle", { cx: -34, cy: -6, r: 2.5, fill: "#fff", filter: "url(#agGlow)" })
         ) : null,
 
         // RIGHT TOP: Armored Holographic Vault Node
-        h("g", { transform: "translate(750, 68)" },
+        h("g", { transform: "translate(820, 68)" },
           h("rect", {
-            x: -42, y: -34, width: 84, height: 68, rx: 10,
+            x: -40, y: -30, width: 80, height: 60, rx: 10,
             fill: "url(#holoVaultGrad)", stroke: mode === "vault" ? "#fff" : "#f59e0b", strokeWidth: 2,
             filter: "url(#agGlow)",
             className: mode === "vault" ? "yg-vault-glow" : ""
           }),
           // Facet overlay
-          h("path", { d: "M -42 -10 L 0 -34 L 42 -10 L 0 34 Z", fill: "rgba(255,255,255,0.12)" }),
+          h("path", { d: "M -40 -8 L 0 -30 L 40 -8 L 0 30 Z", fill: "rgba(255,255,255,0.12)" }),
           // Lock Core
-          h("circle", { cx: 0, cy: 0, r: 16, fill: "#1c1404", stroke: "#fde68a", strokeWidth: 2 }),
-          h("circle", { cx: 0, cy: 0, r: 5, fill: "#fde68a" }),
-          h("line", { x1: 0, y1: -16, x2: 0, y2: -9, stroke: "#fde68a", strokeWidth: 2 }),
+          h("circle", { cx: 0, cy: 0, r: 14, fill: "#1c1404", stroke: "#fde68a", strokeWidth: 1.8 }),
+          h("circle", { cx: 0, cy: 0, r: 4.5, fill: "#fde68a" }),
+          h("line", { x1: 0, y1: -14, x2: 0, y2: -8, stroke: "#fde68a", strokeWidth: 2 }),
           // Vault Counter Badge
-          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#fde68a", fontSize: 11, fontWeight: 700 },
+          h("text", { x: 0, y: 46, textAnchor: "middle", fill: "#fde68a", fontSize: 11, fontWeight: 700 },
             (currentLang === "ru" ? "Сейф: " : "Vault: ") + (vaultCount + vaultBonus)),
-          vaultBonus > 0 && mode === "vault" ? h("text", { x: 38, y: -24, fill: "#ffd700", fontSize: 12, fontWeight: 900 }, "+1") : null
+          h("text", { x: 0, y: 58, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
+            currentLang === "ru" ? "Шифрование AES" : "Hardware AES"),
+          vaultBonus > 0 && mode === "vault" ? h("text", { x: 38, y: -20, fill: "#ffd700", fontSize: 12, fontWeight: 900 }, "+1") : null
         ),
 
         // RIGHT BOTTOM: External Internet Node
-        h("g", { transform: "translate(750, 172)" },
-          h("circle", { cx: 0, cy: 0, r: 36, fill: "url(#holoNetGrad)", stroke: "#38bdf8", strokeWidth: 2, filter: "url(#agGlow)" }),
+        h("g", { transform: "translate(820, 175)" },
+          h("circle", { cx: 0, cy: 0, r: 34, fill: "url(#holoNetGrad)", stroke: "#38bdf8", strokeWidth: 2, filter: "url(#agGlow)" }),
           // Holographic globe lattice
-          h("circle", { cx: 0, cy: 0, r: 24, fill: "none", stroke: "rgba(255,255,255,0.75)", strokeWidth: 1.5 }),
-          h("ellipse", { cx: 0, cy: 0, rx: 11, ry: 24, fill: "none", stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.2 }),
-          h("line", { x1: -24, y1: 0, x2: 24, y2: 0, stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.2 }),
-          // Destination labels
-          h("text", { x: 0, y: 50, textAnchor: "middle", fill: "#bae6fd", fontSize: 11, fontWeight: 700 },
+          h("circle", { cx: 0, cy: 0, r: 23, fill: "none", stroke: "rgba(255,255,255,0.75)", strokeWidth: 1.4 }),
+          h("ellipse", { cx: 0, cy: 0, rx: 10, ry: 23, fill: "none", stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.1 }),
+          h("line", { x1: -23, y1: 0, x2: 23, y2: 0, stroke: "rgba(255,255,255,0.65)", strokeWidth: 1.1 }),
+          // Destination labels - Wrapped without clipping!
+          h("text", { x: 0, y: 48, textAnchor: "middle", fill: "#bae6fd", fontSize: 11, fontWeight: 700 },
             currentLang === "ru" ? "Интернет" : "Internet"),
-          h("text", { x: 0, y: 64, textAnchor: "middle", fill: "#94a3b8", fontSize: 9.5 },
-            dest.length > 20 ? dest.slice(0, 19) + "…" : dest)
+          renderWrappedText(dest, 0, 62, 18, 2, 9.5, "#94a3b8")
         )
       ),
 
@@ -969,11 +1161,19 @@
     }
 
     const domain = (inc.destination || "").replace(/^[a-z]+:\/\//i, "").split(/[/?#]/)[0] || "";
-    const chatTitleFromAgent = inc.agent && (inc.agent.chat_title || inc.agent.session_title);
-    const chat = chatTitleFromAgent
-      ? { title: (currentLang === "ru" ? "Чат «" : "Chat \"") + chatTitleFromAgent + (currentLang === "ru" ? "»" : "\""), id: inc.agent.session_id }
-      : (inc.agent && inc.agent.session_id ? resolveChatTitle(inc.agent.session_id) : null);
-    const who = chat ? chat.title : (inc.agent && inc.agent.session_id ? ((currentLang === "ru" ? "Архивный чат №" : "Archived chat #") + String(inc.agent.session_id).slice(-6)) : (currentLang === "ru" ? "ИИ-агент" : "AI agent"));
+    var rawTitle = "";
+    if (inc.agent && (inc.agent.chat_title || inc.agent.session_title)) {
+      rawTitle = inc.agent.chat_title || inc.agent.session_title;
+    } else if (inc.agent && inc.agent.session_id) {
+      var resolved = resolveChatTitle(inc.agent.session_id);
+      rawTitle = resolved.raw || resolved.title;
+    }
+    rawTitle = String(rawTitle || "").replace(/^(?:чат|chat)\s*[:«"']?\s*/i, "").replace(/[»"']$/i, "").trim();
+    const who = rawTitle
+      ? (currentLang === "ru" ? "«" + rawTitle + "»" : "\"" + rawTitle + "\"")
+      : (inc.agent && inc.agent.session_id
+          ? (currentLang === "ru" ? "«Сеанс #" + String(inc.agent.session_id).slice(-6) + "»" : "\"Session #" + String(inc.agent.session_id).slice(-6) + "\"")
+          : (currentLang === "ru" ? "«ИИ-агент»" : "\"AI agent\""));
 
     // Full command string: command, risk snippet, or tool+dest
     const fullCode = inc.command || (inc.risks && inc.risks[0] && inc.risks[0].snippet) || ((inc.tool || "") + " " + (inc.destination || ""));
@@ -1016,10 +1216,11 @@
       (inc.findings || []).length ? h("div", { className: "yg-inc-story" },
         currentLang === "ru" ? "В чате " : "In chat ",
         h("b", null, who),
-        currentLang === "ru" ? " ИИ-помощник попытался использовать инструмент " : " agent attempted to use tool ",
-        h("b", { className: "yg-mono" }, inc.tool),
-        currentLang === "ru" ? " для отправки данных в " : " to send data to ",
-        h("b", { className: "yg-mono" }, T(inc.destination)), ".") : null,
+        currentLang === "ru" ? " ИИ-помощник попытался передать данные через инструмент: " : " agent attempted to send data via tool: ",
+        h("b", { className: "yg-mono" }, (inc.destination ? T(inc.destination).replace(/^команда:\s*/i, "").replace(/^shell:\s*/i, "") : (inc.tool || "terminal"))),
+        inc.destination && inc.destination.startsWith("http") ? (currentLang === "ru" ? " на адрес " : " to ") : null,
+        inc.destination && inc.destination.startsWith("http") ? h("b", { className: "yg-mono" }, inc.destination) : null,
+        ".") : null,
 
       // Single Clean Command Box with Actions
       fullCode ? h("div", { className: "yg-fullcmd" },
@@ -1092,6 +1293,10 @@
     const [q, setQ] = useState("");
     const [filter, setFilter] = useState("all");
     const [histBusy, setHistBusy] = useState("");
+
+    useEffect(function () {
+      loadDynamicSessionTitles();
+    }, []);
     if (!data) return h(Card, { title: "live protection", className: "wide" }, h(Empty, { text: "loading…" }));
     if (data.status === "error") return h(Card, { title: "live protection", className: "wide" },
       h("div", { className: "yg-err" }, "● " + data.message));
@@ -1967,9 +2172,9 @@
       try {
         if (typeof Notification === "undefined" || !Notification || Notification.permission !== "granted") return;
         const n = new Notification(T("mcp-secrets-guard blocked an agent"), {
-          body: (currentLang === "ru" ? "Агент попытался использовать инструмент " : "Agent tried to use tool ") +
-            (inc.tool || "?") + (currentLang === "ru" ? " для отправки данных в " : " to send data to ") +
-            (inc.destination || "?") + ". " + (currentLang === "ru" ? "Откройте Guard для решения." : "Open Guard to allow or block it."),
+          body: (currentLang === "ru" ? "Агент попытался передать данные через инструмент: " : "Agent attempted to send data via tool: ") +
+            (inc.destination ? T(inc.destination).replace(/^команда:\s*/i, "").replace(/^shell:\s*/i, "") : (inc.tool || "?")) +
+            ". " + (currentLang === "ru" ? "Откройте Guard для решения." : "Open Guard to decide."),
           tag: "yadro-guard",
         });
         n.onclick = function () { try { window.focus(); } catch (e) {} showToast(inc); };
@@ -2132,11 +2337,6 @@
         onDecide: decide, onDismiss: promote, onOpen: function () { setTab("live"); promote(); }
       }) : null,
 
-      !toast && pending ? h("button", {
-        type: "button", className: "yg-toast-count",
-        style: { position: "fixed", bottom: 20, right: 20, zIndex: 9999, background: "var(--yg-bad)", color: "#fff", border: "none", borderRadius: 999, padding: "8px 16px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.5)" },
-        title: "Show the blocked action", onClick: promote
-      }, "⛔ " + pending + " " + (currentLang === "ru" ? "заблокировано" : "blocked")) : null,
 
       h("div", { className: "yg-foot" },
         "🔒 mcp-secrets-guard · " + T("Everything runs on this computer. Secrets are masked; the full value appears only while you hold 👁, and every view is logged."))

@@ -221,13 +221,15 @@ select.yg-input { appearance: auto; }
 @keyframes holoRingPulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.08); opacity: 0.85; } }
 @keyframes holoShieldPulse { 0%, 100% { transform: scale(1); opacity: 0.35; } 50% { transform: scale(1.12); opacity: 0.85; } }
 @keyframes holoIridShimmer { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-@keyframes holoPacketStream { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(200px); opacity: 0; } }
-@keyframes holoOutStreamTop { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(250px, -45px); opacity: 0; } }
-@keyframes holoOutStreamBot { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(250px, 45px); opacity: 0; } }
+@keyframes holoPacketStream { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(245px); opacity: 0; } }
+@keyframes holoOutStreamTop { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(245px, -45px); opacity: 0; } }
+@keyframes holoOutStreamBot { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(240px, 40px); opacity: 0; } }
 @keyframes holoRailDash { to { stroke-dashoffset: -36; } }
 @keyframes holoVaultFlash { 0%, 100% { stroke: #f59e0b; stroke-width: 2; } 50% { stroke: #fff; stroke-width: 3.5; filter: drop-shadow(0 0 14px #fbbf24); } }
 
 .yg-holo-agent { transform-origin: 0px 0px; animation: holoFloat 3.4s ease-in-out infinite; }
+.yg-center-shield { transform-origin: 0px 0px; animation: holoFloat 3.8s ease-in-out infinite; }
+.yg-shield-glow { filter: drop-shadow(0 0 16px rgba(56, 189, 248, 0.65)); }
 .yg-holo-scanline { animation: holoScanline 2.2s linear infinite; }
 .yg-holo-ring { transform-origin: 0px 50px; animation: holoRingPulse 2.6s ease-in-out infinite; }
 .yg-holo-shield-vault { transform-origin: 0px 0px; animation: holoShieldPulse 1.8s ease-in-out infinite; }
@@ -236,6 +238,7 @@ select.yg-input { appearance: auto; }
 .yg-stream-pkt-1 { animation: holoPacketStream 2.2s linear infinite; }
 .yg-stream-pkt-2 { animation: holoPacketStream 2.2s linear 0.73s infinite; }
 .yg-stream-pkt-3 { animation: holoPacketStream 2.2s linear 1.46s infinite; }
+.yg-out-pkt-bot { animation: holoOutStreamBot 2.2s linear infinite; }
 .yg-conduit-active { stroke-dasharray: 8 6; animation: holoRailDash 1s linear infinite; }
 .yg-vault-glow { animation: holoVaultFlash 1.5s ease-in-out infinite; }
 
