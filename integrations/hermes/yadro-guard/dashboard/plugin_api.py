@@ -396,33 +396,51 @@ async def health() -> Dict[str, Any]:
     return {"status": "ok" if ok else "error", "configured": ok}
 
 
-def _get_hermes_session_titles() -> Dict[str, str]:
+def _get_hermes_session_titles() -> Dict[str, Any]:
     out: Dict[str, str] = {}
+    latest_id = ""
+    latest_title = ""
     db_paths = [
         Path.home() / "AppData" / "Local" / "hermes" / "state.db",
+        Path.home() / "AppData" / "Local" / "Hermes" / "state.db",
         Path.home() / ".hermes" / "state.db"
     ]
     for db in db_paths:
         if db.exists():
             try:
                 import sqlite3
-                con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=0.5)
-                for sid, title in con.execute("SELECT id, title FROM sessions WHERE title IS NOT NULL"):
-                    if sid and title:
-                        t = str(title).strip()
+                con = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=1.0)
+                cur = con.cursor()
+                for sid, dname, title in cur.execute(
+                    "SELECT id, display_name, title FROM sessions "
+                    "WHERE display_name IS NOT NULL OR title IS NOT NULL "
+                    "ORDER BY COALESCE(last_activity_at, 0) DESC"
+                ):
+                    t = str(dname or title or "").strip()
+                    if sid and t:
+                        if not latest_id:
+                            latest_id = str(sid)
+                            latest_title = t
                         out[str(sid)] = t
-                        # Also map suffix
                         out[str(sid)[-6:]] = t
                 con.close()
-                break
+                if out:
+                    break
             except Exception:
                 pass
-    return out
+    return {"titles": out, "active_id": latest_id, "active_title": latest_title}
 
 
 @router.get("/sessions/titles")
 async def session_titles() -> Dict[str, Any]:
-    return {"status": "ok", "titles": _get_hermes_session_titles()}
+    data = await asyncio.to_thread(_get_hermes_session_titles)
+    return {
+        "status": "ok",
+        "titles": data["titles"],
+        "active_id": data["active_id"],
+        "active_title": data["active_title"],
+        "__isLive": True
+    }
 
 
 # Enrich incidents with human session titles if not already present
@@ -432,17 +450,27 @@ async def incidents() -> Dict[str, Any]:
     if pol is None:
         return _error("mcp-secrets-guard is not set up yet.")
     items = await asyncio.to_thread(pol.list_incidents, 100)
-    titles = _get_hermes_session_titles()
+    data = await asyncio.to_thread(_get_hermes_session_titles)
+    titles = data["titles"]
     for inc in items:
+        if isinstance(inc.get("id"), str) and inc["id"].startswith("YG-"):
+            inc["id"] = "MSG-" + inc["id"][3:]
         agent = inc.get("agent")
         if isinstance(agent, dict):
-            sid = agent.get("session_id", "")
+            sid = str(agent.get("session_id", ""))
             if sid and not agent.get("chat_title"):
                 resolved = titles.get(sid) or titles.get(sid[-6:])
                 if resolved:
                     agent["chat_title"] = resolved
-    return {"status": "ok", "items": items,
-            "pending": sum(1 for i in items if i.get("status") == "pending")}
+                    inc["chat_title"] = resolved
+    return {
+        "status": "ok",
+        "items": items,
+        "pending": sum(1 for i in items if i.get("status") == "pending"),
+        "active_session": data.get("active_id", ""),
+        "active_chat_title": data.get("active_title", ""),
+        "__isLive": True
+    }
 
 
 RULES_FILE = PLUGIN_DIR / "rules.json"
@@ -554,6 +582,8 @@ class ConfigUpdateBody(BaseModel):
     arena_mode: str = ""
     fail_closed: bool | None = None
     notifications: bool | None = None
+    guard_mode: str = ""
+    paused_until: int | None = None
 
 
 @router.get("/config")
@@ -572,9 +602,63 @@ async def update_config(body: "ConfigUpdateBody") -> Dict[str, Any]:
         cfg["fail_closed"] = bool(getattr(body, "fail_closed"))
     if getattr(body, "notifications", None) is not None:
         cfg["notifications"] = bool(getattr(body, "notifications"))
+    if getattr(body, "guard_mode", ""):
+        cfg["guard_mode"] = getattr(body, "guard_mode")
+    if getattr(body, "paused_until", None) is not None:
+        cfg["paused_until"] = int(getattr(body, "paused_until"))
     try:
         CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         return _error(f"Could not save config: {e}")
     return {"status": "ok", "config": cfg}
+
+
+class GuardModeBody(BaseModel):
+    mode: str = "active"             # "active" | "paused" | "disabled" | "monitor"
+    duration_minutes: int = 5
+
+
+@router.get("/guard/status")
+async def guard_status() -> Dict[str, Any]:
+    cfg = _config()
+    mode = cfg.get("guard_mode", "active")
+    paused_until = cfg.get("paused_until", 0)
+    now = int(time.time())
+    rem = max(0, paused_until - now) if paused_until else 0
+    if mode == "paused" and rem <= 0:
+        mode = "active"
+    return {
+        "status": "ok",
+        "mode": mode,
+        "paused_until": paused_until,
+        "remaining_seconds": rem,
+        "fail_closed": cfg.get("fail_closed", True)
+    }
+
+
+@router.post("/guard/mode")
+async def guard_mode(body: "GuardModeBody") -> Dict[str, Any]:
+    cfg = _config()
+    mode = getattr(body, "mode", "active")
+    if mode not in ("active", "paused", "disabled", "monitor"):
+        return _error("Unknown mode.")
+    now = int(time.time())
+    if mode == "paused":
+        mins = getattr(body, "duration_minutes", 5) or 5
+        cfg["paused_until"] = now + (mins * 60)
+    else:
+        cfg["paused_until"] = 0
+    cfg["guard_mode"] = mode
+    try:
+        CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception as e:
+        return _error(f"Could not save config: {e}")
+    rem = max(0, cfg["paused_until"] - now) if cfg["paused_until"] else 0
+    return {
+        "status": "ok",
+        "mode": mode,
+        "paused_until": cfg["paused_until"],
+        "remaining_seconds": rem,
+        "fail_closed": cfg.get("fail_closed", True)
+    }
 

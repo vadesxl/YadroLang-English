@@ -118,15 +118,27 @@ def _risk_key(tool_name: str, risks) -> str:
 
 def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """The pre_tool_call decision. Returns None (allow) or a Hermes directive dict."""
+    cfg = _read("config.json", {})
+    mode = cfg.get("guard_mode", "active")
+    now = int(time.time())
+    if mode == "disabled":
+        return None
+    if mode == "paused" and now < cfg.get("paused_until", 0):
+        return None
     from . import actions
     findings = detectors.scan_args(args, _known_secrets())
     risks = actions.scan_actions(args)
     if not findings and not risks:
         return None
+    if mode == "monitor":
+        # Audit mode: record the event for review but do not block the agent
+        key = action_key(tool_name, findings) if findings else _risk_key(tool_name, risks)
+        inc = _new_incident(tool_name, args, findings, key, context or {}, risks)
+        inc["status"] = "audited"
+        return None
     key = action_key(tool_name, findings) if findings else _risk_key(tool_name, risks)
     if findings and risks:
         key = hashlib.sha256((key + _risk_key(tool_name, risks)).encode()).hexdigest()[:32]
-    now = int(time.time())
     decisions = _read("decisions.json", {})
     d = decisions.get(key)
     if d and now - d.get("at", 0) <= (ALLOW_ONCE_TTL if d["choice"] == "allow" else DECISION_TTL):
