@@ -744,12 +744,14 @@
     return "";
   }
 
-  // Masked secret with hold-to-show eye (Pointer events, fixed 28px height, zero layout shift)
+  // Masked secret with click-to-toggle / hold-to-show eye, generous hit target and copy button
   function Reveal(p) {
-    const [isRevealed, setIsRevealed] = useState(false);
+    const [isHeld, setIsHeld] = useState(false);
+    const [isPinned, setIsPinned] = useState(false);
     const [fullValue, setFullValue] = useState("");
     const [err, setErr] = useState("");
-    const heldRef = useRef(false);
+    const [copied, setCopied] = useState(false);
+    const pinTimerRef = useRef(null);
 
     useEffect(function () {
       if (p.incident) {
@@ -760,75 +762,207 @@
             }
           }).catch(function () {});
       }
+      return function () {
+        if (pinTimerRef.current) clearTimeout(pinTimerRef.current);
+      };
     }, [p.incident, p.index]);
 
-    function startHold(e) {
-      if (e) {
-        if (e.button !== undefined && e.button !== 0) return;
-        e.preventDefault();
-      }
-      heldRef.current = true;
-      setIsRevealed(true);
-      setErr("");
-      if (!fullValue) {
+    function fetchSecret() {
+      if (!fullValue && p.incident) {
         post("/incidents/reveal", { incident: p.incident, index: p.index || 0 })
           .then(function (r) {
             if (r && r.status === "ok" && r.value) {
               setFullValue(r.value);
-            } else if (heldRef.current) {
-              setErr(r && r.message ? r.message : "Could not show the value.");
+            } else {
+              setErr(r && r.message ? r.message : "Could not show value");
             }
           }).catch(function () {
-            if (heldRef.current) setErr("Could not reach Guard backend.");
+            setErr("Could not reach backend");
           });
       }
     }
 
-    function stopHold() {
-      heldRef.current = false;
-      setIsRevealed(false);
+    function onPointerDown(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      setIsHeld(true);
+      fetchSecret();
     }
 
-    const shownText = isRevealed ? (fullValue || p.preview || "sk_live_99f82b4a1122334455") : (p.preview || "sk_live_99f8***334455");
+    function onPointerUp(e) {
+      setIsHeld(false);
+    }
+
+    function togglePin(e) {
+      if (e) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.preventDefault) e.preventDefault();
+      }
+      if (pinTimerRef.current) clearTimeout(pinTimerRef.current);
+      if (isPinned) {
+        setIsPinned(false);
+      } else {
+        setIsPinned(true);
+        fetchSecret();
+        pinTimerRef.current = setTimeout(function () {
+          setIsPinned(false);
+        }, 15000);
+      }
+    }
+
+    function handleCopy(e) {
+      if (e) {
+        if (e.stopPropagation) e.stopPropagation();
+        if (e.preventDefault) e.preventDefault();
+      }
+      var val = fullValue || p.preview || "";
+      copyText(val);
+      setCopied(true);
+      setTimeout(function () { setCopied(false); }, 1800);
+    }
+
+    const isRevealed = isHeld || isPinned;
+    const shownText = isRevealed ? (fullValue || p.preview || "••••••••••••") : (p.preview || "••••••••••••");
 
     return h("span", {
       className: "yg-reveal" + (isRevealed ? " yg-reveal-on" : ""),
-      style: { minHeight: "28px", height: "28px", display: "inline-flex", alignItems: "center", verticalAlign: "middle" }
+      style: {
+        minHeight: "30px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        padding: "2px 8px",
+        borderRadius: "6px",
+        background: isRevealed ? "rgba(56,189,248,0.12)" : "rgba(0,0,0,0.45)",
+        border: "1px solid " + (isRevealed ? "rgba(56,189,248,0.4)" : "rgba(255,255,255,0.1)"),
+        cursor: "pointer",
+        transition: "all 0.18s ease",
+        verticalAlign: "middle"
+      },
+      title: isRevealed
+        ? (currentLang === "ru" ? "Нажмите, чтобы скрыть секрет" : "Click to hide secret")
+        : (currentLang === "ru" ? "Нажмите или удерживайте для открытия секрета" : "Click or hold to reveal secret"),
+      onClick: togglePin
     },
       h("span", {
         className: "yg-reveal-val yg-mono",
         style: {
           fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          fontSize: "12px",
+          color: isRevealed ? "#38bdf8" : "#f1f5f9",
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          minHeight: "28px",
-          lineHeight: "28px",
-          maxWidth: "220px",
+          maxWidth: isRevealed ? "320px" : "200px",
           display: "inline-block",
-          boxSizing: "border-box"
-        },
-        title: isRevealed ? fullValue : (currentLang === "ru" ? "Удерживайте 👁 для просмотра" : "Hold 👁 to reveal")
+          userSelect: isRevealed ? "all" : "none"
+        }
       }, shownText),
       h("button", {
         type: "button",
         className: "yg-reveal-btn",
-        title: currentLang === "ru" ? "Удерживайте кнопку, чтобы увидеть значение" : "Hold to show the full value",
-        "aria-label": "Hold to show the full value",
-        "aria-pressed": isRevealed,
-        style: { userSelect: "none", touchAction: "none", minHeight: "26px", cursor: "pointer" },
-        onPointerDown: startHold,
-        onMouseDown: startHold,
-        onTouchStart: startHold,
-        onPointerUp: stopHold,
-        onPointerLeave: stopHold,
-        onMouseUp: stopHold,
-        onTouchEnd: stopHold,
-        onTouchCancel: stopHold,
-        onContextMenu: function (e) { e.preventDefault(); }
+        style: {
+          background: isRevealed ? "rgba(56,189,248,0.2)" : "rgba(255,255,255,0.08)",
+          border: "1px solid " + (isRevealed ? "#38bdf8" : "rgba(255,255,255,0.15)"),
+          color: "#fff",
+          borderRadius: "4px",
+          padding: "2px 8px",
+          minWidth: "34px",
+          minHeight: "24px",
+          cursor: "pointer",
+          fontSize: "13px",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center"
+        },
+        title: isRevealed ? (currentLang === "ru" ? "Скрыть" : "Hide") : (currentLang === "ru" ? "Показать секрет" : "Show secret"),
+        onPointerDown: onPointerDown,
+        onPointerUp: onPointerUp,
+        onMouseDown: onPointerDown,
+        onMouseUp: onPointerUp,
+        onClick: togglePin
       }, isRevealed ? "🙈" : "👁"),
+      isRevealed ? h("button", {
+        type: "button",
+        className: "yg-btn ghost",
+        style: {
+          padding: "2px 7px",
+          fontSize: "11px",
+          fontWeight: 700,
+          color: copied ? "#4ade80" : "#38bdf8",
+          borderColor: copied ? "#4ade80" : "rgba(56,189,248,0.3)"
+        },
+        title: currentLang === "ru" ? "Скопировать значение" : "Copy full value",
+        onClick: handleCopy
+      }, copied ? (currentLang === "ru" ? "✓ Скопировано" : "✓ Copied") : "⧉") : null,
       err ? h("span", { className: "yg-err yg-small", style: { marginLeft: 4 } }, err) : null
     );
+  }
+
+  function analyzeFindingDetails(finding, rawSecretText, targetDomain, lang) {
+    var isRu = lang === "ru";
+    var l = ((finding && (finding.label || finding.title || "")) + "").toLowerCase();
+    var t = ((finding && (finding.title || finding.label || "")) + "").toLowerCase();
+    var domain = targetDomain || (isRu ? "внешний сервер в сети" : "an external network server");
+    var preview = rawSecretText || "••••";
+
+    if (l.indexOf("personal") !== -1 || t.indexOf("email") !== -1 || l.indexOf("персонал") !== -1 || t.indexOf("почт") !== -1 || t.indexOf("mail") !== -1 || l.indexOf("pii") !== -1) {
+      return {
+        categoryTitle: isRu ? "Персональные данные" : "Personal Data",
+        categorySub: isRu ? "Адрес эл. почты (Email PII)" : "Email Address (PII)",
+        why: isRu
+          ? ("Агент попытался отправить персональные данные (" + preview + ") на " + domain + ". Шлюз перехватил команду до утечки личных данных пользователя.")
+          : ("The agent attempted to transmit personal data (" + preview + ") to " + domain + ". Guard intercepted the command before PII was leaked."),
+        safer: isRu
+          ? "Безопаснее: анонимизировать персональные данные или сохранить контакт в Сейфе DPAPI (msg_tok_...) перед отправкой."
+          : "Safer: Anonymize personal data or use a secure DPAPI Vault token instead of raw personal records."
+      };
+    }
+    if (l.indexOf("password") !== -1 || t.indexOf("password") !== -1 || l.indexOf("парол") !== -1 || t.indexOf("парол") !== -1) {
+      return {
+        categoryTitle: isRu ? "Учетные данные" : "Credentials",
+        categorySub: isRu ? "Пароль учетной записи" : "Account Password",
+        why: isRu
+          ? ("Агент попытался передать открытый пароль (" + preview + ") в запросе на " + domain + ". Шлюз заблокировал отправку незашифрованных учетных данных.")
+          : ("The agent attempted to transmit an unencrypted password (" + preview + ") to " + domain + ". Guard blocked plaintext credential transmission."),
+        safer: isRu
+          ? "Безопаснее: использовать переменные окружения или токен Сейфа DPAPI (msg_tok_...) вместо открытого пароля в коде."
+          : "Safer: Use environment variables or a DPAPI Vault token instead of hardcoding passwords."
+      };
+    }
+    if (l.indexOf("financial") !== -1 || l.indexOf("card") !== -1 || l.indexOf("финанс") !== -1 || l.indexOf("карт") !== -1 || t.indexOf("card") !== -1) {
+      return {
+        categoryTitle: isRu ? "Финансовые данные" : "Financial Data",
+        categorySub: isRu ? "Номер платёжной карты" : "Credit Card / Payment",
+        why: isRu
+          ? ("Агент попытался передать платёжные данные (" + preview + ") на " + domain + ". Шлюз заблокировал команду для защиты банковской тайны.")
+          : ("The agent attempted to transmit credit card data (" + preview + ") to " + domain + ". Guard blocked the command to protect payment credentials."),
+        safer: isRu
+          ? "Безопаснее: токенизировать карту через Сейф DPAPI или использовать защищённый шлюз оплаты."
+          : "Safer: Tokenize card data through DPAPI Vault or use an authorized payment gateway."
+      };
+    }
+    if (l.indexOf("private") !== -1 || l.indexOf("ssh") !== -1 || l.indexOf("rsa") !== -1 || t.indexOf("private") !== -1 || t.indexOf("rsa") !== -1 || t.indexOf("ssh") !== -1) {
+      return {
+        categoryTitle: isRu ? "Криптографический ключ" : "Cryptographic Key",
+        categorySub: isRu ? "Приватный ключ (SSH / RSA)" : "Private Key (SSH / RSA)",
+        why: isRu
+          ? ("Агент попытался передать секретный криптографический ключ (" + preview + ") на " + domain + ". Шлюз заблокировал утечку закрытого ключа.")
+          : ("The agent attempted to transmit a private cryptographic key (" + preview + ") to " + domain + ". Guard blocked private key egress."),
+        safer: isRu
+          ? "Безопаснее: использовать ssh-agent или аппаратный Сейф DPAPI; никогда не передавать закрытые ключи наружу."
+          : "Safer: Use ssh-agent or DPAPI hardware vault; never transmit private keys over the network."
+      };
+    }
+    return {
+      categoryTitle: isRu ? "Учетные данные и ключи" : "Credentials & Keys",
+      categorySub: finding ? (finding.title || finding.label) : (isRu ? "API-ключ / Токен" : "API Key / Token"),
+      why: isRu
+        ? ("Агент попытался передать приватный API-ключ (" + preview + ") в открытом запросе на " + domain + ". Шлюз перехватил команду до передачи.")
+        : ("The agent attempted to transmit private API credentials (" + preview + ") in an unencrypted request to " + domain + ". Guard intercepted it before egress."),
+      safer: isRu
+        ? "Безопаснее: использовать токен Сейфа DPAPI (msg_tok_...) вместо открытого секретного ключа."
+        : "Safer: Use an encrypted DPAPI Vault token (msg_tok_...) instead of the raw secret key."
+    };
   }
 
   // Unified IncidentCard Component (Used across Focal Main Stage, Pending Queue, and History)
@@ -920,6 +1054,7 @@
 
     const rawSecretText = finding ? (finding.preview || "sk_live_99f8***334455") : "";
     const fullCode = inc.command || (risk && risk.snippet) || ((inc.tool || "") + " " + (inc.destination || ""));
+    const findingAnalysis = hasFindings ? analyzeFindingDetails(finding, rawSecretText, targetDomain, currentLang) : null;
 
     var cardClass = "yg-inc";
     if (isFocal) cardClass += " yg-decision-center focal";
@@ -953,13 +1088,13 @@
 
       // 4-Field Detailed Breakdown Grid
       h("div", { className: "yg-breakdown-grid" },
-        // Field 1: What was detected
+        // Field 1: What was detected (accurately analyzed)
         h("div", { className: "yg-breakdown-cell" },
           h("span", { className: "yg-breakdown-label" }, hasFindings ? ("🔑 " + (currentLang === "ru" ? "Что словлено (Секрет)" : "Detected Secret")) : ("⚠️ " + (currentLang === "ru" ? "Что обнаружено (Угроза)" : "Detected Threat"))),
           h("span", { className: "yg-breakdown-val", style: { color: "#f87171" } },
-            hasFindings ? finding.title : (risk ? risk.title : (currentLang === "ru" ? "Подозрительное действие" : "Suspicious execution"))),
+            hasFindings ? (findingAnalysis ? (findingAnalysis.categorySub || finding.title) : finding.title) : (risk ? risk.title : (currentLang === "ru" ? "Подозрительное действие" : "Suspicious execution"))),
           h("span", { className: "yg-dim yg-small" },
-            hasFindings ? ((currentLang === "ru" ? "Категория: " : "Category: ") + (finding ? T(finding.label) : T("Credentials"))) : (currentLang === "ru" ? "Категория: Системная угроза" : "Category: System Risk"))
+            hasFindings ? ((currentLang === "ru" ? "Категория: " : "Category: ") + (findingAnalysis ? findingAnalysis.categoryTitle : (finding ? T(finding.label) : T("Credentials")))) : (currentLang === "ru" ? "Категория: Системная угроза" : "Category: System Risk"))
         ),
 
         // Field 2: Secret value or Command signature with fixed 28px height (Zero Layout Shift)
@@ -977,7 +1112,7 @@
                 }, (risk && risk.kind ? ("[" + risk.kind + "] ") : "") + (inc.tool || "terminal") + " → " + (inc.destination || "shell"))
               ),
           h("span", { className: "yg-dim yg-small" },
-            hasFindings ? (currentLang === "ru" ? "Маскировано · Удерживайте 👁" : "Masked · Hold 👁 to reveal")
+            hasFindings ? (currentLang === "ru" ? "Защищено · Нажмите для открытия" : "Protected · Click to reveal")
                         : (currentLang === "ru" ? "Непроверенный запуск из сети" : "Unverified remote execution"))
         ),
 
@@ -1024,19 +1159,19 @@
         h("pre", { className: "yg-mono yg-fullcmd-pre", style: { margin: 0, padding: "8px 12px", background: "rgba(0,0,0,0.65)", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.08)" } }, fullCode)
       ) : null,
 
-      // Plain Russian Risk Explanation Box
+      // Plain Russian/English Risk Explanation & Accurate Advice Box
       (risk || hasFindings) ? h("div", { className: "yg-decision-why-box", style: { marginTop: 10 } },
         h("div", { style: { fontWeight: 800, marginBottom: 4, color: "#fca5a5" } },
           currentLang === "ru" ? "⚠️ Почему этот запрос был остановлен:" : "⚠️ Why this action was stopped:"),
         h("div", null,
           risk ? T(risk.why)
-               : (currentLang === "ru"
-                  ? ("Агент попытался передать ваш приватный API-ключ (" + rawSecretText + ") в открытом запросе на внешний сервер " + (targetDomain || "в сеть") + ". Шлюз перехватил команду до передачи.")
-                  : "The agent attempted to transmit private credentials in an unencrypted request to an external server. Guard intercepted it before egress.")),
+               : (findingAnalysis ? findingAnalysis.why : (currentLang === "ru"
+                  ? ("Агент попытался передать секретные данные (" + rawSecretText + ") на внешний сервер " + (targetDomain || "в сеть") + ". Шлюз перехватил команду до передачи.")
+                  : "The agent attempted to transmit private credentials in an unencrypted request to an external server. Guard intercepted it before egress."))),
         (risk && risk.safer) ? h("div", { className: "yg-ok yg-small", style: { marginTop: 6, fontWeight: 700 } },
           T("Safer: ") + T(risk.safer))
         : (hasFindings ? h("div", { className: "yg-ok yg-small", style: { marginTop: 6, fontWeight: 700 } },
-          currentLang === "ru" ? "Безопаснее: использовать токен Сейфа DPAPI (msg_tok_...) вместо открытого секретного ключа." : "Safer: Use an encrypted DPAPI Vault token instead of raw secret.") : null)
+          findingAnalysis ? findingAnalysis.safer : (currentLang === "ru" ? "Безопаснее: использовать токен Сейфа DPAPI (msg_tok_...) вместо открытого секретного ключа." : "Safer: Use an encrypted DPAPI Vault token instead of raw secret.")) : null)
       ) : null,
 
       // Decision Action Buttons (if pending)
@@ -1135,7 +1270,25 @@
       ? (activeIncident.command.match(/sk_live_[a-zA-Z0-9]+/)?.[0] || "sk_live_99f82b4a1122334455")
       : "sk_live_99f82b4a1122334455";
     var maskedTokenText = activeFinding ? (activeFinding.token || "msg_tok_Credentials_99f82b") : "msg_tok_Credentials_99f82b";
-    var totalVaultKeys = Math.max((data.vault && data.vault.length) || 0, vaultCount + vaultBonus, secretsCaughtCount, 1);
+    var stLocalVlt = useState(function () {
+      if (p.vault && p.vault.items && Array.isArray(p.vault.items)) return p.vault.items.length;
+      if (typeof p.vaultCount === "number" && p.vaultCount > 0) return p.vaultCount;
+      return 0;
+    }), localVaultCount = stLocalVlt[0], setLocalVaultCount = stLocalVlt[1];
+
+    useEffect(function () {
+      if (p.vault && p.vault.items && Array.isArray(p.vault.items)) {
+        setLocalVaultCount(p.vault.items.length);
+      } else {
+        SDK.fetchJSON(API + "/vault").then(function (v) {
+          if (v && v.items && Array.isArray(v.items)) {
+            setLocalVaultCount(v.items.length);
+          }
+        }).catch(function () {});
+      }
+    }, [p.vault, p.vaultCount]);
+
+    var totalVaultKeys = Math.max(localVaultCount + vaultBonus, (p.vault && p.vault.items ? p.vault.items.length : 0));
 
     // Scramble displayed state so React doesn't wipe scrambled text
     var stDisp = useState(fullSecretText), displayedSecret = stDisp[0], setDisplayedSecret = stDisp[1];
@@ -1198,7 +1351,12 @@
               autoplay: true,
               animationData: window.__LOTTIE_ASSETS__.shield
             });
-            if (shieldAnimRef.current.playSegments) shieldAnimRef.current.playSegments(blocked || activeFinding ? [106, 180] : [0, 60], true);
+            if (shieldAnimRef.current.setSpeed) {
+              shieldAnimRef.current.setSpeed(blocked || activeFinding ? 1.4 : 1.0);
+            }
+            if (shieldAnimRef.current.play) {
+              shieldAnimRef.current.play();
+            }
           } catch (e) { console.error("Shield Lottie load error:", e); }
         }
         if (vaultBoxRef.current && !vaultAnimRef.current && window.__LOTTIE_ASSETS__.vault) {
@@ -1231,6 +1389,17 @@
         if (internetAnimRef.current) { internetAnimRef.current.destroy(); internetAnimRef.current = null; }
       };
     }, [hasLottie]);
+
+    useEffect(function () {
+      if (shieldAnimRef.current) {
+        if (shieldAnimRef.current.setSpeed) {
+          shieldAnimRef.current.setSpeed(blocked || activeFinding ? 1.4 : 1.0);
+        }
+        if (shieldAnimRef.current.play) {
+          shieldAnimRef.current.play();
+        }
+      }
+    }, [blocked, activeFinding]);
 
     function setRoboEmotion(name) {
       if (!agentAnimRef.current || !agentAnimRef.current.playSegments) return;
@@ -1605,7 +1774,28 @@
                       : "Vault tokens: " + totalVaultKeys + " · Leaks blocked: 0")
                 )
               ),
-              h("div", { style: { display: "flex", gap: 6 } },
+              h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" } },
+                (p.guardMode && p.guardMode !== "active") ? h("button", {
+                  type: "button",
+                  className: "yg-btn",
+                  style: {
+                    background: "linear-gradient(135deg, #10b981, #059669)",
+                    borderColor: "#059669",
+                    color: "#fff",
+                    fontWeight: 700,
+                    padding: "5px 12px",
+                    fontSize: "11px"
+                  },
+                  title: currentLang === "ru" ? "Включить активный режим защиты" : "Enable active protection mode",
+                  onClick: function () { if (p.onSetMode) p.onSetMode("active"); }
+                }, "▶ " + (currentLang === "ru" ? "В рабочий режим" : "To Active Mode")) : null,
+                h("button", {
+                  type: "button",
+                  className: "yg-btn ghost",
+                  style: { padding: "5px 10px", fontSize: "11px", display: "inline-flex", alignItems: "center", gap: 4 },
+                  title: currentLang === "ru" ? "Обновить данные шлюза и сейфа" : "Refresh live gateway and vault data",
+                  onClick: function () { if (p.refresh) p.refresh(); }
+                }, "⟳ " + (currentLang === "ru" ? "Обновить" : "Refresh")),
                 h("button", {
                   type: "button", className: "yg-arena-btn vault", style: { padding: "5px 12px", fontSize: "11px" },
                   onClick: runScrambleVaultDemo
@@ -1759,9 +1949,12 @@
             : (currentLang === "ru" ? "  Каждое действие агента проверяется на секреты до запуска." : "  Every agent action is checked for secrets before it runs."))),
         h(VisualSecurityMap, {
           data: data,
+          vault: p.vault,
+          vaultCount: p.vaultCount,
           refresh: p.onChanged,
           guardMode: p.guardMode,
           pauseRemaining: p.pauseRemaining,
+          onSetMode: p.onSetMode,
           activeIncidentId: activeIncidentId
         }),
         // If there are other pending incidents, render them cleanly below with interactive selection
@@ -2557,6 +2750,7 @@
       } catch (e) { return 0; }
     });
     const [modeMenuOpen, setModeMenuOpen] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     function changeGuardMode(newMode, durationMins) {
       setModeMenuOpen(false);
@@ -2762,7 +2956,54 @@
             style: { fontSize: "10px", padding: "2px 8px", fontWeight: 700 }
           }, isLive ? "● Hermes Live API" : (currentLang === "ru" ? "● Демо-режим" : "● Demo Mode"))
         ),
-        // Master Protection Mode Switch
+        // Master Protection Mode Switch & Quick Controls
+        h("div", { style: { display: "inline-flex", alignItems: "center", gap: 8 } },
+          h("button", {
+            type: "button",
+            className: "yg-btn ghost yg-refresh-btn",
+            style: {
+              padding: "4px 10px",
+              fontSize: "11px",
+              fontWeight: 700,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              borderRadius: "6px",
+              border: "1px solid rgba(255,255,255,0.15)"
+            },
+            disabled: isRefreshing,
+            title: currentLang === "ru" ? "Обновить данные шлюза, инцидентов и сейфа" : "Refresh live incidents and vault data",
+            onClick: function () {
+              setIsRefreshing(true);
+              refresh();
+              setTimeout(function () { setIsRefreshing(false); }, 650);
+            }
+          },
+            h("span", {
+              style: {
+                display: "inline-block",
+                animation: isRefreshing ? "yg-spin 0.65s linear infinite" : "none"
+              }
+            }, "⟳"),
+            currentLang === "ru" ? "Обновить" : "Refresh"
+          ),
+          guardMode !== "active" ? h("button", {
+            type: "button",
+            className: "yg-btn",
+            style: {
+              background: "linear-gradient(135deg, #10b981, #059669)",
+              borderColor: "#059669",
+              color: "#fff",
+              fontWeight: 700,
+              padding: "4px 12px",
+              fontSize: "11px",
+              borderRadius: "6px",
+              boxShadow: "0 0 12px rgba(16,185,129,0.35)"
+            },
+            title: currentLang === "ru" ? "Вернуться в полный рабочий режим защиты" : "Return to active protection mode",
+            onClick: function () { changeGuardMode("active"); }
+          }, "▶ " + (currentLang === "ru" ? "Рабочий режим" : "Active Mode")) : null
+        ),
         h("div", { className: "yg-master-switch" },
           h("button", {
             type: "button",
@@ -2880,6 +3121,8 @@
       h("div", { className: "yg-grid" + (tab === "live" ? " live" : "") },
         tab === "live" ? h(LivePanel, {
           data: incidents,
+          vault: vault,
+          vaultCount: (vault && vault.items && vault.items.length) || 0,
           onChanged: refresh,
           guardMode: guardMode,
           pauseRemaining: pauseRemaining,

@@ -253,6 +253,18 @@ def list_incidents(limit: int = 100) -> List[Dict[str, Any]]:
     return [{k: v for k, v in inc.items() if k != "key"} for inc in _read("incidents.json", [])[:limit]]
 
 
+def _find_incident(incidents, incident_id):
+    if not incident_id:
+        return None
+    for i in incidents:
+        iid = i.get("id") or ""
+        if iid == incident_id:
+            return i
+        if iid.replace("MSG-", "YG-") == incident_id.replace("MSG-", "YG-"):
+            return i
+    return None
+
+
 def reveal(incident_id: str, index: int) -> Dict[str, Any]:
     """Full value of one caught secret, for the local dashboard's "hold to show" eye button.
 
@@ -260,7 +272,7 @@ def reveal(incident_id: str, index: int) -> Dict[str, Any]:
     incident's token, only on an explicit user gesture, and every reveal is written to the
     vault audit log and to the incident's event list. Trashed vault entries are not revealed.
     """
-    inc = next((i for i in _read("incidents.json", []) if i.get("id") == incident_id), None)
+    inc = _find_incident(_read("incidents.json", []), incident_id)
     if not inc:
         return {"status": "error", "message": "Incident not found."}
     findings = inc.get("findings") or []
@@ -274,7 +286,7 @@ def reveal(incident_id: str, index: int) -> Dict[str, Any]:
         value = vault.get(token, True, f"dashboard reveal, incident {incident_id}")
     except Exception:
         return {"status": "error", "message": "The value is no longer in the vault."}
-    _log_event(incident_id, f"full value shown in the dashboard ({findings[index].get('title', 'secret')})")
+    _log_event(inc.get("id", incident_id), f"full value shown in the dashboard ({findings[index].get('title', 'secret')})")
     return {"status": "ok", "value": value}
 
 
@@ -286,7 +298,7 @@ def decide(incident_id: str, choice: str) -> Dict[str, Any]:
     if choice not in CHOICES:
         return {"status": "error", "message": "Unknown choice."}
     incidents = _read("incidents.json", [])
-    inc = next((i for i in incidents if i["id"] == incident_id), None)
+    inc = _find_incident(incidents, incident_id)
     if not inc:
         return {"status": "error", "message": "Incident not found."}
     if inc["status"] != "pending":

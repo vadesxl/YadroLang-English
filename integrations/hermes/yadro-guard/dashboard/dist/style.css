@@ -861,3 +861,19 @@ select.yg-input { appearance: auto; }
 .yg-btn-block:hover:not(:disabled) {
   box-shadow: 0 6px 22px rgba(239, 68, 68, 0.5);
 }
+
+@keyframes yg-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.yg-refresh-btn {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.yg-refresh-btn:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #fff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
