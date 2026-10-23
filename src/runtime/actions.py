@@ -87,6 +87,17 @@ RULES = [
      "Disabling Defender removes protection against malware.",
      "Do not let an agent change antivirus settings.",
      r"Set-MpPreference[^\n]*-Disable\w+\s+\$?true|Add-MpPreference[^\n]*-ExclusionPath"),
+
+    ("tamper_guard_env", "Turns off or changes the guard's environment",
+     "Setting the guard's own environment variables is how an agent would disable its protection from the shell.",
+     "The guard has deliberately no env kill-switch; changing YADRO_GUARD_* does nothing and is blocked.",
+     r"(?i)\b(?:set|export)\s+YADRO_GUARD_[A-Z_]+\s*=|YADRO_GUARD_[A-Z_]+\s*=\s*(?:1|true|on)|\bSet-Item\s+Env:\s*YADRO_GUARD_\w+"),
+    ("tamper_guard_files", "Modifies or deletes the guard's own files",
+     "Deleting or overwriting the guard's config, vault or incident files removes or weakens the protection.",
+     "Never let an agent touch the guard's own directory or its vault/config/decision files.",
+     r"(?i)\b(?:rm|del|remove|rd|erase)\b[^\n]*(?:yadro[-_]guard|mcp[-_]secrets[-_]guard|(?:vault|decisions|incidents|rules)\.json)"
+     r"|\bRemove-Item\b[^\n]*(?:yadro[-_]guard|mcp[-_]secrets[-_]guard)"
+     r"|(?:yadro[-_]guard|mcp[-_]secrets[-_]guard)[\\/](?:config|rules)\.json"),
 ]
 _COMPILED = [(k, t, w, s, re.compile(r, re.I | re.M)) for k, t, w, s, r in RULES]
 

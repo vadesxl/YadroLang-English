@@ -357,8 +357,27 @@ async def incidents() -> Dict[str, Any]:
     if pol is None:
         return _error("mcp-secrets-guard is not set up yet.")
     items = await asyncio.to_thread(pol.list_incidents, 100)
-    return {"status": "ok", "items": items,
-            "pending": sum(1 for i in items if i.get("status") == "pending")}
+    data = await asyncio.to_thread(_get_hermes_session_titles)
+    titles = data["titles"]
+    for inc in items:
+        if isinstance(inc.get("id"), str) and inc["id"].startswith("YG-"):
+            inc["id"] = "MSG-" + inc["id"][3:]
+        agent = inc.get("agent")
+        if isinstance(agent, dict):
+            sid = str(agent.get("session_id", ""))
+            if sid and not agent.get("chat_title"):
+                resolved = titles.get(sid) or titles.get(sid[-6:])
+                if resolved:
+                    agent["chat_title"] = resolved
+                    inc["chat_title"] = resolved
+    return {
+        "status": "ok",
+        "items": items,
+        "pending": sum(1 for i in items if i.get("status") == "pending"),
+        "active_session": data.get("active_id", ""),
+        "active_chat_title": data.get("active_title", ""),
+        "__isLive": True
+    }
 
 
 @router.post("/incidents/decide")
@@ -443,34 +462,7 @@ async def session_titles() -> Dict[str, Any]:
     }
 
 
-# Enrich incidents with human session titles if not already present
-@router.get("/incidents")
-async def incidents() -> Dict[str, Any]:
-    pol = _policy()
-    if pol is None:
-        return _error("mcp-secrets-guard is not set up yet.")
-    items = await asyncio.to_thread(pol.list_incidents, 100)
-    data = await asyncio.to_thread(_get_hermes_session_titles)
-    titles = data["titles"]
-    for inc in items:
-        if isinstance(inc.get("id"), str) and inc["id"].startswith("YG-"):
-            inc["id"] = "MSG-" + inc["id"][3:]
-        agent = inc.get("agent")
-        if isinstance(agent, dict):
-            sid = str(agent.get("session_id", ""))
-            if sid and not agent.get("chat_title"):
-                resolved = titles.get(sid) or titles.get(sid[-6:])
-                if resolved:
-                    agent["chat_title"] = resolved
-                    inc["chat_title"] = resolved
-    return {
-        "status": "ok",
-        "items": items,
-        "pending": sum(1 for i in items if i.get("status") == "pending"),
-        "active_session": data.get("active_id", ""),
-        "active_chat_title": data.get("active_title", ""),
-        "__isLive": True
-    }
+# (single /incidents GET is defined above; the earlier duplicate was removed)
 
 
 RULES_FILE = PLUGIN_DIR / "rules.json"

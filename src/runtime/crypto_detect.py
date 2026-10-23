@@ -39,7 +39,7 @@ def _load_wordlist():
 WORDS, INDEX = _load_wordlist()
 _B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 _B58_INDEX = {c: i for i, c in enumerate(_B58)}
-_KEY_WORD = re.compile(r"(?i)(private|priv|secret|seed|mnemonic|wallet|signer|pk|sk|key)\w*[\"']?\s*[:=]?\s*[\"']?$")
+_KEY_WORD = re.compile(r"(?i)(?:private|priv|secret|seed|mnemonic|wallet|signer|pk|sk|key)\b[\"']?\s*[:=]?\s*[\"']?$")
 
 Hit = Tuple[str, str, str, int, int, str]   # kind, label, title, start, end, confidence
 
@@ -95,7 +95,7 @@ def _seed_hits(text: str) -> List[Hit]:
                     hits.append(("seed_phrase", "Credentials", "Crypto wallet seed phrase (BIP39)",
                                  run[i][1], run[i + size - 1][2], "certain"))
                     return
-        if len(words) in (12, 24):
+        if 12 <= len(words) <= 24:
             hits.append(("seed_phrase_unverified", "Credentials", "Possible crypto seed phrase",
                          run[0][1], run[-1][2], "medium"))
 

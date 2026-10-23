@@ -8,7 +8,9 @@ Protect & send / Block & quarantine / Allow once.
 
 Fail-closed: if the guard itself fails, the tool call is BLOCKED, never silently
 allowed. (Hermes also blocks on hook timeout for pre_tool_call.)
-Kill switch for emergencies: environment variable YADRO_GUARD_DISABLE=1.
+There is no environment-variable kill switch: an agent must never be able to turn
+off its own guard. Attempts to modify the guard's own files, config or env are
+blocked as tampering by the engine's action rules.
 
 The detectors and policy are pure Python (no llvmlite), so they are imported
 in-process from the engine folder configured in config.json.
@@ -26,8 +28,10 @@ _policy = None
 _load_error = ""
 
 # Read-only / internal tools that cannot exfiltrate data by themselves.
+# read_file / search_files / glob are NOT skipped: their path args are checked for
+# references to sensitive local files (see runtime.detectors.scan_sensitive_paths).
 # Everything NOT listed here is scanned (unknown tools are guarded by default).
-_SKIP_TOOLS = frozenset({"read_file", "list_dir", "search_files", "glob", "todo_write", "clarify"})
+_SKIP_TOOLS = frozenset({"list_dir", "todo_write", "clarify"})
 
 
 def _load_policy():
@@ -44,8 +48,6 @@ def _load_policy():
 
 
 def _on_pre_tool_call(tool_name: str = "", args: Any = None, **ctx: Any) -> Optional[dict]:
-    if os.environ.get("YADRO_GUARD_DISABLE", "").lower() in {"1", "true", "yes"}:
-        return None
     if tool_name in _SKIP_TOOLS:
         return None
     policy = _load_policy()

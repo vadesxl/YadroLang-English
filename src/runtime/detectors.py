@@ -122,6 +122,29 @@ _ASSIGN = re.compile(
     r"[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9_\-+/=.]{16,})")
 _BEARER = re.compile(r"(?i)\bbearer\s+([A-Za-z0-9_\-+/=.]{20,})")
 
+# Sensitive-local-file path hints: reading these lets an agent pull secrets out of the
+# filesystem into the conversation / a network call. Also matches the guard's own files.
+_SENSITIVE_FILE = re.compile(
+    r"(?i)(?:\.env(?:\.[\w.-]+)?|\.ssh[/\\][^\"'\s]*|(?:^|[/\\])id_rsa(?:\.pub)?$|wallet\.dat|"
+    r"(?:vault|decisions|incidents|rules)\.json|credentials(?:\.json|\.txt)?|\.aws[/\\]credentials|"
+    r"\.npmrc|\.pypirc|\.netrc|gnupg[/\\]|secrets(?:\.yaml|\.yml|\.json)?|"
+    r"\.git-credentials|api_keys?\.(?:txt|json|py))",
+)
+
+
+def _is_sensitive_path(path: str, text: str = "") -> bool:
+    """True if a path/pattern resolves to a likely sensitive file (or the guard's own state)."""
+    if not isinstance(path, str) or not path:
+        return False
+    if _SENSITIVE_FILE.search(path.replace("\\", "/")):
+        return True
+    # a path that points inside the guard's own folder is always sensitive
+    low = path.replace("\\", "/").lower()
+    if ("yadro-guard" in low or "mcp-secrets-guard" in low) and any(
+            seg in low for seg in ("/config.json", "/rules.json", "/plugin.yaml", "/__init__.py", "/engine_loader.py")):
+        return True
+    return False
+
 
 def luhn_ok(digits: str) -> bool:
     total, alt = 0, False
@@ -223,6 +246,29 @@ def scan_args(args, known_secrets: Iterable[tuple] = ()) -> List[Finding]:
     out: List[Finding] = []
     for path, text in walk_args(args):
         out.extend(scan_text(text, path, known))
+        out.extend(scan_sensitive_paths_at(path, text))
+    return out
+
+
+_PATH_KEYS = {"path", "file_path", "pattern", "root", "folder", "dir", "directory", "name", "source", "target"}
+
+
+def scan_sensitive_paths_at(path: str, text: str) -> List[Finding]:
+    """Flag tool args that point a read/write tool at a sensitive local file (or the guard itself)."""
+    if not isinstance(text, str) or not text:
+        return []
+    base = (path or "").rsplit(".", 1)[-1].split("[")[0]
+    if base in _PATH_KEYS and _is_sensitive_path(text):
+        return [Finding("sensitive_file", "Credentials",
+                        "A path to a sensitive local file (env, ssh keys, wallet, guard state)",
+                        0, len(text), text, "high", path or "value")]
+    return []
+
+
+def scan_sensitive_paths(args) -> List[Finding]:
+    out: List[Finding] = []
+    for path, text in walk_args(args):
+        out.extend(scan_sensitive_paths_at(path, text))
     return out
 
 

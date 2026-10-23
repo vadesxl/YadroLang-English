@@ -24,6 +24,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import secrets
 import time
 from pathlib import Path
@@ -66,10 +67,10 @@ def fingerprint(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def action_key(tool_name: str, findings: List[detectors.Finding]) -> str:
-    """Same tool + same set of secrets = same action (args may differ slightly)."""
+def action_key(tool_name: str, findings: List[detectors.Finding], dest: str = "") -> str:
+    """Same tool + same set of secrets + same recipient = same action (args may differ slightly)."""
     fps = sorted({fingerprint(f.value) for f in findings})
-    return hashlib.sha256((tool_name + "|" + "|".join(fps)).encode()).hexdigest()[:32]
+    return hashlib.sha256((tool_name + "|" + (dest or "") + "|" + "|".join(fps)).encode()).hexdigest()[:32]
 
 
 def _destination(tool_name: str, args: Any) -> str:
@@ -86,6 +87,31 @@ def _destination(tool_name: str, args: Any) -> str:
             prog = cmd.split()[0][:60]
             return f"{url.group(0)[:140]} (via {prog})" if url else "shell: " + prog
     return tool_name
+
+
+def _scrub(text: str) -> str:
+    """Mask any secrets found inside a string (used before it is written to a file/journal)."""
+    try:
+        from . import detectors as _d
+        hits = _d.scan_text(text)
+        for f in sorted(hits, key=lambda x: x.start, reverse=True):
+            text = text[:f.start] + f.preview + text[f.end:]
+        return text[:4096]
+    except Exception:
+        return text[:4096]
+
+
+def _destination_key(tool_name: str, args: Any) -> str:
+    """Normalised recipient (host/domain/target) for scoping saved decisions."""
+    dest = _destination(tool_name, args)
+    m = re.search(r"(?:https?|ftp|wss?)://([^/\s\"'<>:]+)", dest)
+    if m:
+        host = m.group(1).lower().rstrip(".")
+        parts = host.split(".")
+        return ".".join(parts[-2:]) if len(parts) >= 2 else host
+    if re.fullmatch(r"[A-Za-z0-9.-]+", dest):
+        return dest.lower()
+    return dest[:64]
 
 
 def _known_secrets():
@@ -130,13 +156,14 @@ def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -
     risks = actions.scan_actions(args)
     if not findings and not risks:
         return None
+    dest = _destination_key(tool_name, args)
     if mode == "monitor":
         # Audit mode: record the event for review but do not block the agent
-        key = action_key(tool_name, findings) if findings else _risk_key(tool_name, risks)
+        key = action_key(tool_name, findings, dest) if findings else _risk_key(tool_name, risks)
         inc = _new_incident(tool_name, args, findings, key, context or {}, risks)
         inc["status"] = "audited"
         return None
-    key = action_key(tool_name, findings) if findings else _risk_key(tool_name, risks)
+    key = action_key(tool_name, findings, dest) if findings else _risk_key(tool_name, risks)
     if findings and risks:
         key = hashlib.sha256((key + _risk_key(tool_name, risks)).encode()).hexdigest()[:32]
     decisions = _read("decisions.json", {})
@@ -150,7 +177,7 @@ def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -
         if d["choice"] == "protect" and not risks:
             safe = detectors.redact_args(args, findings, _replacement_for(d.get("tokens", {})))
             _log_event(d.get("incident"), "sent with protection")
-            return {"action": "modify", "args": safe if isinstance(safe, dict) else {"value": safe}}
+            return {"action": "modify", "args": safe}   # same shape as input args, always
         if d["choice"] == "block":
             return {"action": "block", "message": f'⛔ MCP Secrets Guard: this action was blocked by the user '
                                                   f'(incident {d.get("incident")}). Do not retry it.'}
@@ -216,7 +243,7 @@ def _new_incident(tool_name, args, findings, key, ctx, risks=()) -> Dict[str, An
 
     inc = {"id": "MSG-" + secrets.token_hex(3).upper(), "key": key, "status": "pending",
            "at": int(time.time()), "last_at": int(time.time()), "attempts": 1,
-           "tool": tool_name, "destination": _destination(tool_name, args),
+           "tool": tool_name, "destination": _scrub(_destination(tool_name, args)),
            "command": command_str,
            "agent": agent_info,
            "process": {"pid": os.getpid(), "name": Path(sys.argv[0] if sys.argv and sys.argv[0] else "python").name[:60]},
@@ -305,6 +332,10 @@ def decide(incident_id: str, choice: str) -> Dict[str, Any]:
         return {"status": "error", "message": "This incident has already been decided."}
     if choice == "protect" and not inc["findings"]:
         return {"status": "error", "message": "There is no secret to protect here. Choose Block or Allow once."}
+    if choice == "protect" and inc.get("risks"):
+        return {"status": "error",
+                "message": "This action also contains a risky action. Protect & send is not available for it — "
+                           "choose Block & quarantine, or Allow once after checking the risk yourself."}
     tokens = {f["fingerprint"]: f["token"] for f in inc["findings"] if f.get("token")}
     decisions = _read("decisions.json", {})
     decisions[inc["key"]] = {"choice": choice, "at": int(time.time()), "incident": inc["id"], "tokens": tokens}
