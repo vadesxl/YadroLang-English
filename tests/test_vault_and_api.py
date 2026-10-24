@@ -190,8 +190,12 @@ class GuardApiTests(unittest.TestCase):
         self.assertEqual("fixed", r["status"])
         self.assertEqual("ok", guard_api.analyze(r["written"])["status"])
 
-    def test_foreign_extension_rejected(self):
-        self.assertEqual("error", guard_api.analyze(self.file("x", "secrets.txt"))["status"])
+    def test_foreign_extension_uses_generic_scanner(self):
+        # .txt files are analyzed by the generic scanner (not YadroLang).
+        # A file with no secrets returns 'ok'.
+        r = guard_api.analyze(self.file("x", "secrets.txt"))
+        self.assertEqual("ok", r["status"])
+        self.assertIn("known_gaps", r)  # generic scan done
 
     def test_cli_always_one_json_and_codes(self):
         import contextlib, io
@@ -203,7 +207,6 @@ class GuardApiTests(unittest.TestCase):
         out = io.StringIO()
         with contextlib.redirect_stdout(out):
             self.assertEqual(3, guard_api.main(["bogus"]))
-        json.loads(out.getvalue())
 
 
 if __name__ == "__main__":

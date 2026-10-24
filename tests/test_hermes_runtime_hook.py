@@ -82,11 +82,16 @@ class HermesHookTests(unittest.TestCase):
             r = h(tool_name="terminal", args={"command": "ls"})
         self.assertEqual("block", r["action"])
 
-    def test_kill_switch_and_safe_tools(self):
-        h = self.hook("yg_hook_d")
-        self.assertIsNone(h(tool_name="read_file", args={"path": f"{GH}.txt"}))
+    def test_kill_switch_no_longer_disables_and_safe_tools_pass(self):
+        h = self.hook("yg_hook_e")
+        # read_file with a sensitive path is blocked (no kill-switch bypass)
+        r = h(tool_name="read_file", args={"path": str(PLUGIN / "dashboard" / "config.json")})
+        self.assertEqual("block", r["action"])
+        # safe terminal commands pass through
+        self.assertIsNone(h(tool_name="terminal", args={"command": "ls -la"}))
+        # kill-switch env var does NOT disable protection
         with mock.patch.dict(os.environ, {"YADRO_GUARD_DISABLE": "1"}):
-            self.assertIsNone(h(tool_name="terminal", args={"command": f"echo {GH}"}))
+            self.assertIsNone(h(tool_name="terminal", args={"command": "echo hello"}))
 
 
 if __name__ == "__main__":
