@@ -1210,22 +1210,22 @@ const makeGuardPage = function (SDK, onReady) {
       ) : null,
 
       // Decision Action Buttons (if pending)
-      pending ? h("div", { className: isFocal ? "yg-decision-actions-row" : "yg-actions", style: { marginTop: 12 } },
+      pending ? h("div", { className: "yg-actions", style: { marginTop: 12 } },
         hasFindings ? h("button", {
           type: "button",
-          className: isFocal ? "yg-btn-decision yg-btn-protect" : "yg-btn good",
+          className: "yg-btn good",
           disabled: !!busy,
           onClick: function (e) { choose("protect", e); }
         }, busy === "protect" ? "…" : ("🛡️ " + (currentLang === "ru" ? "Защитить токеном и отправить" : "Protect & send"))) : null,
         h("button", {
           type: "button",
-          className: isFocal ? "yg-btn-decision yg-btn-allow" : "yg-btn ghost",
+          className: "yg-btn ghost",
           disabled: !!busy,
           onClick: function (e) { choose("allow", e); }
         }, busy === "allow" ? "…" : ("⚡ " + (currentLang === "ru" ? "Пропустить один раз" : "Allow once"))),
         h("button", {
           type: "button",
-          className: isFocal ? "yg-btn-decision yg-btn-block" : "yg-btn bad",
+          className: "yg-btn bad",
           disabled: !!busy,
           onClick: function (e) { choose("block", e); }
         }, busy === "block" ? "…" : (hasFindings
@@ -1930,9 +1930,29 @@ const makeGuardPage = function (SDK, onReady) {
       }).catch(function () { setHistBusy(""); window.alert("Could not reach Guard backend."); });
     }
 
-    const items = data.items || [];
+    function clearAllHistory() {
+      if (!window.confirm(currentLang === "ru" ? "Полностью очистить весь журнал инцидентов, включая ожидающие решения? Это нельзя отменить." : "Clear the entire incident log, including pending decisions? This cannot be undone.")) return;
+      setHistBusy("__all__");
+      post("/incidents/clear", { scope: "all" }).then(function (r) {
+        setHistBusy("");
+        if (r.status === "ok" && p.onChanged) p.onChanged();
+        else if (r.status !== "ok") window.alert(r.message || "Failed to clear log.");
+      }).catch(function () { setHistBusy(""); window.alert("Could not reach Guard backend."); });
+    }
+
+    const rawItems = data.items || [];
+    const activeFocal = (activeIncidentId && rawItems.find(function (i) { return i.id === activeIncidentId; }))
+      || rawItems.filter(function (i) { return i.status === "pending"; })[0] || null;
+    const items = rawItems.concat().sort(function (a, b) {
+      const ta = a.at || "", tb = b.at || "";
+      if (ta < tb) return -1;
+      if (ta > tb) return 1;
+      const ia = a.id || "", ib = b.id || "";
+      if (ia < ib) return -1;
+      if (ia > ib) return 1;
+      return 0;
+    });
     const pending = items.filter(function (i) { return i.status === "pending"; });
-    const activeFocal = (activeIncidentId && items.find(function (i) { return i.id === activeIncidentId; })) || pending[0] || null;
     const otherPending = pending.filter(function (i) { return !activeFocal || i.id !== activeFocal.id; });
 
     const done = items.filter(function (i) { return i.status !== "pending"; })
@@ -2024,11 +2044,18 @@ const makeGuardPage = function (SDK, onReady) {
                 onClick: function () { handleFilterChange(f[0]); }
               }, f[1]);
             })),
-          done.length ? h("button", {
-            type: "button", className: "yg-btn ghost", disabled: !!histBusy,
-            title: currentLang === "ru" ? "Удалить все решённые инциденты" : "Clear resolved history",
-            onClick: clearHistory
-          }, histBusy === "__all__" ? "…" : (currentLang === "ru" ? "🗑 Очистить историю" : "🗑 Clear history")) : null),
+          (done.length || items.length) ? h("div", { className: "yg-hst-actions", style: { display: "flex", gap: 6 } },
+            done.length ? h("button", {
+              type: "button", className: "yg-btn ghost", disabled: !!histBusy,
+              title: currentLang === "ru" ? "Удалить все решённые инциденты" : "Clear resolved history",
+              onClick: clearHistory
+            }, histBusy === "__all__" ? "…" : (currentLang === "ru" ? "🗑 Очистить историю" : "🗑 Clear history")) : null,
+            items.length ? h("button", {
+              type: "button", className: "yg-btn ghost danger", disabled: !!histBusy,
+              title: currentLang === "ru" ? "Полностью очистить весь журнал (включая ожидающие)" : "Clear the entire log (including pending)",
+              onClick: clearAllHistory
+            }, histBusy === "__all__" ? "…" : (currentLang === "ru" ? "🗑 Очистить всё" : "🗑 Clear all")) : null)
+          : null),
         done.length ? h("div", { className: "yg-list" },
           done.slice(0, 50).map(function (inc) {
             var accSummary = h("summary", { className: "yg-acc-sum" },

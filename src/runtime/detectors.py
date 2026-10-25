@@ -218,6 +218,10 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
     from . import crypto_detect
     for kind, label, title, s, e, conf in crypto_detect.scan(text):
         add(Finding(kind, label, title, s, e, text[s:e], conf, path))
+    # 2c) AiTM / Evilginx look-alike login pages and token-in-URL stealing
+    from . import aim_detect
+    for f in aim_detect.scan(text):
+        add(f)
     # 3) secret-looking assignments / bearer headers with high entropy
     for rx, title in ((_ASSIGN, "Secret value assigned to a password/token field"),
                       (_BEARER, "Bearer token in an Authorization header")):

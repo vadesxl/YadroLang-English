@@ -561,9 +561,16 @@ async def clear_incidents(body: "IncidentOpBody") -> Dict[str, Any]:
     if pol is None:
         return _error("mcp-secrets-guard is not set up yet.")
     try:
+        scope = str(getattr(body, "scope", "resolved") or "resolved")
         incs = pol._read("incidents.json", [])
-        new_incs = [i for i in incs if i.get("status") == "pending"]
-        pol._write("incidents.json", new_incs)
+        if scope == "all":
+            # Full wipe of the journal (including resolved). Used by the "Clear all"
+            # button in the history block for a full journal wipe.
+            pol._write("incidents.json", [])
+        else:
+            # Default: keep pending (their decisions matter), drop the rest.
+            new_incs = [i for i in incs if i.get("status") == "pending"]
+            pol._write("incidents.json", new_incs)
         return {"status": "ok"}
     except Exception as e:
         return _error(f"Could not clear incidents: {e}")

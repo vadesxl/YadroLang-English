@@ -177,7 +177,16 @@ def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -
         if d["choice"] == "protect" and not risks:
             safe = detectors.redact_args(args, findings, _replacement_for(d.get("tokens", {})))
             _log_event(d.get("incident"), "sent with protection")
-            return {"action": "modify", "args": safe}   # same shape as input args, always
+            incident_id = d.get("incident", "UNKNOWN")
+            token = d.get("tokens", {}).get("__primary", "")
+            notice = (
+                "[MCP-Secrets-Guard Notice] "
+                + ("Secret detected and replaced with secure token. " if token else "Secret detected and masked. ")
+                + "Raw credentials never leave the perimeter. "
+                + (f"Token: {token}. " if token else "")
+                + f"Incident: {incident_id}."
+            )
+            return {"action": "modify", "args": safe, "notice": notice}
         if d["choice"] == "block":
             return {"action": "block", "message": f'⛔ MCP Secrets Guard: this action was blocked by the user '
                                                   f'(incident {d.get("incident")}). Do not retry it.'}

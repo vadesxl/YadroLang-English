@@ -586,6 +586,13 @@ EXIT_SOURCE = 3
 def run(argv=None, stdin=None, stdout=None) -> int:
     stdout = stdout or sys.stdout
     stdin = stdin or sys.stdin
+    # Windows CI / console defaults to CP1252; force UTF-8 so Russian YadroLang
+    # keywords (функ, вернуть) never trip UnicodeDecodeError/EncodeError.
+    for stream in (sys.stdin, sys.stdout, getattr(sys, "stderr", None)):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError, OSError):
+            pass
     parser = argparse.ArgumentParser(prog="src.guard_api")
     parser.add_argument("command", choices=("analyze", "scan", "autofix", "report-text"))
     parser.add_argument("--stdin", action="store_true")
