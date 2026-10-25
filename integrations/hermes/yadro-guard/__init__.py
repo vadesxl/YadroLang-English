@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 
 # SHA-256 of core runtime modules — tampered files trigger fail-closed block.
 _EXPECTED_HASHES = {
-    "src/runtime/policy.py":      "e622af7cfe095ad8c69f624da215d2bd884e5f522572003e0ba31b05e1bd2527",
+    "src/runtime/policy.py":      "1529f3b26a0542ea7decc6e8da4bcac8668b06121e4d48902361c65a87ec3ad1",
     "src/runtime/detectors.py":   "487c974c016352ac2c0e4b72079584b990caf202f2b8d70aa8b18dac2e11e0bf",
     "src/runtime/actions.py":    "bd82b5a6942f7b4d1072117e2c121cf504422d5749989f1515d859db834b1c54",
-    "src/runtime/aim_detect.py": "6782fd03b83c69769ac83305b0682b09ef95cf10cc65b37563b867a36bd02afd",
+    "src/runtime/aim_detect.py": "4a15e4a6ee460649934bb460f4aa0b61ae293f6af5ecf629b99bef2a51be10a0",
 }
 
 def _check_integrity() -> str | None:

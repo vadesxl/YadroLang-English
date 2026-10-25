@@ -80,10 +80,67 @@ _TOKEN_PARAMS = (
     "jwt", "assertion", "creds", "pwd", "passwd",
 )
 
-# an URL-ish authority: scheme optional, host, optional port, optional path/query
-_HOST_RE = re.compile(
-    r"(?i)(?P<scheme>[a-z][a-z0-9+.\-]*://)?(?P<host>[^\s/@:#?\"'<>]{2,}(\.[^\s/@:#?\"'<>]+)+)(?::\d+)?(?P<suff>[^\s\"'<>]*)",
-)
+# Host extraction is deliberately NOT one backtracking regex (audit S1-1):
+# a greedy token run has no following required pattern to backtrack into, so it is
+# linear; the authority is then parsed in bounded time from that single token.
+_MAX_TOKEN_CHARS = 2048
+_MAX_HOST_CHARS = 253
+_TOKEN_RE = re.compile(r"[^\s\"'<>]+")
+_HOST_LABEL_CHARS = "-_"
+
+
+def _valid_host(host):
+    """True for a plausible domain or IPv4 literal (Unicode labels allowed: homoglyphs)."""
+    if not host or len(host) > _MAX_HOST_CHARS or "." not in host:
+        return False
+    if host.startswith(".") or host.endswith(".") or ".." in host:
+        return False
+    labels = host.split(".")
+    if len(labels) < 2:
+        return False
+    for label in labels:
+        if not label or len(label) > 63 or label[0] == "-" or label[-1] == "-":
+            return False
+        for ch in label:
+            if not (ch.isalnum() or ch in _HOST_LABEL_CHARS):
+                return False
+    if all(label.isdigit() for label in labels):
+        return True                       # IPv4 literal
+    tld = labels[-1]
+    return tld.startswith("xn--") or any(ch.isalpha() for ch in tld)
+
+
+def _iter_hosts(text):
+    """Yield (host, start, end, suffix) for every URL-ish authority. O(len(text))."""
+    for m in _TOKEN_RE.finditer(text):
+        tok = m.group(0)
+        if not tok:
+            continue
+        base = m.start()
+        if len(tok) > _MAX_TOKEN_CHARS:   # one giant token (minified JS, base64) is not a URL
+            tok = tok[:_MAX_TOKEN_CHARS]
+        scheme = tok.find("://")
+        if scheme > 0:
+            base += scheme + 3
+            tok = tok[scheme + 3:]
+            if not tok:
+                continue
+        cut = len(tok)                    # authority ends at path / query / fragment
+        for mark in "/?#":
+            i = tok.find(mark)
+            if 0 <= i < cut:
+                cut = i
+        authority = tok[:cut]
+        at = authority.rfind("@")         # strip userinfo: user:pass@host
+        if at >= 0:
+            base += at + 1
+            authority = authority[at + 1:]
+        host = authority
+        colon = authority.rfind(":")      # strip port only when it really is a port
+        if colon > 0 and authority[colon + 1:].isdigit():
+            host = authority[:colon]
+        if _valid_host(host):
+            yield host.lower(), base, base + len(host), tok[cut:]
 # auth-looking label at a label boundary
 _AUTH_RE = re.compile(
     r"(?i)(?:^|\.)(?:login|account|accounts|signin|sign-in|auth|secure|"
@@ -118,14 +175,13 @@ def scan(text):
     found = []
     seen = set()
 
-    for m in _HOST_RE.finditer(text):
-        host = (m.group("host") or "").lower()
-        if not host or host in seen:
-            continue
-        if any(c in host for c in " \t"):
+    if "." not in text and "://" not in text:   # nothing can be a host here
+        return []
+
+    for host, start, end, suff in _iter_hosts(text):
+        if host in seen:
             continue
         seen.add(host)
-        start, end = m.start("host"), m.end("host")
 
         # 1) punycode domain
         if _PUNY_RE.search(host):
@@ -163,7 +219,6 @@ def scan(text):
                      start, end, host, "medium")
 
         # 5) SSO token in URL query to external host
-        suff = m.group("suff") or ""
         if "?" in suff or "=" in suff:
             tm = _TOKENPARAM_RE.search(suff)
             if tm and not _is_local(host):

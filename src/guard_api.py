@@ -190,9 +190,16 @@ def _regex_replace_word(text: str, ru: str, en: str) -> str:
     return rx.sub(en, text)
 
 # ------------------------------------------------------------------ YadroLang detection
+# Words that only YadroLang uses. Generic keywords ("if", "let", "return", "function")
+# are NOT markers: sniffing on them sent ordinary JS/Python into the YadroLang parser,
+# which died with "Syntax error" and the secret scanner never ran (audit S1-3).
+_YADRO_STRONG_KW = ("fn ", "fn(", "функ", "требует",
+                    "requires", "старт")
+
+
 def _is_yadro_content(source: str) -> bool:
     src_lower = source.lower()
-    return any(kw in src_lower for kw in _YADRO_RU_KW | _YADRO_EN_KW)
+    return any(kw in src_lower for kw in _YADRO_STRONG_KW)
 
 
 def _is_yadro_file(path: str) -> bool:
@@ -229,6 +236,43 @@ def _line_at(text: str, line_num: int) -> str:
     return (lines[0] if lines else "").strip()
 
 
+def _masked_line(text: str, pos: int, findings) -> str:
+    """The line holding `pos` with every finding on it replaced by its masked preview.
+
+    Audit S1-2: a raw secret must never leave the engine - not even inside the
+    human-readable "code" / "before" fields of the API response.
+    """
+    pos = max(0, min(pos, len(text)))
+    line_start = text.rfind("\n", 0, pos) + 1
+    line_end = text.find("\n", pos)
+    if line_end < 0:
+        line_end = len(text)
+    out = text[line_start:line_end]
+    for f in sorted(findings, key=lambda x: x.start, reverse=True):
+        if line_start <= f.start and f.end <= line_end:
+            out = out[:f.start - line_start] + f.preview + out[f.end - line_start:]
+    return out.strip()
+
+
+def _mask_any(line: str) -> str:
+    """Belt and braces: mask anything that still looks like a secret inside one line."""
+    out = line
+    for f in sorted(detectors.scan_text(line), key=lambda x: x.start, reverse=True):
+        out = out[:f.start] + f.preview + out[f.end:]
+    return out
+
+
+def _risky_public(risky):
+    """Risky-action dicts with their context snippet masked (it can carry a secret)."""
+    out = []
+    for action in risky:
+        item = action.public()
+        if isinstance(item.get("snippet"), str):
+            item["snippet"] = _mask_any(item["snippet"])
+        out.append(item)
+    return out
+
+
 def _extract_line_from_msg(msg: str) -> int:
     import re
     m = re.search(r"line (\d+)", msg)
@@ -258,24 +302,24 @@ def _generic_analyze(code: str, lang: str = "en") -> Dict[str, Any]:
         return {
             "status": "leak",
             "line": _line_of(code, f.start),
-            "code": _line_at(code, _line_of(code, f.start)),
+            "code": _masked_line(code, f.start, findings),
             "why": f.title + ": " + _sink_human(f.kind, lang),
             "labels": [{"label": labels_map.get(lbl, lbl)} for lbl in labels],
             "sources": [],
             "sink": {"name": f.kind, "human": _sink_human(f.kind, lang)},
             "quarantine": quarantine,
             "autofix": autofix,
-            "risky": [a.public() for a in risky],
+            "risky": _risky_public(risky),
             "known_gaps": KNOWN_GAPS,
         }
 
     a = risky[0]
     return {
-        "status": "leak", "line": 0, "code": a.snippet[:240],
+        "status": "leak", "line": 0, "code": _mask_any(a.snippet[:240]),
         "why": a.title + ". " + a.why,
         "labels": [], "sources": [], "sink": {"name": a.kind, "human": a.title},
         "quarantine": [], "autofix": None,
-        "risky": [a.public() for a in risky],
+        "risky": _risky_public(risky),
         "known_gaps": KNOWN_GAPS,
     }
 
@@ -292,14 +336,15 @@ def _generic_autofix(code: str, findings, lang: str) -> Dict[str, Any]:
             fixed = fixed[:f.start] + f"[protected:{f.kind}]" + fixed[f.end:]
     verified = bool(findings) and not detectors.scan_text(fixed)
     return {
-        "before": _line_at(code, _line_of(code, first.start)),
-        "after": _line_at(fixed, _line_of(code, first.start)),
+        "before": _masked_line(code, first.start, findings),
+        "after": _mask_any(_line_at(fixed, _line_of(code, first.start))),
         "verified": verified, "fixed_code": fixed, "count": len(findings),
     }
 
 
 # ------------------------------------------------------------------ YadroLang scanner
-def _yadro_analyze(source: str, path: str, lang: str = "en") -> Dict[str, Any]:
+def _yadro_analyze(source: str, path: str, lang: str = "en",
+                   fallback_generic: bool = False) -> Dict[str, Any]:
     if not _YADRO_AVAILABLE:
         return {"status": "error", "message": "YadroLang compiler not available in this repo variant",
                 "known_gaps": KNOWN_GAPS}
@@ -318,12 +363,20 @@ def _yadro_analyze(source: str, path: str, lang: str = "en") -> Dict[str, Any]:
     except Exception as e:
         # Catch any syntax error (LexerError, ParserError, or their stubs) by name
         err_name = type(e).__name__
-        if err_name in ("LexerError", "ParserError"):
-            return {"status": "error", "message": f"Syntax error in YadroLang: {e}"}
-        # A preserved/sanitized construction that the parser rejects: report as error
-        if err_name in ("EthicalError", "EntryPointError", "SemanticError"):
-            return {"status": "error", "message": f"YadroLang: {e}"}
-        raise  # re-raise anything else
+        syntax = err_name in ("LexerError", "ParserError")
+        semantic = err_name in ("EthicalError", "EntryPointError", "SemanticError")
+        if not (syntax or semantic):
+            raise  # a real bug: never hide it behind a fallback
+        if fallback_generic:
+            # The text only looked like YadroLang. Do not lose the scan: run the generic
+            # detectors over it and report a real leak if there is one (audit S1-3).
+            rescued = _generic_analyze(source, lang)
+            if rescued.get("status") == "leak":
+                rescued["engine"] = "generic-fallback"
+                rescued["yadro_error"] = _mask_any(f"{err_name}: {e}")[:200]
+                return rescued
+        message = f"Syntax error in YadroLang: {e}" if syntax else f"YadroLang: {e}"
+        return {"status": "error", "message": _mask_any(message)}
 
     analyzer = EthicalAnalyzer()
     try:
@@ -508,7 +561,7 @@ def analyze_text(code: str, lang: str = "en") -> Dict[str, Any]:
         raise InputError("Empty input")
 
     if _YADRO_AVAILABLE and _is_yadro_content(code[:500]):
-        return _yadro_analyze(code, "<analyze_text>", lang)
+        return _yadro_analyze(code, "<analyze_text>", lang, fallback_generic=True)
 
     return _generic_analyze(code, lang)
 

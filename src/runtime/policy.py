@@ -89,16 +89,26 @@ def _destination(tool_name: str, args: Any) -> str:
     return tool_name
 
 
+_MASKED_ERROR = "[MASKED_ERROR]"
+
+
 def _scrub(text: str) -> str:
-    """Mask any secrets found inside a string (used before it is written to a file/journal)."""
+    """Mask any secrets found inside a string (used before it is written to a file/journal).
+
+    Fail-closed (audit S2-3): if the scanner cannot run, the whole string is replaced.
+    Returning the original text on error writes the raw secret into the journal - the
+    exact leak this guard exists to prevent.
+    """
     try:
+        if not isinstance(text, str):
+            return _MASKED_ERROR
         from . import detectors as _d
         hits = _d.scan_text(text)
         for f in sorted(hits, key=lambda x: x.start, reverse=True):
             text = text[:f.start] + f.preview + text[f.end:]
         return text[:4096]
     except Exception:
-        return text[:4096]
+        return _MASKED_ERROR
 
 
 def _destination_key(tool_name: str, args: Any) -> str:
