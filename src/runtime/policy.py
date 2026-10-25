@@ -299,6 +299,31 @@ def list_incidents(limit: int = 100) -> List[Dict[str, Any]]:
     return [{k: v for k, v in inc.items() if k != "key"} for inc in _read("incidents.json", [])[:limit]]
 
 
+def delete_incident(incident_id: str) -> Dict[str, Any]:
+    """Remove one incident from the journal (used by the dashboard's trash button)."""
+    incidents = _read("incidents.json", [])
+    left = [i for i in incidents if i.get("id") != incident_id]
+    if len(left) == len(incidents):
+        return {"status": "error", "message": "Incident not found."}
+    _write("incidents.json", left)
+    return {"status": "ok", "removed": len(incidents) - len(left)}
+
+
+def clear_incidents(scope: str = "resolved") -> Dict[str, Any]:
+    """Wipe the journal: scope "all" removes every record, "resolved" keeps pending ones.
+
+    Decisions are kept on purpose: they are a separate security control, not history.
+    """
+    incidents = _read("incidents.json", [])
+    if scope == "all":
+        left: List[Dict[str, Any]] = []
+    else:
+        left = [i for i in incidents if i.get("status") == "pending"]
+    removed = len(incidents) - len(left)
+    _write("incidents.json", left)
+    return {"status": "ok", "removed": removed, "left": len(left)}
+
+
 def _find_incident(incidents, incident_id):
     if not incident_id:
         return None

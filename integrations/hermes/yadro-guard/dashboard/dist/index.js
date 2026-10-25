@@ -738,10 +738,57 @@
     var m = text.match(/https?:\/\/([a-zA-Z0-9.-]+(?::[0-9]+)?)/i);
     if (m && m[1]) return m[1];
     if (inc.destination) {
-      var d = inc.destination.replace(/^(?:shell|команда|command):\s*/i, "").replace(/^[a-z]+:\/\//i, "").split(/[/?# ]/)[0];
+      var destRaw = String(inc.destination);
+      // A local path is not a network destination ("C:\\x", "E:/x", "\\\\srv\\share", "./x", "/x").
+      if (/^[a-zA-Z]:[\\/]/.test(destRaw) || /^\\\\/.test(destRaw) || /^\.{0,2}[\\/]/.test(destRaw)) return "";
+      var d = destRaw.replace(/^(?:shell|команда|command):\s*/i, "").replace(/^[a-z]+:\/\//i, "").split(/[/?# ]/)[0];
+      if (d.indexOf("\\") !== -1) return "";
       if (d && d.indexOf(".") !== -1 && !/^[0-9]+$/.test(d)) return d;
     }
     return "";
+  }
+
+  // Tools that work on the local disk: their destination is the file system, not the net.
+  var LOCAL_TOOLS = {
+    read_file: 1, read_multiple_files: 1, write_file: 1, patch: 1, list_directory: 1,
+    directory_tree: 1, get_file_info: 1, search_files: 1, move_file: 1, create_directory: 1,
+    edit_file: 1, apply_diff: 1, read_text_file: 1, write_text_file: 1
+  };
+
+  function isLocalDestination(inc) {
+    if (!inc) return false;
+    // A real host anywhere in the call wins: "shell: curl" with a URL inside is egress.
+    if (extractDomain(inc)) return false;
+    if (LOCAL_TOOLS[String(inc.tool || "").toLowerCase()]) return true;
+    var dest = String(inc.destination || "");
+    if (/^(?:shell|команда|command):/i.test(dest)) return !/https?:\/\//i.test(dest);
+    if (/^[a-zA-Z]:[\\/]/.test(dest) || /^\\\\/.test(dest) || /^\.{0,2}[\\/]/.test(dest)) return true;
+    if (dest.indexOf("\\") !== -1) return true;
+    return true;
+  }
+
+  // Category of a risky action (by kind, never by guessing from English text).
+  var RISK_CATEGORY = {
+    tamper_guard_files: { ru: "Попытка модификации защиты", en: "Guard tampering" },
+    tamper_guard_env: { ru: "Попытка отключить защиту", en: "Guard bypass attempt" },
+    destroy_files: { ru: "Уничтожение файлов", en: "Data destruction" },
+    destroy_db: { ru: "Уничтожение базы данных", en: "Database destruction" },
+    disable_defender: { ru: "Отключение антивируса", en: "Antivirus disabled" },
+    firewall_open: { ru: "Изменение брандмауэра", en: "Firewall change" },
+    rdp_enable: { ru: "Удалённый доступ", en: "Remote access" },
+    public_tunnel: { ru: "Туннель в интернет", en: "Public tunnel" },
+    expose_bind_all: { ru: "Сервис открыт в сеть", en: "Service exposed" },
+    expose_ollama: { ru: "ИИ-сервер открыт в сеть", en: "AI server exposed" },
+    expose_docker_port: { ru: "Порт контейнера открыт", en: "Container port exposed" },
+    http_server_all: { ru: "Папка раздаётся по HTTP", en: "Folder shared over HTTP" },
+    git_force: { ru: "Перезапись истории git", en: "Git history rewrite" },
+    pipe_to_shell: { ru: "Запуск кода из сети", en: "Remote code execution" }
+  };
+
+  function riskCategoryLabel(kind, lang) {
+    var m = RISK_CATEGORY[kind];
+    if (m) return lang === "ru" ? m.ru : m.en;
+    return lang === "ru" ? "Системная угроза" : "System risk";
   }
 
   // Masked secret with click-to-toggle / hold-to-show eye, generous hit target and copy button
@@ -825,55 +872,15 @@
 
     return h("span", {
       className: "yg-reveal" + (isRevealed ? " yg-reveal-on" : ""),
-      style: {
-        minHeight: "30px",
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "2px 8px",
-        borderRadius: "6px",
-        background: isRevealed ? "rgba(56,189,248,0.12)" : "rgba(0,0,0,0.45)",
-        border: "1px solid " + (isRevealed ? "rgba(56,189,248,0.4)" : "rgba(255,255,255,0.1)"),
-        cursor: "pointer",
-        transition: "all 0.18s ease",
-        verticalAlign: "middle"
-      },
       title: isRevealed
         ? (currentLang === "ru" ? "Нажмите, чтобы скрыть секрет" : "Click to hide secret")
         : (currentLang === "ru" ? "Нажмите или удерживайте для открытия секрета" : "Click or hold to reveal secret"),
       onClick: togglePin
     },
-      h("span", {
-        className: "yg-reveal-val yg-mono",
-        style: {
-          fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-          fontSize: "12px",
-          color: isRevealed ? "#38bdf8" : "#f1f5f9",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          maxWidth: isRevealed ? "320px" : "200px",
-          display: "inline-block",
-          userSelect: isRevealed ? "all" : "none"
-        }
-      }, shownText),
+      h("span", { className: "yg-reveal-val yg-mono", title: isRevealed ? undefined : shownText }, shownText),
       h("button", {
         type: "button",
         className: "yg-reveal-btn",
-        style: {
-          background: isRevealed ? "rgba(56,189,248,0.2)" : "rgba(255,255,255,0.08)",
-          border: "1px solid " + (isRevealed ? "#38bdf8" : "rgba(255,255,255,0.15)"),
-          color: "#fff",
-          borderRadius: "4px",
-          padding: "2px 8px",
-          minWidth: "34px",
-          minHeight: "24px",
-          cursor: "pointer",
-          fontSize: "13px",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center"
-        },
         title: isRevealed ? (currentLang === "ru" ? "Скрыть" : "Hide") : (currentLang === "ru" ? "Показать секрет" : "Show secret"),
         onPointerDown: onPointerDown,
         onPointerUp: onPointerUp,
@@ -881,25 +888,36 @@
         onMouseUp: onPointerUp,
         onClick: togglePin
       }, isRevealed ? "🙈" : "👁"),
-      isRevealed ? h("button", {
+      h("button", {
         type: "button",
-        className: "yg-btn ghost",
-        style: {
-          padding: "2px 7px",
-          fontSize: "11px",
-          fontWeight: 700,
-          color: copied ? "#4ade80" : "#38bdf8",
-          borderColor: copied ? "#4ade80" : "rgba(56,189,248,0.3)"
-        },
+        className: "yg-btn ghost yg-reveal-copy" + (copied ? " copied" : ""),
+        style: { visibility: isRevealed ? "visible" : "hidden" },
+        disabled: !isRevealed,
         title: currentLang === "ru" ? "Скопировать значение" : "Copy full value",
         onClick: handleCopy
-      }, copied ? (currentLang === "ru" ? "✓ Скопировано" : "✓ Copied") : "⧉") : null,
+      }, copied ? (currentLang === "ru" ? "✓ Скопировано" : "✓ Copied") : "⧉"),
       err ? h("span", { className: "yg-err yg-small", style: { marginLeft: 4 } }, err) : null
     );
   }
 
-  function analyzeFindingDetails(finding, rawSecretText, targetDomain, lang) {
+  function analyzeFindingDetails(finding, rawSecretText, targetDomain, lang, pathText) {
     var isRu = lang === "ru";
+    var kindId = ((finding && finding.kind) || "").toLowerCase();
+    if (kindId === "sensitive_file") {
+      var shownPath = pathText || rawSecretText || "";
+      return {
+        categoryTitle: isRu ? "Защищённый системный файл" : "Protected system file",
+        categorySub: isRu ? "Обращение к защищённому файлу" : "Protected file access",
+        why: isRu
+          ? ("Агент попытался прочитать или изменить защищённый файл шлюза (" + shownPath + "). Это конфигурация, журнал, правила или файл секретов самого mcp-secrets-guard - инструменту отказано.")
+          : ("The agent tried to read or modify a file owned by the guard (" + shownPath + "). This is the guard's own configuration, journal, rules or secret store - the call was refused."),
+        safer: isRu
+          ? "Безопаснее: не давать агенту доступ к каталогу шлюза; если нужно прочитать конфигурацию - используйте копию без секретов."
+          : "Safer: never give an agent access to the guard folder; use a secrets-free copy if configuration must be read.",
+        isPath: true,
+        local: true
+      };
+    }
     var l = ((finding && (finding.label || finding.title || "")) + "").toLowerCase();
     var t = ((finding && (finding.title || finding.label || "")) + "").toLowerCase();
     var domain = targetDomain || (isRu ? "внешний сервер в сети" : "an external network server");
@@ -1052,9 +1070,15 @@
     const hasRisks = inc.risks && inc.risks.length > 0;
     const risk = hasRisks ? inc.risks[0] : null;
 
-    const rawSecretText = finding ? (finding.preview || "sk_live_99f8***334455") : "";
+    const findingKind = ((finding && finding.kind) || "").toLowerCase();
+    const isPathFinding = findingKind === "sensitive_file";
+    const localTarget = isLocalDestination(inc);
+    const destPath = String(inc.destination || "");
+
+    const rawSecretText = finding ? (finding.preview || "") : "";
     const fullCode = inc.command || (risk && risk.snippet) || ((inc.tool || "") + " " + (inc.destination || ""));
-    const findingAnalysis = hasFindings ? analyzeFindingDetails(finding, rawSecretText, targetDomain, currentLang) : null;
+    const findingAnalysis = hasFindings ? analyzeFindingDetails(finding, rawSecretText, targetDomain, currentLang, destPath) : null;
+    const riskCategory = risk ? riskCategoryLabel(risk.kind, currentLang) : "";
 
     var cardClass = "yg-inc";
     if (isFocal) cardClass += " yg-decision-center focal";
@@ -1090,30 +1114,36 @@
       h("div", { className: "yg-breakdown-grid" },
         // Field 1: What was detected (accurately analyzed)
         h("div", { className: "yg-breakdown-cell" },
-          h("span", { className: "yg-breakdown-label" }, hasFindings ? ("🔑 " + (currentLang === "ru" ? "Что словлено (Секрет)" : "Detected Secret")) : ("⚠️ " + (currentLang === "ru" ? "Что обнаружено (Угроза)" : "Detected Threat"))),
+          h("span", { className: "yg-breakdown-label" },
+            isPathFinding ? ("📄 " + (currentLang === "ru" ? "Что обнаружено (Файл)" : "Detected (File)"))
+              : hasFindings ? ("🔑 " + (currentLang === "ru" ? "Что словлено (Секрет)" : "Detected Secret"))
+                : ("⚠️ " + (currentLang === "ru" ? "Что обнаружено (Угроза)" : "Detected Threat"))),
           h("span", { className: "yg-breakdown-val", style: { color: "#f87171" } },
-            hasFindings ? (findingAnalysis ? (findingAnalysis.categorySub || finding.title) : finding.title) : (risk ? risk.title : (currentLang === "ru" ? "Подозрительное действие" : "Suspicious execution"))),
+            hasFindings ? (findingAnalysis ? (findingAnalysis.categorySub || finding.title) : finding.title)
+              : (risk ? ((currentLang === "ru" && risk.title_ru) ? risk.title_ru : risk.title) : (currentLang === "ru" ? "Подозрительное действие" : "Suspicious execution"))),
           h("span", { className: "yg-dim yg-small" },
-            hasFindings ? ((currentLang === "ru" ? "Категория: " : "Category: ") + (findingAnalysis ? findingAnalysis.categoryTitle : (finding ? T(finding.label) : T("Credentials")))) : (currentLang === "ru" ? "Категория: Системная угроза" : "Category: System Risk"))
+            isPathFinding ? (currentLang === "ru" ? "Категория: Защищённый системный файл" : "Category: Protected system file")
+              : hasFindings ? ((currentLang === "ru" ? "Категория: " : "Category: ") + (findingAnalysis ? findingAnalysis.categoryTitle : (finding ? T(finding.label) : T("Credentials"))))
+                : ((currentLang === "ru" ? "Категория: " : "Category: ") + (riskCategory || (currentLang === "ru" ? "Системная угроза" : "System risk"))))
         ),
 
         // Field 2: Secret value or Command signature with fixed 28px height (Zero Layout Shift)
         h("div", { className: "yg-breakdown-cell" },
-          h("span", { className: "yg-breakdown-label" }, hasFindings ? ("👁️ " + (currentLang === "ru" ? "Значение секрета" : "Secret Value")) : ("⚙️ " + (currentLang === "ru" ? "Сигнатура вызова" : "Signature"))),
-          hasFindings
-            ? h(Reveal, { incident: inc.id, index: 0, preview: rawSecretText })
-            : h("div", {
-                className: "yg-secret-value-row"
-              },
-                h("span", {
-                  className: "yg-secret-value-text",
-                  style: { color: "#f87171" },
-                  title: fullCode
-                }, (risk && risk.kind ? ("[" + risk.kind + "] ") : "") + (inc.tool || "terminal") + " → " + (inc.destination || "shell"))
-              ),
+          h("span", { className: "yg-breakdown-label" },
+            isPathFinding ? ("📄 " + (currentLang === "ru" ? "Путь к файлу" : "File path"))
+              : hasFindings ? ("👁️ " + (currentLang === "ru" ? "Значение секрета" : "Secret Value"))
+                : ("⚙️ " + (currentLang === "ru" ? "Сигнатура вызова" : "Signature"))),
+          isPathFinding
+            ? h("div", { className: "yg-pathbox yg-mono", title: destPath }, destPath || rawSecretText)
+            : hasFindings
+              ? h(Reveal, { incident: inc.id, index: 0, preview: rawSecretText })
+              : h("div", { className: "yg-secret-value-row" },
+                  h("span", { className: "yg-secret-value-text", style: { color: "#f87171" }, title: fullCode },
+                    (risk && risk.kind ? ("[" + risk.kind + "] ") : "") + (inc.tool || "terminal") + " → " + (inc.destination || "shell"))),
           h("span", { className: "yg-dim yg-small" },
-            hasFindings ? (currentLang === "ru" ? "Защищено · Нажмите для открытия" : "Protected · Click to reveal")
-                        : (currentLang === "ru" ? "Непроверенный запуск из сети" : "Unverified remote execution"))
+            isPathFinding ? (currentLang === "ru" ? "Полный путь · файл защищён" : "Full path · file protected")
+              : hasFindings ? (currentLang === "ru" ? "Защищено · Нажмите для открытия" : "Protected · Click to reveal")
+                : (currentLang === "ru" ? "Опасное действие · локально" : "Risky action · local"))
         ),
 
         // Field 3: Source (From where)
@@ -1128,11 +1158,13 @@
 
         // Field 4: Destination (To where)
         h("div", { className: "yg-breakdown-cell" },
-          h("span", { className: "yg-breakdown-label" }, "🌐 " + (currentLang === "ru" ? "Назначение (Куда)" : "Destination")),
-          h("span", { className: "yg-breakdown-val", style: { color: "#38bdf8", wordBreak: "break-all" } },
-            targetDomain || inc.destination || "https://analytics-leak.net/api/v1/telemetry"),
+          h("span", { className: "yg-breakdown-label" }, (localTarget ? "💾 " : "🌐 ") + (currentLang === "ru" ? "Назначение (Куда)" : "Destination")),
+          h("span", { className: "yg-breakdown-val", style: { color: localTarget ? "#fbbf24" : "#38bdf8", wordBreak: "break-all" } },
+            targetDomain || inc.destination || (currentLang === "ru" ? "локальная система" : "local system")),
           h("span", { className: "yg-dim yg-small" },
-            currentLang === "ru" ? "Внешняя сеть / Исходящий запрос" : "External network endpoint")
+            localTarget
+              ? (currentLang === "ru" ? "Локальная файловая система · данные не покидают компьютер" : "Local file system · data never leaves this computer")
+              : (currentLang === "ru" ? "Внешняя сеть / Исходящий запрос" : "External network endpoint"))
         )
       ),
 
@@ -1164,19 +1196,19 @@
         h("div", { style: { fontWeight: 800, marginBottom: 4, color: "#fca5a5" } },
           currentLang === "ru" ? "⚠️ Почему этот запрос был остановлен:" : "⚠️ Why this action was stopped:"),
         h("div", null,
-          risk ? T(risk.why)
+          risk ? ((currentLang === "ru" && risk.why_ru) ? risk.why_ru : T(risk.why))
                : (findingAnalysis ? findingAnalysis.why : (currentLang === "ru"
                   ? ("Агент попытался передать секретные данные (" + rawSecretText + ") на внешний сервер " + (targetDomain || "в сеть") + ". Шлюз перехватил команду до передачи.")
                   : "The agent attempted to transmit private credentials in an unencrypted request to an external server. Guard intercepted it before egress."))),
         (risk && risk.safer) ? h("div", { className: "yg-ok yg-small", style: { marginTop: 6, fontWeight: 700 } },
-          T("Safer: ") + T(risk.safer))
+          T("Safer: ") + ((currentLang === "ru" && risk.safer_ru) ? risk.safer_ru : T(risk.safer)))
         : (hasFindings ? h("div", { className: "yg-ok yg-small", style: { marginTop: 6, fontWeight: 700 } },
           findingAnalysis ? findingAnalysis.safer : (currentLang === "ru" ? "Безопаснее: использовать токен Сейфа DPAPI (msg_tok_...) вместо открытого секретного ключа." : "Safer: Use an encrypted DPAPI Vault token instead of raw secret.")) : null)
       ) : null,
 
       // Decision Action Buttons (if pending)
       pending ? h("div", { className: "yg-actions", style: { marginTop: 12 } },
-        hasFindings ? h("button", {
+        (hasFindings && !isPathFinding) ? h("button", {
           type: "button",
           className: "yg-btn good",
           disabled: !!busy,
@@ -1261,6 +1293,8 @@
     });
     var secretsCaughtCount = allFindings.length;
     var totalThreatsCount = blockedCount + pendingCount;
+    // Only a LIVE pending incident may paint the stage red. History stays history.
+    var threatActive = pendingCount > 0;
 
     var activeIncident = (p.activeIncidentId && items.find(function (i) { return i.id === p.activeIncidentId; })) || pendingItems[0] || blockedItems[0] || items[0] || null;
     var activeFinding = (activeIncident && activeIncident.findings && activeIncident.findings[0]) || allFindings[0] || null;
@@ -1318,13 +1352,13 @@
     }), scramblePill = stPill[0], setScramblePill = stPill[1];
 
     var stShield = useState({
-      title: blocked || activeFinding
+      title: threatActive
         ? (currentLang === "ru" ? "🛑 СЕКРЕТ ПЕРЕХВАЧЕН!" : "🛑 SECRET INTERCEPTED!")
         : (currentLang === "ru" ? "Шлюз Безопасности" : "Security Gateway"),
-      sub: blocked || activeFinding
-        ? ("OpenAI API Key (" + rawSecretText + ") " + (currentLang === "ru" ? "изолирован от внешней сети" : "isolated from egress"))
-        : (currentLang === "ru" ? "Анализ AST и перехват токенов" : "AST Analysis & Token Masking"),
-      color: blocked || activeFinding ? "#ef4444" : "#38bdf8"
+      sub: threatActive
+        ? (rawSecretText + (currentLang === "ru" ? " · изолирован от внешней сети" : " · isolated from egress"))
+        : (currentLang === "ru" ? "Все действия агента проверяются до запуска" : "Every agent action is inspected before it runs"),
+      color: threatActive ? "#ef4444" : "#38bdf8"
     }), shieldStatus = stShield[0], setShieldStatus = stShield[1];
 
     useEffect(function () {
@@ -1338,8 +1372,9 @@
               autoplay: true,
               animationData: window.__LOTTIE_ASSETS__.agent
             });
-            // Calm cyclic breathing IDLE mode by default
-            if (agentAnimRef.current.playSegments) agentAnimRef.current.playSegments([0, 30], true);
+            // Calm breathing loop by default (same segment the state machine uses)
+            if (agentAnimRef.current.setSpeed) agentAnimRef.current.setSpeed(0.17);
+            if (agentAnimRef.current.playSegments) agentAnimRef.current.playSegments([0, 29], true);
           } catch (e) { console.error("Agent Lottie load error:", e); }
         }
         if (shieldBoxRef.current && !shieldAnimRef.current && window.__LOTTIE_ASSETS__.shield) {
@@ -1401,17 +1436,23 @@
       }
     }, [blocked, activeFinding]);
 
+    // Independent loops instead of one free-running 8 s scene. Each state is a fixed
+    // frame range played as its own loop, slowed down to 3-5 seconds per cycle:
+    //   calm  [0, 29]    calm breathing, no head shake, no "!" frame
+    //   alert [181, 270] alarm with the exclamation mark
+    var ROBO_LOOPS = {
+      calm: { segment: [0, 29], speed: 0.17 },       // ~2.9 s per cycle
+      alert: { segment: [181, 270], speed: 0.50 },   // ~3.0 s per cycle
+      thinking: { segment: [271, 390], speed: 0.55 },
+      success: { segment: [31, 105], speed: 0.70 }
+    };
+
     function setRoboEmotion(name) {
-      if (!agentAnimRef.current || !agentAnimRef.current.playSegments) return;
-      var segs = {
-        idle: [0, 30],
-        yes: [31, 105],
-        no: [106, 180],
-        alert: [181, 270],
-        thinking: [271, 390],
-        jump: [391, 479]
-      };
-      if (segs[name]) agentAnimRef.current.playSegments(segs[name], true);
+      var anim = agentAnimRef.current;
+      var loop = ROBO_LOOPS[name] || ROBO_LOOPS.calm;
+      if (!anim || !anim.playSegments) return;
+      if (anim.setSpeed) anim.setSpeed(loop.speed);
+      anim.playSegments(loop.segment, true);
     }
 
     var isDemoActive = useRef(false);
@@ -1454,24 +1495,13 @@
             kind: "bad"
           });
         }
-      } else if (intercepted) {
-        setRoboEmotion("idle");
-        setShieldStatus({
-          title: currentLang === "ru" ? "🔒 СЕКРЕТ СПРЯТАН В СЕЙФ" : "🔒 SECRET SECURED IN VAULT",
-          sub: currentLang === "ru" ? "В сеть отправлен токен msg_tok_... вместо сырого ключа" : "Masked token sent instead of raw key",
-          color: "#fbbf24"
-        });
-        setScramblePill({
-          text: currentLang === "ru" ? "✓ СЕКРЕТ В СЕЙФЕ · ВЫДАН ТОКЕН" : "✓ VAULTED · TOKEN ISSUED",
-          kind: "ok"
-        });
-        setDisplayedSecret(maskedTokenText);
-        setTokenClass("vaulted");
       } else {
-        setRoboEmotion("idle");
+        // Nothing pending: the whole stage is in its calm, protected state. A resolved
+        // incident from yesterday must not keep a red frame on the dashboard.
+        setRoboEmotion("calm");
         setShieldStatus({
           title: currentLang === "ru" ? "Шлюз Безопасности" : "Security Gateway",
-          sub: currentLang === "ru" ? "Анализ AST и перехват токенов" : "AST Analysis & Token Masking",
+          sub: currentLang === "ru" ? "Все действия агента проверяются до запуска" : "Every agent action is inspected before it runs",
           color: "#38bdf8"
         });
         setScramblePill({
@@ -1510,9 +1540,9 @@
               color: "#fbbf24"
             });
             setVaultBonus(function (v) { return v + 1; });
-            setRoboEmotion("jump");
+            setRoboEmotion("success");
             setTimeout(function () {
-              setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "idle");
+              setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "calm");
               isDemoActive.current = false;
             }, 4500);
           });
@@ -1530,14 +1560,14 @@
       });
       setScramblePill({ text: currentLang === "ru" ? "⛔ УГРОЗА ЗАБЛОКИРОВАНА" : "⛔ THREAT BLOCKED", kind: "bad" });
       setTimeout(function () {
-        setRoboEmotion("no");
+        setRoboEmotion("alert");
         setShieldStatus({
           title: currentLang === "ru" ? "💥 СКРИПТ УНИЧТОЖЕН ДО ЗАПУСКА" : "💥 SCRIPT SHREDDED BEFORE EXECUTION",
           sub: currentLang === "ru" ? "Опасный процесс hermes.exe изолирован" : "Harmful execution prevented",
           color: "#ef4444"
         });
         setTimeout(function () {
-          setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "idle");
+          setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "calm");
           setShieldStatus({
             title: blocked || activeFinding ? (currentLang === "ru" ? "🛑 СЕКРЕТ ПЕРЕХВАЧЕН!" : "🛑 SECRET INTERCEPTED!") : (currentLang === "ru" ? "Шлюз Безопасности" : "Security Gateway"),
             sub: blocked || activeFinding ? ("OpenAI API Key (" + rawSecretText + ")") : (currentLang === "ru" ? "Анализ AST и перехват токенов" : "AST Analysis & Token Masking"),
@@ -1554,7 +1584,7 @@
 
     function resetDemo() {
       isDemoActive.current = false;
-      setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "idle");
+      setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "calm");
       setShieldStatus({
         title: blocked || activeFinding ? (currentLang === "ru" ? "🛑 СЕКРЕТ ПЕРЕХВАЧЕН!" : "🛑 SECRET INTERCEPTED!") : (currentLang === "ru" ? "Шлюз Безопасности" : "Security Gateway"),
         sub: blocked || activeFinding ? ("OpenAI API Key (" + rawSecretText + ") " + (currentLang === "ru" ? "изолирован от внешней сети" : "isolated from egress")) : (currentLang === "ru" ? "Анализ AST и перехват токенов" : "AST Analysis & Token Masking"),
@@ -1571,7 +1601,7 @@
       }
     }
 
-    var coreColor = blocked ? "#ef4444" : intercepted ? "#a855f7" : "#38bdf8";
+    var coreColor = threatActive ? "#ef4444" : intercepted ? "#a855f7" : "#38bdf8";
 
     function renderLottieConveyor() {
       return h("div", { className: "yg-lottie-conveyor-wrap", key: "lottie-view" },
@@ -1581,7 +1611,11 @@
           h("div", { className: "yg-lottie-card agent" },
             h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" } },
               h("span", { className: "yg-pill ok", style: { fontSize: "9px" } }, "● " + (currentLang === "ru" ? "АГЕНТ (AI ROBO)" : "AGENT (AI ROBO)")),
-              h("span", { style: { fontSize: "9.5px", color: "#94a3b8", fontFamily: "monospace" } }, "State Machine")
+              h("span", {
+                className: "yg-pill " + (threatActive ? "bad" : "ok"),
+                style: { fontSize: "9px", padding: "2px 8px", letterSpacing: "0.05em" }
+              }, threatActive ? (currentLang === "ru" ? "● ТРЕВОГА" : "● ALERT")
+                              : (currentLang === "ru" ? "● СПОКОЙНО" : "● CALM"))
             ),
             h("div", {
               ref: agentBoxRef,
@@ -1594,55 +1628,44 @@
                 (items[0] && items[0].agent && items[0].agent.session_id
                   ? ((currentLang === "ru" ? "Сеанс #" : "Session #") + String(items[0].agent.session_id).slice(-6))
                   : (data.active_session ? ((currentLang === "ru" ? "Сеанс #" : "Session #") + String(data.active_session).slice(-6)) : "Hermes Desktop")))
-            ),
-            h("div", { style: { marginTop: "10px", background: "rgba(0,0,0,0.5)", padding: "5px 10px", borderRadius: "6px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "10.5px" } },
-              h("span", null, (currentLang === "ru" ? "Состояние: " : "Status: ")),
-              h("span", {
-                className: "yg-pill " + (blocked ? "bad" : intercepted ? "ok" : items.some(function (i) { return i.status === "pending"; }) ? "warn" : "ok"),
-                style: { fontSize: "9px", padding: "2px 8px" }
-              }, blocked ? (currentLang === "ru" ? "⛔ Атака" : "⛔ Threat")
-                  : items.some(function (i) { return i.status === "pending" && (i.risks && i.risks.length); }) ? (currentLang === "ru" ? "⚠️ Угроза" : "⚠️ Alert")
-                  : items.some(function (i) { return i.status === "pending" && (i.findings && i.findings.length); }) ? (currentLang === "ru" ? "🔍 Сканирование" : "🔍 Scanning")
-                  : intercepted ? (currentLang === "ru" ? "🔒 Защищён" : "🔒 Vaulted")
-                  : (currentLang === "ru" ? "● Активен" : "● Active"))
             )
           ),
 
           // Beam 1: Agent -> Shield (shows moving secret chip)
           h("div", { className: "yg-conveyor-beam" },
             h("svg", { width: "42", height: "36", viewBox: "0 0 42 36", className: "yg-beam-svg" },
-              h("line", { x1: "0", y1: "18", x2: "42", y2: "18", stroke: blocked ? "#ef4444" : "#38bdf8", strokeWidth: "2.5", className: "yg-beam-pulse-line" }),
-              h("polygon", { points: "40,18 30,13 30,23", fill: blocked ? "#ef4444" : "#38bdf8" }),
+              h("line", { x1: "0", y1: "18", x2: "42", y2: "18", stroke: threatActive ? "#ef4444" : "#38bdf8", strokeWidth: "2.5", className: "yg-beam-pulse-line" }),
+              h("polygon", { points: "40,18 30,13 30,23", fill: threatActive ? "#ef4444" : "#38bdf8" }),
               h("g", { className: "yg-beam-pkt-secret" },
-                h("circle", { cx: "4", cy: "18", r: "4.5", fill: blocked ? "#ef4444" : "#38bdf8" })
+                h("circle", { cx: "4", cy: "18", r: "4.5", fill: threatActive ? "#ef4444" : "#38bdf8" })
               )
             )
           ),
 
           // Node 2: Secure Shield (Reacts actively to secret intercepts)
-          h("div", { className: "yg-lottie-card shield" + (blocked || activeFinding ? " threat" : "") },
+          h("div", { className: "yg-lottie-card shield" + (threatActive ? " threat" : "") },
             h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" } },
               h("span", {
                 className: "yg-pill",
                 style: {
-                  color: blocked || activeFinding ? "#f87171" : "#38bdf8",
-                  borderColor: blocked || activeFinding ? "#ef4444" : "#38bdf8",
+                  color: threatActive ? "#f87171" : "#38bdf8",
+                  borderColor: threatActive ? "#ef4444" : "#38bdf8",
                   fontSize: "9px"
                 }
               }, currentLang === "ru" ? "🛡️ FAIL-CLOSED ШЛЮЗ" : "🛡️ FAIL-CLOSED GATEWAY"),
               h("span", {
                 style: {
                   fontSize: "9.5px",
-                  color: blocked || activeFinding ? "#ef4444" : "#4ade80",
+                  color: threatActive ? "#ef4444" : "#4ade80",
                   fontWeight: 800,
                   letterSpacing: "0.04em"
                 }
-              }, blocked || activeFinding ? (currentLang === "ru" ? "ПЕРЕХВАЧЕНО" : "INTERCEPTED") : "FAIL-CLOSED")
+              }, threatActive ? (currentLang === "ru" ? "ПЕРЕХВАЧЕНО" : "INTERCEPTED") : (currentLang === "ru" ? "ЗАЩИЩЕНО" : "PROTECTED"))
             ),
             h("div", {
               ref: shieldBoxRef,
               className: "yg-lottie-box",
-              style: { filter: blocked || activeFinding ? "drop-shadow(0 0 24px rgba(239,68,68,0.65))" : "drop-shadow(0 0 20px rgba(56,189,248,0.5))" }
+              style: { filter: threatActive ? "drop-shadow(0 0 24px rgba(239,68,68,0.65))" : "drop-shadow(0 0 20px rgba(56,189,248,0.5))" }
             }),
             h("div", { style: { textAlign: "center", marginTop: "8px" } },
               h("div", { style: { fontSize: "13px", fontWeight: 800, color: shieldStatus.color } }, shieldStatus.title),
@@ -1697,7 +1720,7 @@
           // Beam 3: Vault/Shield -> External Internet (Stops traffic if blocked!)
           h("div", { className: "yg-conveyor-beam" },
             h("svg", { width: "42", height: "36", viewBox: "0 0 42 36", className: "yg-beam-svg" },
-              blocked ? [
+              threatActive ? [
                 h("line", { x1: "0", y1: "18", x2: "42", y2: "18", stroke: "#ef4444", strokeWidth: "2.5", strokeDasharray: "2 2", key: "bl" }),
                 h("g", { className: "yg-beam-stop", key: "bs" },
                   h("circle", { cx: "21", cy: "18", r: "8", fill: "#b91c1c" }),
@@ -1715,33 +1738,33 @@
 
           // Node 4: External Internet Gateway (IconScout Rotating Globe + Golden Shield)
           h("div", {
-            className: "yg-lottie-card internet" + (blocked ? " blocked" : ""),
+            className: "yg-lottie-card internet" + (threatActive ? " blocked" : ""),
             style: {
-              borderColor: blocked ? "rgba(239, 68, 68, 0.55)" : "rgba(56, 189, 248, 0.4)",
-              boxShadow: blocked ? "0 0 24px rgba(239, 68, 68, 0.28)" : "0 0 24px rgba(56, 189, 248, 0.2)"
+              borderColor: threatActive ? "rgba(239, 68, 68, 0.55)" : "rgba(56, 189, 248, 0.4)",
+              boxShadow: threatActive ? "0 0 24px rgba(239, 68, 68, 0.28)" : "0 0 24px rgba(56, 189, 248, 0.2)"
             }
           },
             h("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" } },
               h("span", {
-                className: "yg-pill " + (blocked ? "bad" : "ok"),
+                className: "yg-pill " + (threatActive ? "bad" : "ok"),
                 style: { fontSize: "9px" }
               }, "🌐 " + (currentLang === "ru" ? "ВНЕШНЯЯ СЕТЬ" : "EXTERNAL NET")),
               h("span", {
-                style: { fontSize: "9.5px", color: blocked ? "#f87171" : "#38bdf8", fontFamily: "monospace", fontWeight: 700 }
-              }, blocked ? (currentLang === "ru" ? "ИЗОЛЯЦИЯ" : "ISOLATED") : "SECURE API")
+                style: { fontSize: "9.5px", color: threatActive ? "#f87171" : "#38bdf8", fontFamily: "monospace", fontWeight: 700 }
+              }, threatActive ? (currentLang === "ru" ? "ИЗОЛЯЦИЯ" : "ISOLATED") : (currentLang === "ru" ? "ЗАЩИЩЕНО" : "SECURED"))
             ),
             h("div", {
               ref: internetBoxRef,
               className: "yg-lottie-box",
-              style: { filter: blocked ? "drop-shadow(0 0 16px rgba(239,68,68,0.4))" : "drop-shadow(0 0 16px rgba(56,189,248,0.45))" }
+              style: { filter: threatActive ? "drop-shadow(0 0 16px rgba(239,68,68,0.4))" : "drop-shadow(0 0 16px rgba(56,189,248,0.45))" }
             }),
             h("div", { style: { textAlign: "center", marginTop: "8px" } },
-              h("div", { style: { fontSize: "13px", fontWeight: 700, color: blocked ? "#f87171" : "#fff" } },
-                blocked ? (currentLang === "ru" ? "⛔ Выход в Сеть Закрыт" : "⛔ Egress Blocked")
-                        : (currentLang === "ru" ? "Шлюз Внешнего API" : "External API Gateway")),
+              h("div", { style: { fontSize: "13px", fontWeight: 700, color: threatActive ? "#f87171" : "#fff" } },
+                threatActive ? (currentLang === "ru" ? "⛔ Выход в Сеть Закрыт" : "⛔ Egress Blocked")
+                             : (currentLang === "ru" ? "Шлюз Внешнего API" : "External API Gateway")),
               h("div", { style: { fontSize: "10.5px", color: "#94a3b8" } },
-                blocked ? (currentLang === "ru" ? "0 байт передано наружу" : "0 bytes transmitted")
-                        : (currentLang === "ru" ? "Только безопасные токены" : "Sanitized tokens only"))
+                threatActive ? (currentLang === "ru" ? "0 байт передано наружу" : "0 bytes transmitted")
+                             : (currentLang === "ru" ? "Только безопасные токены" : "Sanitized tokens only"))
             ),
             h("div", { style: { marginTop: "10px", background: "rgba(0,0,0,0.5)", padding: "5px 10px", borderRadius: "6px", display: "flex", justifyContent: "space-between", fontSize: "10.5px" } },
               h("span", null, (currentLang === "ru" ? "Утечка в сеть: " : "Net Leak: ")),
@@ -1792,10 +1815,13 @@
                 h("button", {
                   type: "button",
                   className: "yg-btn ghost",
+                  disabled: !!p.refreshing,
                   style: { padding: "5px 10px", fontSize: "11px", display: "inline-flex", alignItems: "center", gap: 4 },
-                  title: currentLang === "ru" ? "Обновить данные шлюза и сейфа" : "Refresh live gateway and vault data",
+                  title: currentLang === "ru" ? "Обновить режим, инциденты и сейф" : "Refresh mode, incidents and vault",
                   onClick: function () { if (p.refresh) p.refresh(); }
-                }, "⟳ " + (currentLang === "ru" ? "Обновить" : "Refresh")),
+                },
+                  h("span", { style: { display: "inline-block", animation: p.refreshing ? "yg-spin 0.65s linear infinite" : "none" } }, "⟳"),
+                  " " + (p.refreshing ? (currentLang === "ru" ? "Обновление…" : "Refreshing…") : (currentLang === "ru" ? "Обновить" : "Refresh"))),
                 h("button", {
                   type: "button", className: "yg-arena-btn vault", style: { padding: "5px 12px", fontSize: "11px" },
                   onClick: runScrambleVaultDemo
@@ -1857,6 +1883,25 @@
       try { return localStorage.getItem("msg_guard_active_id") || ""; } catch (e) { return ""; }
     });
     const [histBusy, setHistBusy] = useState("");
+    const [histNote, setHistNote] = useState("");
+    // Two-step confirmation inside the button itself: no window.confirm, no white dialogs.
+    const [confirmAct, setConfirmAct] = useState("");
+    const confirmTimer = useRef(null);
+
+    function armConfirm(kind) {
+      setConfirmAct(kind);
+      if (confirmTimer.current) clearTimeout(confirmTimer.current);
+      confirmTimer.current = setTimeout(function () { setConfirmAct(""); }, 4000);
+    }
+
+    function resetConfirm() {
+      if (confirmTimer.current) { clearTimeout(confirmTimer.current); confirmTimer.current = null; }
+      setConfirmAct("");
+    }
+
+    useEffect(function () {
+      return function () { if (confirmTimer.current) clearTimeout(confirmTimer.current); };
+    }, []);
 
     function handleSelectIncident(id) {
       setActiveIncidentId(id);
@@ -1871,38 +1916,55 @@
     useEffect(function () {
       loadDynamicSessionTitles();
     }, []);
+
+    useEffect(function () {
+      if (!activeIncidentId) return;
+      var list = (data && data.items) || [];
+      if (!list.some(function (i) { return i.id === activeIncidentId; })) handleSelectIncident("");
+    }, [data]);
     if (!data) return h(Card, { title: "live protection", className: "wide" }, h(Empty, { text: "loading…" }));
     if (data.status === "error") return h(Card, { title: "live protection", className: "wide" },
       h("div", { className: "yg-err" }, "● " + data.message));
 
     function delIncident(id) {
-      if (!window.confirm(currentLang === "ru" ? ("Удалить инцидент " + id + " из истории? Это нельзя отменить.") : ("Delete incident " + id + " from history?"))) return;
+      if (histBusy) return;
+      if (confirmAct !== "del:" + id) { armConfirm("del:" + id); return; }
+      resetConfirm();
       setHistBusy(id);
       post("/incidents/delete", { incident: id }).then(function (r) {
         setHistBusy("");
-        if (r.status === "ok" && p.onChanged) p.onChanged();
-        else if (r.status !== "ok") window.alert(r.message || "Failed to delete incident.");
-      }).catch(function () { setHistBusy(""); window.alert("Could not reach Guard backend."); });
+        if (r && r.status === "ok") {
+          if (activeIncidentId === id) handleSelectIncident("");
+          if (p.onChanged) p.onChanged();
+        } else {
+          setHistNote((r && r.message) || (currentLang === "ru" ? "Не удалось удалить инцидент." : "Could not delete the incident."));
+        }
+      }).catch(function () {
+        setHistBusy("");
+        setHistNote(currentLang === "ru" ? "Нет связи с бэкендом Guard." : "Could not reach Guard backend.");
+      });
     }
 
-    function clearHistory() {
-      if (!window.confirm(currentLang === "ru" ? "Очистить всю решённую историю инцидентов? Ожидающие решения останутся." : "Clear all resolved incident history?")) return;
+    function clearHistory(scope) {
+      if (histBusy) return;
+      var key = scope === "all" ? "all" : "resolved";
+      if (confirmAct !== key) { armConfirm(key); return; }
+      resetConfirm();
       setHistBusy("__all__");
-      post("/incidents/clear", { scope: "resolved" }).then(function (r) {
+      setHistNote("");
+      post("/incidents/clear", { scope: key }).then(function (r) {
         setHistBusy("");
-        if (r.status === "ok" && p.onChanged) p.onChanged();
-        else if (r.status !== "ok") window.alert(r.message || "Failed to clear history.");
-      }).catch(function () { setHistBusy(""); window.alert("Could not reach Guard backend."); });
-    }
-
-    function clearAllHistory() {
-      if (!window.confirm(currentLang === "ru" ? "Полностью очистить весь журнал инцидентов, включая ожидающие решения? Это нельзя отменить." : "Clear the entire incident log, including pending decisions? This cannot be undone.")) return;
-      setHistBusy("__all__");
-      post("/incidents/clear", { scope: "all" }).then(function (r) {
+        if (r && r.status === "ok") {
+          setHistNote((currentLang === "ru" ? "Удалено записей: " : "Removed: ") + (r.removed || 0));
+          handleSelectIncident("");
+          if (p.onChanged) p.onChanged();
+        } else {
+          setHistNote((r && r.message) || (currentLang === "ru" ? "Не удалось очистить журнал." : "Could not clear the log."));
+        }
+      }).catch(function () {
         setHistBusy("");
-        if (r.status === "ok" && p.onChanged) p.onChanged();
-        else if (r.status !== "ok") window.alert(r.message || "Failed to clear log.");
-      }).catch(function () { setHistBusy(""); window.alert("Could not reach Guard backend."); });
+        setHistNote(currentLang === "ru" ? "Нет связи с бэкендом Guard." : "Could not reach Guard backend.");
+      });
     }
 
     const rawItems = data.items || [];
@@ -1918,7 +1980,9 @@
       return 0;
     });
     const pending = items.filter(function (i) { return i.status === "pending"; });
-    const otherPending = pending.filter(function (i) { return !activeFocal || i.id !== activeFocal.id; });
+    // The queue is every pending incident, in the same chronological order, always.
+    // Selecting one only moves it to the stage; nothing leaves or re-enters the list.
+    const otherPending = pending;
 
     const done = items.filter(function (i) { return i.status !== "pending"; })
       .filter(function (inc) {
@@ -1972,6 +2036,7 @@
           vault: p.vault,
           vaultCount: p.vaultCount,
           refresh: p.onChanged,
+          refreshing: p.refreshing,
           guardMode: p.guardMode,
           pauseRemaining: p.pauseRemaining,
           onSetMode: p.onSetMode,
@@ -1980,13 +2045,13 @@
         // If there are other pending incidents, render them cleanly below with interactive selection
         otherPending.length > 0 ? h("div", { style: { marginTop: 14 } },
           h("div", { className: "yg-sub", style: { marginBottom: 8 } },
-            currentLang === "ru" ? ("Другие заблокированные действия агента (" + otherPending.length + "):") : ("Other blocked agent actions (" + otherPending.length + "):")),
+            currentLang === "ru" ? ("Заблокированные действия агента (" + otherPending.length + "):") : ("Blocked agent actions (" + otherPending.length + "):")),
           otherPending.map(function (inc) {
             return h(IncidentCard, {
               key: inc.id,
               inc: inc,
               isPendingQueue: true,
-              isActive: inc.id === activeIncidentId,
+              isActive: !!activeFocal && inc.id === activeFocal.id,
               onSelect: handleSelectIncident,
               onChanged: p.onChanged
             });
@@ -2009,17 +2074,26 @@
                 onClick: function () { handleFilterChange(f[0]); }
               }, f[1]);
             })),
-          (done.length || items.length) ? h("div", { className: "yg-hst-actions", style: { display: "flex", gap: 6 } },
+          (done.length || items.length) ? h("div", { className: "yg-hst-actions", style: { display: "flex", gap: 6, alignItems: "center" } },
+            histNote ? h("span", { className: "yg-dim yg-small", style: { marginRight: 4 } }, histNote) : null,
             done.length ? h("button", {
-              type: "button", className: "yg-btn ghost", disabled: !!histBusy,
+              type: "button",
+              className: "yg-btn " + (confirmAct === "resolved" ? "yg-btn-confirm" : "ghost"),
+              disabled: !!histBusy,
               title: currentLang === "ru" ? "Удалить все решённые инциденты" : "Clear resolved history",
-              onClick: clearHistory
-            }, histBusy === "__all__" ? "…" : (currentLang === "ru" ? "🗑 Очистить историю" : "🗑 Clear history")) : null,
+              onClick: function () { clearHistory("resolved"); }
+            }, histBusy === "__all__" ? "…" : (confirmAct === "resolved"
+              ? (currentLang === "ru" ? "ТОЧНО ОЧИСТИТЬ? (ПОДТВЕРДИТЕ)" : "REALLY CLEAR? (CONFIRM)")
+              : (currentLang === "ru" ? "🗑 Очистить историю" : "🗑 Clear history"))) : null,
             items.length ? h("button", {
-              type: "button", className: "yg-btn ghost danger", disabled: !!histBusy,
+              type: "button",
+              className: "yg-btn " + (confirmAct === "all" ? "yg-btn-confirm" : "ghost danger"),
+              disabled: !!histBusy,
               title: currentLang === "ru" ? "Полностью очистить весь журнал (включая ожидающие)" : "Clear the entire log (including pending)",
-              onClick: clearAllHistory
-            }, histBusy === "__all__" ? "…" : (currentLang === "ru" ? "🗑 Очистить всё" : "🗑 Clear all")) : null)
+              onClick: function () { clearHistory("all"); }
+            }, histBusy === "__all__" ? "…" : (confirmAct === "all"
+              ? (currentLang === "ru" ? "ТОЧНО УДАЛИТЬ? (ПОДТВЕРДИТЕ)" : "REALLY DELETE? (CONFIRM)")
+              : (currentLang === "ru" ? "🗑 Очистить всё" : "🗑 Clear all"))) : null)
           : null),
         done.length ? h("div", { className: "yg-list" },
           done.slice(0, 50).map(function (inc) {
@@ -2029,10 +2103,14 @@
               h("span", { className: "yg-dim yg-acc-time" }, fmtTs(inc.at)),
               h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")),
               h("button", {
-                type: "button", className: "yg-btn ghost yg-acc-del", disabled: !!histBusy,
-                title: "Delete",
+                type: "button",
+                className: "yg-btn ghost yg-acc-del" + (confirmAct === "del:" + inc.id ? " yg-btn-confirm" : ""),
+                disabled: !!histBusy,
+                title: confirmAct === "del:" + inc.id
+                  ? (currentLang === "ru" ? "Нажмите ещё раз, чтобы удалить" : "Click again to delete")
+                  : (currentLang === "ru" ? "Удалить инцидент" : "Delete incident"),
                 onClick: function (e) { e.preventDefault(); e.stopPropagation(); delIncident(inc.id); }
-              }, histBusy === inc.id ? "…" : "🗑"));
+              }, histBusy === inc.id ? "…" : (confirmAct === "del:" + inc.id ? "✓?" : "🗑")));
             return h("details", { key: inc.id, className: "yg-acc", open: false }, accSummary,
               h(IncidentCard, { inc: inc, onChanged: p.onChanged, inAccordion: true }));
           }))
@@ -2915,6 +2993,24 @@
       SDK.fetchJSON(API + "/vault").then(function (d) { if (alive.current) setVault(d); }).catch(function () {});
     }, [announce]);
 
+    // One button refreshes everything the page shows: guard mode/status, incidents, vault.
+    const refreshAll = useCallback(function () {
+      setIsRefreshing(true);
+      SDK.fetchJSON(API + "/guard/status").then(function (r) {
+        if (r && r.status === "ok") {
+          setGuardMode(r.mode || "active");
+          try { localStorage.setItem("msg_guard_mode", r.mode || "active"); } catch (e) {}
+          if (typeof r.paused_until === "number") {
+            setPausedUntil(r.paused_until);
+            try { localStorage.setItem("msg_guard_pause_until", String(r.paused_until)); } catch (e) {}
+          }
+          if (typeof r.remaining_seconds === "number") setPauseRemaining(r.remaining_seconds);
+        }
+      }).catch(function () {});
+      refresh();
+      setTimeout(function () { setIsRefreshing(false); }, 700);
+    }, [refresh]);
+
     useEffect(function () {
       alive.current = true; refresh();
       const t = setInterval(function () { if (!document.hidden) refresh(); }, POLL_MS);
@@ -3000,11 +3096,7 @@
             },
             disabled: isRefreshing,
             title: currentLang === "ru" ? "Обновить данные шлюза, инцидентов и сейфа" : "Refresh live incidents and vault data",
-            onClick: function () {
-              setIsRefreshing(true);
-              refresh();
-              setTimeout(function () { setIsRefreshing(false); }, 650);
-            }
+            onClick: function () { refreshAll(); }
           },
             h("span", {
               style: {
@@ -3150,7 +3242,8 @@
           data: incidents,
           vault: vault,
           vaultCount: (vault && vault.items && vault.items.length) || 0,
-          onChanged: refresh,
+          onChanged: refreshAll,
+          refreshing: isRefreshing,
           guardMode: guardMode,
           pauseRemaining: pauseRemaining,
           onSetMode: changeGuardMode

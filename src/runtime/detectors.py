@@ -34,6 +34,7 @@ class Finding:
     value: str = field(repr=False)
     confidence: str = "high"
     path: str = ""          # where in the args: e.g. "command" or "headers.Authorization"
+    group: str = ""         # semantic class for the UI: "system_file" | "" (a real secret)
 
     @property
     def preview(self) -> str:
@@ -42,7 +43,8 @@ class Finding:
     def public(self) -> dict:
         """Safe-to-display dict: no raw value."""
         return {"kind": self.kind, "label": self.label, "title": self.title,
-                "preview": self.preview, "confidence": self.confidence, "path": self.path}
+                "preview": self.preview, "confidence": self.confidence, "path": self.path,
+                "group": self.group}
 
 
 _KNOWN_PREFIXES = ("github_pat_", "sk-proj-", "sk-ant-", "sk_live_", "rk_live_", "glpat-", "ghp_", "gho_",
@@ -65,6 +67,8 @@ def mask(value: str, kind: str = "") -> str:
     leaked, but never more than MAX_SHOWN of the characters, and never any key body.
     """
     v = (value or "").strip()
+    if kind == "sensitive_file":
+        return v          # a local file path is not a secret: show it as is
     if kind in ("private_key", "wallet_keystore", "solana_keypair"):
         first = v.splitlines()[0].strip() if v else ""
         return f"[{first[:30]} … {len(v)} chars]" if first.startswith("-----") else f"[{len(v)} chars]"
@@ -264,8 +268,8 @@ def scan_sensitive_paths_at(path: str, text: str) -> List[Finding]:
     base = (path or "").rsplit(".", 1)[-1].split("[")[0]
     if base in _PATH_KEYS and _is_sensitive_path(text):
         return [Finding("sensitive_file", "Credentials",
-                        "A path to a sensitive local file (env, ssh keys, wallet, guard state)",
-                        0, len(text), text, "high", path or "value")]
+                        "Access to a protected local file (guard state, secrets, keys)",
+                        0, len(text), text, "high", path or "value", "system_file")]
     return []
 
 
