@@ -234,15 +234,46 @@ select.yg-input { appearance: auto; }
   scrollbar-width: thin;
 }
 
-/* Two-step destructive button: red only while the second click is armed. */
-.yg-btn-confirm {
-  background: #dc2626 !important;
-  border-color: #ef4444 !important;
-  color: #fff !important;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+/* The single destructive-action style used by every delete/clear/stop button.
+   Outline by default, solid red only while the second click is armed. */
+.yg-btn.danger {
+  background: transparent;
+  background-image: none;
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  box-shadow: none;
+  text-shadow: none;
+  min-width: 150px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.yg-btn-confirm:hover { background: #b91c1c !important; }
+.yg-btn.danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: #ef4444;
+  color: #fecaca;
+}
+.yg-btn.danger.armed {
+  background: #dc2626;
+  border-color: #ef4444;
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+}
+.yg-row-btn {
+  min-width: 150px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.yg-btn.danger.icon {
+  min-width: 0;
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+.yg-btn.danger.armed.icon { color: #fff; }
 
 /* Zero-layout-shift secret and signature container */
 .yg-secret-value-row {

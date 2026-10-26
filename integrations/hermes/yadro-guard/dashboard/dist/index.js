@@ -91,6 +91,7 @@
     "New value": "Новое значение",
     "Save": "Сохранить",
     "Cancel": "Отмена",
+    "Confirm": "Подтвердить",
     "Rename": "Переименовать",
     "Renamed.": "Переименовано.",
     "Change kind": "Сменить категорию",
@@ -732,6 +733,39 @@
   // =========================================================================
   // UNIFIED INCIDENT COMPONENT & HOLD-TO-SHOW UTILITIES
   // =========================================================================
+  // ONE destructive-action button for the whole product: identical metrics everywhere,
+  // two-step confirmation in place (never window.confirm), 4 s auto-reset.
+  function DangerButton(p) {
+    const [armed, setArmed] = useState(false);
+    const timer = useRef(null);
+    useEffect(function () {
+      return function () { if (timer.current) clearTimeout(timer.current); };
+    }, []);
+    function disarm() {
+      if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+      setArmed(false);
+    }
+    var label = armed ? (p.confirmLabel || T("Confirm")) : p.label;
+    return h("button", {
+      type: "button",
+      className: "yg-btn danger" + (armed ? " armed" : "") + (p.icon ? " icon" : "") +
+                 (p.className ? " " + p.className : ""),
+      disabled: !!p.disabled,
+      title: armed ? (p.confirmTitle || p.confirmLabel || label) : (p.title || p.label),
+      onClick: function (e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        if (e && e.preventDefault) e.preventDefault();
+        if (!armed) {
+          setArmed(true);
+          timer.current = setTimeout(function () { setArmed(false); }, 4000);
+          return;
+        }
+        disarm();
+        if (p.onConfirm) p.onConfirm(e);
+      }
+    }, p.busy ? "…" : label);
+  }
+
   function extractDomain(inc) {
     if (!inc) return "";
     var text = [inc.command || "", inc.destination || "", (inc.risks && inc.risks[0] && inc.risks[0].snippet) || ""].join(" ");
@@ -1908,25 +1942,6 @@
     });
     const [histBusy, setHistBusy] = useState("");
     const [histNote, setHistNote] = useState("");
-    // Two-step confirmation inside the button itself: no window.confirm, no white dialogs.
-    const [confirmAct, setConfirmAct] = useState("");
-    const confirmTimer = useRef(null);
-
-    function armConfirm(kind) {
-      setConfirmAct(kind);
-      if (confirmTimer.current) clearTimeout(confirmTimer.current);
-      confirmTimer.current = setTimeout(function () { setConfirmAct(""); }, 4000);
-    }
-
-    function resetConfirm() {
-      if (confirmTimer.current) { clearTimeout(confirmTimer.current); confirmTimer.current = null; }
-      setConfirmAct("");
-    }
-
-    useEffect(function () {
-      return function () { if (confirmTimer.current) clearTimeout(confirmTimer.current); };
-    }, []);
-
     function handleSelectIncident(id) {
       setActiveIncidentId(id);
       try { localStorage.setItem("msg_guard_active_id", id); } catch (e) {}
@@ -1952,8 +1967,6 @@
 
     function delIncident(id) {
       if (histBusy) return;
-      if (confirmAct !== "del:" + id) { armConfirm("del:" + id); return; }
-      resetConfirm();
       setHistBusy(id);
       post("/incidents/delete", { incident: id }).then(function (r) {
         setHistBusy("");
@@ -1972,8 +1985,6 @@
     function clearHistory(scope) {
       if (histBusy) return;
       var key = scope === "all" ? "all" : "resolved";
-      if (confirmAct !== key) { armConfirm(key); return; }
-      resetConfirm();
       setHistBusy("__all__");
       setHistNote("");
       post("/incidents/clear", { scope: key }).then(function (r) {
@@ -2103,24 +2114,20 @@
             })),
           (done.length || items.length) ? h("div", { className: "yg-hst-actions", style: { display: "flex", gap: 6, alignItems: "center" } },
             histNote ? h("span", { className: "yg-dim yg-small", style: { marginRight: 4 } }, histNote) : null,
-            done.length ? h("button", {
-              type: "button",
-              className: "yg-btn " + (confirmAct === "resolved" ? "yg-btn-confirm" : "ghost"),
-              disabled: !!histBusy,
+            done.length ? h(DangerButton, {
+              label: currentLang === "ru" ? "🗑 Очистить историю" : "🗑 Clear history",
+              confirmLabel: currentLang === "ru" ? "Точно очистить?" : "Really clear?",
               title: currentLang === "ru" ? "Удалить все решённые инциденты" : "Clear resolved history",
-              onClick: function () { clearHistory("resolved"); }
-            }, histBusy === "__all__" ? "…" : (confirmAct === "resolved"
-              ? (currentLang === "ru" ? "ТОЧНО ОЧИСТИТЬ? (ПОДТВЕРДИТЕ)" : "REALLY CLEAR? (CONFIRM)")
-              : (currentLang === "ru" ? "🗑 Очистить историю" : "🗑 Clear history"))) : null,
-            items.length ? h("button", {
-              type: "button",
-              className: "yg-btn " + (confirmAct === "all" ? "yg-btn-confirm" : "ghost danger"),
               disabled: !!histBusy,
+              onConfirm: function () { clearHistory("resolved"); }
+            }) : null,
+            items.length ? h(DangerButton, {
+              label: currentLang === "ru" ? "🗑 Очистить всё" : "🗑 Clear all",
+              confirmLabel: currentLang === "ru" ? "Удалить всё навсегда?" : "Delete all permanently?",
               title: currentLang === "ru" ? "Полностью очистить весь журнал (включая ожидающие)" : "Clear the entire log (including pending)",
-              onClick: function () { clearHistory("all"); }
-            }, histBusy === "__all__" ? "…" : (confirmAct === "all"
-              ? (currentLang === "ru" ? "ТОЧНО УДАЛИТЬ? (ПОДТВЕРДИТЕ)" : "REALLY DELETE? (CONFIRM)")
-              : (currentLang === "ru" ? "🗑 Очистить всё" : "🗑 Clear all"))) : null)
+              disabled: !!histBusy,
+              onConfirm: function () { clearHistory("all"); }
+            }) : null)
           : null),
         done.length ? h("div", { className: "yg-list" },
           done.slice(0, 50).map(function (inc) {
@@ -2129,15 +2136,16 @@
               h("span", { className: "yg-acc-status" }, getStatusText(inc.status)),
               h("span", { className: "yg-dim yg-acc-time" }, fmtTs(inc.at)),
               h("span", { className: "yg-dim yg-acc-how" }, (inc.tool || "") + " → " + (inc.destination || "")),
-              h("button", {
-                type: "button",
-                className: "yg-btn ghost yg-acc-del" + (confirmAct === "del:" + inc.id ? " yg-btn-confirm" : ""),
+              h(DangerButton, {
+                icon: true,
+                className: "yg-acc-del",
+                label: "🗑",
+                confirmLabel: "✓?",
+                confirmTitle: currentLang === "ru" ? "Нажмите ещё раз, чтобы удалить" : "Click again to delete",
+                title: currentLang === "ru" ? "Удалить инцидент" : "Delete incident",
                 disabled: !!histBusy,
-                title: confirmAct === "del:" + inc.id
-                  ? (currentLang === "ru" ? "Нажмите ещё раз, чтобы удалить" : "Click again to delete")
-                  : (currentLang === "ru" ? "Удалить инцидент" : "Delete incident"),
-                onClick: function (e) { e.preventDefault(); e.stopPropagation(); delIncident(inc.id); }
-              }, histBusy === inc.id ? "…" : (confirmAct === "del:" + inc.id ? "✓?" : "🗑")));
+                onConfirm: function () { delIncident(inc.id); }
+              }));
             return h("details", { key: inc.id, className: "yg-acc", open: false }, accSummary,
               h(IncidentCard, { inc: inc, onChanged: p.onChanged, inAccordion: true }));
           }))
@@ -2329,13 +2337,19 @@
     if (l.actions && l.actions.indexOf("unblock") >= 0)
       btns.push(h("button", { key: "ub", className: "yg-btn ghost", disabled: !!busy, onClick: function () { act("unblock"); } }, "Remove firewall block"));
     if (l.actions && l.actions.indexOf("disable_service") >= 0 && l.service_name)
-      btns.push(h("button", { key: "ds", className: "yg-btn bad", disabled: !!busy, onClick: function () {
-        if (window.confirm(T("Turn off this Windows service? Windows will ask you to confirm. You can undo it here."))) act("disable_service");
-      } }, "Turn off this service"));
+      btns.push(h(DangerButton, {
+        key: "ds", disabled: !!busy,
+        label: "Turn off this service",
+        confirmLabel: currentLang === "ru" ? "Выключить службу?" : "Turn it off?",
+        onConfirm: function () { act("disable_service"); }
+      }));
     if (l.actions && l.actions.indexOf("stop_program") >= 0)
-      btns.push(h("button", { key: "sp", className: "yg-btn bad", disabled: !!busy, onClick: function () {
-        if (window.confirm(T("Stop this program now? Unsaved work in it may be lost."))) act("stop_program");
-      } }, "Stop the program"));
+      btns.push(h(DangerButton, {
+        key: "sp", disabled: !!busy,
+        label: "Stop the program",
+        confirmLabel: currentLang === "ru" ? "Остановить программу?" : "Stop the program?",
+        onConfirm: function () { act("stop_program"); }
+      }));
     if (l.settings_page)
       btns.push(h("button", { key: "st", className: "yg-btn ghost", disabled: !!busy, onClick: function () { act("settings", { page: l.settings_page }); } }, "Open Windows Settings"));
     btns.push(h("button", { key: "tr", className: "yg-btn ghost", disabled: !!busy, onClick: function () { act(l.trusted ? "untrust" : "trust"); } },
@@ -2501,12 +2515,15 @@
           return h("div", { className: "yg-row", key: v.token },
             h(Chip, { label: { id: v.label, label: v.title || v.filename || v.label } }),
             h("span", { className: "yg-dim yg-small" }, ago(v.deleted)),
-            h("button", { className: "yg-btn ghost", disabled: busy, onClick: function () { op({ op: "restore", token: v.token }, "Restored."); } }, "Restore"),
-            h("button", {
-              className: "yg-btn bad", disabled: busy, onClick: function () {
-                if (window.confirm(T("Delete forever? This cannot be undone."))) op({ op: "purge", token: v.token }, "Deleted forever.");
-              }
-            }, "Delete forever"));
+            h("button", { className: "yg-btn ghost yg-row-btn", disabled: busy, onClick: function () { op({ op: "restore", token: v.token }, "Restored."); } }, T("Restore")),
+            h(DangerButton, {
+              className: "yg-row-btn",
+              label: T("Delete forever"),
+              confirmLabel: currentLang === "ru" ? "Точно удалить?" : "Delete forever?",
+              title: T("Delete forever? This cannot be undone."),
+              disabled: busy,
+              onConfirm: function () { op({ op: "purge", token: v.token }, "Deleted forever."); }
+            }));
         })) : null);
   }
 
@@ -2545,14 +2562,19 @@
             type: "button", className: "yg-vault-menu-btn", disabled: p.busy,
             title: "Actions", onClick: function () { setMenuOpen(!menuOpen); }
           }, "⋮"),
-          h("button", {
-            type: "button", className: "yg-vault-menu-btn yg-vault-trash-btn", disabled: p.busy,
+          h(DangerButton, {
+            icon: true,
+            className: "yg-vault-trash-btn",
+            label: "🗑",
+            confirmLabel: "✓?",
             title: v.deleted ? T("Delete forever") : T("Move to trash"),
-            onClick: function () {
-              if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
-                p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
+            confirmTitle: T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later."),
+            disabled: p.busy,
+            onConfirm: function () {
+              p.op({ op: v.deleted ? "purge" : "trash", token: v.token },
+                   v.deleted ? "Deleted forever." : "Moved to the trash.");
             }
-          }, "🗑"),
+          }),
           menuOpen ? h("div", { className: "yg-vault-menu-dropdown", role: "menu" },
             h("button", {
               type: "button", role: "menuitem", className: "yg-vault-menu-item",
@@ -2573,11 +2595,7 @@
               }, currentLang === "ru" ? "↻ Заменить значение" : "↻ Replace value"),
             h("button", {
               type: "button", role: "menuitem", className: "yg-vault-menu-item" + (v.deleted ? " bad" : ""),
-              onClick: function () {
-                if (window.confirm(T(v.deleted ? "Delete forever? This cannot be undone." : "Move to trash? You can restore it later.")))
-                  p.op({ op: v.deleted ? "purge" : "trash", token: v.token }, v.deleted ? "Deleted forever." : "Moved to the trash.");
-                done();
-              }
+              onClick: function () { setMenuOpen(false); setMode(v.deleted ? "confirm:purge" : "confirm:trash"); }
             }, "🗑 " + T(v.deleted ? "Delete forever" : "Move to trash"))
           ) : null)
       ),
@@ -2589,6 +2607,20 @@
         h("input", { className: "yg-input", type: "password", autoComplete: "off", value: val, placeholder: "New value", onChange: function (e) { setVal(e.target.value); } }),
         h("button", { className: "yg-btn", disabled: p.busy || !val, onClick: function () { p.op({ op: "replace", token: v.token, secret: val }, "Value replaced. Agents keep the same token."); done(); } }, "Save"),
         h("button", { className: "yg-btn ghost", onClick: done }, "Cancel")) : null,
+      mode.indexOf("confirm:") === 0 ? h("div", { className: "yg-actions" },
+        h("span", { className: "yg-dim yg-small" },
+          mode === "confirm:purge"
+            ? T("Delete forever? This cannot be undone.")
+            : T("Move to trash? You can restore it later.")),
+        h("button", {
+          type: "button", className: "yg-btn danger", disabled: p.busy,
+          onClick: function () {
+            if (mode === "confirm:purge") p.op({ op: "purge", token: v.token }, "Deleted forever.");
+            else p.op({ op: "trash", token: v.token }, "Moved to the trash.");
+            done();
+          }
+        }, mode === "confirm:purge" ? T("Delete forever") : T("Move to trash")),
+        h("button", { type: "button", className: "yg-btn ghost", onClick: done }, T("Cancel"))) : null,
       mode === "kind" ? h("div", { className: "yg-kinds" },
         KINDS.map(function (k) {
           return h("button", {
