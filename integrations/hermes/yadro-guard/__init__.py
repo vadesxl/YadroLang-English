@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 # SHA-256 of core runtime modules — tampered files trigger fail-closed block.
 _EXPECTED_HASHES = {
-    "src/runtime/policy.py":      "dd50dddfc5a166eb2a0b05905c0b1be09a0fe6d5d8bd31a37ecdc69baa95b811",
-    "src/runtime/detectors.py":   "795990217b9005cdefcac07fdf29b16b27e77bba16fcfb6815f2f6c819ada3c7",
+    "src/runtime/policy.py":      "3611cc47b480bfb4be1c08aad304b6074339112228931a2e7b7ff2beec32a823",
+    "src/runtime/detectors.py":   "36d0e3e86ac6227c2447078921a5c32794282823a917d055dab0455433f6041d",
     "src/runtime/actions.py":    "d6b95d5344c49b3e1beae0e094a1892b993c85f1fe11cc0f54490368bb483bc7",
     "src/runtime/aim_detect.py": "4a15e4a6ee460649934bb460f4aa0b61ae293f6af5ecf629b99bef2a51be10a0",
 }

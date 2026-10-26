@@ -404,7 +404,9 @@ def _quarantine(findings: List[detectors.Finding]) -> List[Dict[str, Any]]:
         vault = None
     for f in findings:
         item = {**f.public(), "fingerprint": fingerprint(f.value)}
-        if vault is not None:
+        # A protected file path is not a secret: never quarantine it into the vault, or the
+        # vault starts "matching" the path as a leaked credential on the next scan.
+        if vault is not None and f.group != "system_file":
             try:
                 item["token"] = vault.put_unique(f.value, LABEL_RU.get(f.label, "УчетныеДанные"),
                                                          fingerprint(f.value), f.title)

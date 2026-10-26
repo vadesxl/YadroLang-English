@@ -136,6 +136,17 @@ _SENSITIVE_FILE = re.compile(
 )
 
 
+# A filesystem path is not a secret. Without this guard the guard's own journal turns a
+# blocked path into a "vault secret" (it is quarantined once), and every later scan of the
+# same path reports it as a leaked credential.
+_WIN_PATH = re.compile(r"^[A-Za-z]:[\\/]")
+
+
+def _looks_like_path(value: str) -> bool:
+    v = value or ""
+    return bool(_WIN_PATH.match(v) or "\\" in v or v.startswith(("/", "./", "../")))
+
+
 def _is_sensitive_path(path: str, text: str = "") -> bool:
     """True if a path/pattern resolves to a likely sensitive file (or the guard's own state)."""
     if not isinstance(path, str) or not path:
@@ -200,7 +211,7 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
 
     # 1) exact vault matches first: highest confidence, they define what is "yours"
     for value, label, title in known_secrets:
-        if value and len(value) >= 4:
+        if value and len(value) >= 4 and not _looks_like_path(value):
             i = text.find(value)
             while i >= 0:
                 add(Finding("vault_secret", label, title or "A secret from your vault", i, i + len(value),

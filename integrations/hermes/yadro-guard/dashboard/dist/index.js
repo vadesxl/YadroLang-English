@@ -767,6 +767,20 @@
     return true;
   }
 
+  // The incident may carry a technical vault_secret match next to the real finding
+  // (the guard used to quarantine a blocked path, and the path then matched itself).
+  // Pick what the card must show: a real secret first, then a protected path.
+  function pickFinding(inc) {
+    var list = (inc && inc.findings) || [];
+    var real = list.filter(function (f) { return f && f.kind !== "vault_secret" && f.group !== "system_file"; });
+    var path = list.filter(function (f) { return f && (f.group === "system_file" || f.kind === "sensitive_file" || f.kind === "sensitive_path"); });
+    return real[0] || path[0] || list[0] || null;
+  }
+
+  function isPathFindingObj(f) {
+    return !!f && (f.group === "system_file" || f.kind === "sensitive_file" || f.kind === "sensitive_path");
+  }
+
   // Category of a risky action (by kind, never by guessing from English text).
   var RISK_CATEGORY = {
     tamper_guard_files: { ru: "Попытка модификации защиты", en: "Guard tampering" },
@@ -1066,12 +1080,12 @@
           : (currentLang === "ru" ? "«ИИ-агент»" : "\"AI agent\""));
 
     const hasFindings = inc.findings && inc.findings.length > 0;
-    const finding = hasFindings ? inc.findings[0] : null;
+    const finding = hasFindings ? pickFinding(inc) : null;
     const hasRisks = inc.risks && inc.risks.length > 0;
     const risk = hasRisks ? inc.risks[0] : null;
 
     const findingKind = ((finding && finding.kind) || "").toLowerCase();
-    const isPathFinding = findingKind === "sensitive_file";
+    const isPathFinding = isPathFindingObj(finding);
     const localTarget = isLocalDestination(inc);
     const destPath = String(inc.destination || "");
 
@@ -1136,7 +1150,7 @@
           isPathFinding
             ? h("div", { className: "yg-pathbox yg-mono", title: destPath }, destPath || rawSecretText)
             : hasFindings
-              ? h(Reveal, { incident: inc.id, index: 0, preview: rawSecretText })
+              ? h(Reveal, { incident: inc.id, index: Math.max(0, (inc.findings || []).indexOf(finding)), preview: rawSecretText })
               : h("div", { className: "yg-secret-value-row" },
                   h("span", { className: "yg-secret-value-text", style: { color: "#f87171" }, title: fullCode },
                     (risk && risk.kind ? ("[" + risk.kind + "] ") : "") + (inc.tool || "terminal") + " → " + (inc.destination || "shell"))),
@@ -1291,13 +1305,17 @@
         i.findings.forEach(function (f) { allFindings.push(f); });
       }
     });
-    var secretsCaughtCount = allFindings.length;
+    // A blocked file path is not a leaked secret; neither is the guard's own vault echo.
+    var secretFindings = allFindings.filter(function (f) {
+      return f && f.group !== "system_file" && f.kind !== "vault_secret";
+    });
+    var secretsCaughtCount = secretFindings.length;
     var totalThreatsCount = blockedCount + pendingCount;
     // Only a LIVE pending incident may paint the stage red. History stays history.
     var threatActive = pendingCount > 0;
 
     var activeIncident = (p.activeIncidentId && items.find(function (i) { return i.id === p.activeIncidentId; })) || pendingItems[0] || blockedItems[0] || items[0] || null;
-    var activeFinding = (activeIncident && activeIncident.findings && activeIncident.findings[0]) || allFindings[0] || null;
+    var activeFinding = pickFinding(activeIncident) || secretFindings[0] || null;
     var activeRisk = (activeIncident && activeIncident.risks && activeIncident.risks[0]) || null;
     var rawSecretText = activeFinding ? (activeFinding.preview || "sk_live_99f8***334455") : "sk_live_99f8***334455";
     var fullSecretText = (activeIncident && activeIncident.command && activeIncident.command.indexOf("sk_live_") !== -1)
@@ -1373,8 +1391,8 @@
               animationData: window.__LOTTIE_ASSETS__.agent
             });
             // Calm breathing loop by default (same segment the state machine uses)
-            if (agentAnimRef.current.setSpeed) agentAnimRef.current.setSpeed(0.17);
-            if (agentAnimRef.current.playSegments) agentAnimRef.current.playSegments([0, 29], true);
+            if (agentAnimRef.current.setSpeed) agentAnimRef.current.setSpeed(0.25);
+            if (agentAnimRef.current.playSegments) agentAnimRef.current.playSegments([44, 92], true);
           } catch (e) { console.error("Agent Lottie load error:", e); }
         }
         if (shieldBoxRef.current && !shieldAnimRef.current && window.__LOTTIE_ASSETS__.shield) {
@@ -1441,8 +1459,10 @@
     //   calm  [0, 29]    calm breathing, no head shake, no "!" frame
     //   alert [181, 270] alarm with the exclamation mark
     var ROBO_LOOPS = {
-      calm: { segment: [0, 29], speed: 0.17 },       // ~2.9 s per cycle
-      alert: { segment: [181, 270], speed: 0.50 },   // ~3.0 s per cycle
+      // Patrol: the green "looking around" cycle (frames 31-105). Frames 181-270 carry the
+      // red "!" alarm, 0-29 is a near-static purple blob - neither may be the calm state.
+      calm: { segment: [44, 92], speed: 0.25 },       // ~3.2 s green patrol cycle, no "!"
+      alert: { segment: [181, 270], speed: 0.55 },    // ~2.7 s per cycle
       thinking: { segment: [271, 390], speed: 0.55 },
       success: { segment: [31, 105], speed: 0.70 }
     };
@@ -1456,6 +1476,19 @@
     }
 
     var isDemoActive = useRef(false);
+    useEffect(function () {
+      // "Refresh" must always return the robot to the live state: a demo that was left
+      // running must not keep the alarm pose and the "!" on screen forever.
+      if (!isDemoActive.current) return;
+      isDemoActive.current = false;
+      bumpDemo(function (v) { return v + 1; });
+    }, [p.refreshSeq]);
+    // Bumped when a demo ends so the state effect re-runs and restores the real status.
+    var stDemo = useState(0), demoTick = stDemo[0], bumpDemo = stDemo[1];
+    function finishDemo() {
+      isDemoActive.current = false;
+      bumpDemo(function (v) { return v + 1; });
+    }
 
     // Automatic event-driven emotion and shield status reaction to live incidents
     useEffect(function () {
@@ -1509,7 +1542,7 @@
           kind: "ok"
         });
       }
-    }, [activeIncident, blocked, intercepted, items, currentLang]);
+    }, [activeIncident, blocked, intercepted, items, currentLang, demoTick]);
 
     function runScrambleVaultDemo() {
       isDemoActive.current = true;
@@ -1541,10 +1574,7 @@
             });
             setVaultBonus(function (v) { return v + 1; });
             setRoboEmotion("success");
-            setTimeout(function () {
-              setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "calm");
-              isDemoActive.current = false;
-            }, 4500);
+            setTimeout(function () { finishDemo(); }, 4500);
           });
         }
       }, 350);
@@ -1566,24 +1596,12 @@
           sub: currentLang === "ru" ? "Опасный процесс hermes.exe изолирован" : "Harmful execution prevented",
           color: "#ef4444"
         });
-        setTimeout(function () {
-          setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "calm");
-          setShieldStatus({
-            title: blocked || activeFinding ? (currentLang === "ru" ? "🛑 СЕКРЕТ ПЕРЕХВАЧЕН!" : "🛑 SECRET INTERCEPTED!") : (currentLang === "ru" ? "Шлюз Безопасности" : "Security Gateway"),
-            sub: blocked || activeFinding ? ("OpenAI API Key (" + rawSecretText + ")") : (currentLang === "ru" ? "Анализ AST и перехват токенов" : "AST Analysis & Token Masking"),
-            color: blocked || activeFinding ? "#ef4444" : "#38bdf8"
-          });
-          setScramblePill({
-            text: blocked || activeFinding ? (currentLang === "ru" ? "⛔ ПЕРЕХВАЧЕН СЕКРЕТ · ВЫХОД В СЕТЬ ЗАБЛОКИРОВАН" : "⛔ SECRET INTERCEPTED") : "✓ ОЖИДАНИЕ ТРАФИКА",
-            kind: blocked || activeFinding ? "bad" : "ok"
-          });
-          isDemoActive.current = false;
-        }, 3200);
+        setTimeout(function () { finishDemo(); }, 3200);
       }, 400);
     }
 
     function resetDemo() {
-      isDemoActive.current = false;
+      finishDemo();
       setRoboEmotion((activeIncident && activeIncident.status === "pending") ? "alert" : "calm");
       setShieldStatus({
         title: blocked || activeFinding ? (currentLang === "ru" ? "🛑 СЕКРЕТ ПЕРЕХВАЧЕН!" : "🛑 SECRET INTERCEPTED!") : (currentLang === "ru" ? "Шлюз Безопасности" : "Security Gateway"),
@@ -1793,8 +1811,8 @@
                       : (currentLang === "ru" ? "ШЛЮЗ АКТИВЕН · ВЕСЬ ИСХОДЯЩИЙ ТРАФИК ЗАЩИЩЁН" : "GATEWAY ACTIVE · ALL EGRESS PROTECTED")),
                   h("div", { style: { fontSize: "11px", color: "#94a3b8" } },
                     currentLang === "ru"
-                      ? "Токенов в Сейфе DPAPI: " + totalVaultKeys + " · Утечек заблокировано: 0"
-                      : "Vault tokens: " + totalVaultKeys + " · Leaks blocked: 0")
+                      ? "Токенов в Сейфе DPAPI: " + totalVaultKeys + " · Заблокировано действий: " + blockedCount
+                      : "Vault tokens: " + totalVaultKeys + " · Actions blocked: " + blockedCount)
                 )
               ),
               h("div", { style: { display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" } },
@@ -2037,6 +2055,7 @@
           vaultCount: p.vaultCount,
           refresh: p.onChanged,
           refreshing: p.refreshing,
+          refreshSeq: p.refreshSeq,
           guardMode: p.guardMode,
           pauseRemaining: p.pauseRemaining,
           onSetMode: p.onSetMode,
@@ -2856,6 +2875,7 @@
     });
     const [modeMenuOpen, setModeMenuOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [refreshSeq, setRefreshSeq] = useState(0);
 
     function changeGuardMode(newMode, durationMins) {
       setModeMenuOpen(false);
@@ -2996,6 +3016,7 @@
     // One button refreshes everything the page shows: guard mode/status, incidents, vault.
     const refreshAll = useCallback(function () {
       setIsRefreshing(true);
+      setRefreshSeq(function (v) { return v + 1; });
       SDK.fetchJSON(API + "/guard/status").then(function (r) {
         if (r && r.status === "ok") {
           setGuardMode(r.mode || "active");
@@ -3244,6 +3265,7 @@
           vaultCount: (vault && vault.items && vault.items.length) || 0,
           onChanged: refreshAll,
           refreshing: isRefreshing,
+          refreshSeq: refreshSeq,
           guardMode: guardMode,
           pauseRemaining: pauseRemaining,
           onSetMode: changeGuardMode
