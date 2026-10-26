@@ -1973,7 +1973,9 @@
       post("/incidents/clear", { scope: key }).then(function (r) {
         setHistBusy("");
         if (r && r.status === "ok") {
-          setHistNote((currentLang === "ru" ? "Удалено записей: " : "Removed: ") + (r.removed || 0));
+          setHistNote(typeof r.removed === "number"
+            ? ((currentLang === "ru" ? "Удалено записей: " : "Removed: ") + r.removed)
+            : (currentLang === "ru" ? "Журнал очищен." : "Log cleared."));
           handleSelectIncident("");
           if (p.onChanged) p.onChanged();
         } else {
