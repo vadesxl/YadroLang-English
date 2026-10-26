@@ -1357,25 +1357,31 @@ const makeGuardPage = function (SDK, onReady) {
       ? (activeIncident.command.match(/sk_live_[a-zA-Z0-9]+/)?.[0] || "sk_live_99f82b4a1122334455")
       : "sk_live_99f82b4a1122334455";
     var maskedTokenText = activeFinding ? (activeFinding.token || "msg_tok_Credentials_99f82b") : "msg_tok_Credentials_99f82b";
+    // The vault endpoint also returns the trash, so count only live records:
+    // trashed paths must not inflate "В сейфе: N" after a cleanup.
+    function liveVaultCount(list) {
+      return (list || []).filter(function (v) { return v && !v.deleted; }).length;
+    }
     var stLocalVlt = useState(function () {
-      if (p.vault && p.vault.items && Array.isArray(p.vault.items)) return p.vault.items.length;
+      if (p.vault && p.vault.items && Array.isArray(p.vault.items)) return liveVaultCount(p.vault.items);
       if (typeof p.vaultCount === "number" && p.vaultCount > 0) return p.vaultCount;
       return 0;
     }), localVaultCount = stLocalVlt[0], setLocalVaultCount = stLocalVlt[1];
 
     useEffect(function () {
       if (p.vault && p.vault.items && Array.isArray(p.vault.items)) {
-        setLocalVaultCount(p.vault.items.length);
+        setLocalVaultCount(liveVaultCount(p.vault.items));
       } else {
         SDK.fetchJSON(API + "/vault").then(function (v) {
           if (v && v.items && Array.isArray(v.items)) {
-            setLocalVaultCount(v.items.length);
+            setLocalVaultCount(liveVaultCount(v.items));
           }
         }).catch(function () {});
       }
     }, [p.vault, p.vaultCount]);
 
-    var totalVaultKeys = Math.max(localVaultCount + vaultBonus, (p.vault && p.vault.items ? p.vault.items.length : 0));
+    var totalVaultKeys = Math.max(localVaultCount + vaultBonus,
+      (p.vault && p.vault.items ? liveVaultCount(p.vault.items) : 0));
 
     // Scramble displayed state so React doesn't wipe scrambled text
     var stDisp = useState(fullSecretText), displayedSecret = stDisp[0], setDisplayedSecret = stDisp[1];
