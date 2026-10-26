@@ -81,11 +81,15 @@ class CryptoDetectorTests(unittest.TestCase):
             self.assertNotIn(SEED12, log)                              # phrase is not written to log
 
     def test_crlf_in_word_list_does_not_break_check(self):
+        # A Windows checkout (core.autocrlf) is already CRLF, so build the fixture from
+        # the LF form: replacing b"\n" inside a CRLF file yields b"\r\r\n" and would
+        # test a corrupted word list instead of a CRLF one (this broke windows-latest CI).
         import shutil
         from pathlib import Path
         tmp = Path(tempfile.mkdtemp()) / "bip39_english.txt"
         shutil.copy(C._WORDLIST_FILE, tmp)
-        tmp.write_bytes(tmp.read_bytes().replace(b"\n", b"\r\n"))
+        lf = tmp.read_bytes().replace(b"\r\n", b"\n")
+        tmp.write_bytes(lf.replace(b"\n", b"\r\n"))
         with mock.patch.object(C, "_WORDLIST_FILE", tmp):
             words, _ = C._load_wordlist()
         self.assertEqual(2048, len(words))
