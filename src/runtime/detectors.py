@@ -34,7 +34,6 @@ class Finding:
     value: str = field(repr=False)
     confidence: str = "high"
     path: str = ""          # where in the args: e.g. "command" or "headers.Authorization"
-    group: str = ""         # semantic class for the UI: "system_file" | "" (a real secret)
 
     @property
     def preview(self) -> str:
@@ -43,8 +42,7 @@ class Finding:
     def public(self) -> dict:
         """Safe-to-display dict: no raw value."""
         return {"kind": self.kind, "label": self.label, "title": self.title,
-                "preview": self.preview, "confidence": self.confidence, "path": self.path,
-                "group": self.group}
+                "preview": self.preview, "confidence": self.confidence, "path": self.path}
 
 
 _KNOWN_PREFIXES = ("github_pat_", "sk-proj-", "sk-ant-", "sk_live_", "rk_live_", "glpat-", "ghp_", "gho_",
@@ -67,8 +65,6 @@ def mask(value: str, kind: str = "") -> str:
     leaked, but never more than MAX_SHOWN of the characters, and never any key body.
     """
     v = (value or "").strip()
-    if kind == "sensitive_file":
-        return v          # a local file path is not a secret: show it as is
     if kind in ("private_key", "wallet_keystore", "solana_keypair"):
         first = v.splitlines()[0].strip() if v else ""
         return f"[{first[:30]} … {len(v)} chars]" if first.startswith("-----") else f"[{len(v)} chars]"
@@ -119,10 +115,7 @@ _RULES = [
 ]
 _COMPILED = [(k, l, t, re.compile(r), c) for k, l, t, r, c in _RULES]
 
-# Card numbers need card context or grouping: a bare digit run in a filename or a
-# timestamp ("2026102618464896") passes Luhn often enough to produce false blocks.
-_CARD = re.compile(r"(?<![\w/\\#.\-])\d(?:[ -]?\d){12,18}(?![\w/\\#.\-])")
-_CARD_WORDS = re.compile(r"(?i)(?:card|visa|mastercard|maestro|amex|american express|\bmir\b|\bpan\b|cvv|cvc|плат[её]ж|карт[аыуе]?)")
+_CARD = re.compile(r"(?<![\d-])\d(?:[ -]?\d){12,18}(?![\d-])")
 _IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
 _ASSIGN = re.compile(
     r"(?i)(?:password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|auth|bearer|private[_-]?key|client[_-]?secret)"
@@ -137,17 +130,6 @@ _SENSITIVE_FILE = re.compile(
     r"\.npmrc|\.pypirc|\.netrc|gnupg[/\\]|secrets(?:\.yaml|\.yml|\.json)?|"
     r"\.git-credentials|api_keys?\.(?:txt|json|py))",
 )
-
-
-# A filesystem path is not a secret. Without this guard the guard's own journal turns a
-# blocked path into a "vault secret" (it is quarantined once), and every later scan of the
-# same path reports it as a leaked credential.
-_WIN_PATH = re.compile(r"^[A-Za-z]:[\\/]")
-
-
-def _looks_like_path(value: str) -> bool:
-    v = value or ""
-    return bool(_WIN_PATH.match(v) or "\\" in v or v.startswith(("/", "./", "../")))
 
 
 def _is_sensitive_path(path: str, text: str = "") -> bool:
@@ -214,7 +196,7 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
 
     # 1) exact vault matches first: highest confidence, they define what is "yours"
     for value, label, title in known_secrets:
-        if value and len(value) >= 4 and not _looks_like_path(value):
+        if value and len(value) >= 4:
             i = text.find(value)
             while i >= 0:
                 add(Finding("vault_secret", label, title or "A secret from your vault", i, i + len(value),
@@ -227,11 +209,7 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
             add(Finding(kind, label, title, m.start(g), m.end(g), m.group(g), conf, path))
     for m in _CARD.finditer(text):
         digits = re.sub(r"\D", "", m.group(0))
-        if not (13 <= len(digits) <= 19 and luhn_ok(digits) and len(set(digits)) > 1):
-            continue
-        grouped = (" " in m.group(0) or "-" in m.group(0))
-        near = text[max(0, m.start() - 32):m.end() + 32]
-        if grouped or _CARD_WORDS.search(near):
+        if 13 <= len(digits) <= 19 and luhn_ok(digits) and len(set(digits)) > 1:
             add(Finding("card_number", "Financial", "Payment card number", m.start(), m.end(), m.group(0), "high", path))
     for m in _IBAN.finditer(text):
         if iban_ok(m.group(0)):
@@ -286,8 +264,8 @@ def scan_sensitive_paths_at(path: str, text: str) -> List[Finding]:
     base = (path or "").rsplit(".", 1)[-1].split("[")[0]
     if base in _PATH_KEYS and _is_sensitive_path(text):
         return [Finding("sensitive_file", "Credentials",
-                        "Access to a protected local file (guard state, secrets, keys)",
-                        0, len(text), text, "high", path or "value", "system_file")]
+                        "A path to a sensitive local file (env, ssh keys, wallet, guard state)",
+                        0, len(text), text, "high", path or "value")]
     return []
 
 

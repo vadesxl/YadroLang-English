@@ -63,31 +63,6 @@ def _write(name: str, data) -> None:
     os.replace(tmp, p)
 
 
-def set_mode(mode: str, paused_until: int = 0) -> Dict[str, Any]:
-    """Persist the guard mode where check() reads it.
-
-    The dashboard used to write its own config.json in the plugin folder, while the hook
-    read this one - so "audit/monitor" never reached the runtime and leaks kept blocking.
-    """
-    if mode not in ("active", "paused", "monitor", "disabled"):
-        return {"status": "error", "message": "Unknown mode."}
-    cfg = _read("config.json", {})
-    cfg["guard_mode"] = mode
-    cfg["paused_until"] = int(paused_until or 0)
-    _write("config.json", cfg)
-    return {"status": "ok", "mode": mode, "paused_until": cfg["paused_until"]}
-
-
-def current_mode() -> Dict[str, Any]:
-    """The runtime's real mode: what the hook will use for the next tool call."""
-    cfg = _read("config.json", {})
-    mode = cfg.get("guard_mode", "active")
-    paused_until = int(cfg.get("paused_until", 0) or 0)
-    if mode == "paused" and paused_until and int(time.time()) >= paused_until:
-        mode = "active"
-    return {"mode": mode, "paused_until": paused_until if mode == "paused" else 0}
-
-
 def fingerprint(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
@@ -114,26 +89,16 @@ def _destination(tool_name: str, args: Any) -> str:
     return tool_name
 
 
-_MASKED_ERROR = "[MASKED_ERROR]"
-
-
 def _scrub(text: str) -> str:
-    """Mask any secrets found inside a string (used before it is written to a file/journal).
-
-    Fail-closed (audit S2-3): if the scanner cannot run, the whole string is replaced.
-    Returning the original text on error writes the raw secret into the journal - the
-    exact leak this guard exists to prevent.
-    """
+    """Mask any secrets found inside a string (used before it is written to a file/journal)."""
     try:
-        if not isinstance(text, str):
-            return _MASKED_ERROR
         from . import detectors as _d
         hits = _d.scan_text(text)
         for f in sorted(hits, key=lambda x: x.start, reverse=True):
             text = text[:f.start] + f.preview + text[f.end:]
         return text[:4096]
     except Exception:
-        return _MASKED_ERROR
+        return text[:4096]
 
 
 def _destination_key(tool_name: str, args: Any) -> str:
@@ -324,31 +289,6 @@ def list_incidents(limit: int = 100) -> List[Dict[str, Any]]:
     return [{k: v for k, v in inc.items() if k != "key"} for inc in _read("incidents.json", [])[:limit]]
 
 
-def delete_incident(incident_id: str) -> Dict[str, Any]:
-    """Remove one incident from the journal (used by the dashboard's trash button)."""
-    incidents = _read("incidents.json", [])
-    left = [i for i in incidents if i.get("id") != incident_id]
-    if len(left) == len(incidents):
-        return {"status": "error", "message": "Incident not found."}
-    _write("incidents.json", left)
-    return {"status": "ok", "removed": len(incidents) - len(left)}
-
-
-def clear_incidents(scope: str = "resolved") -> Dict[str, Any]:
-    """Wipe the journal: scope "all" removes every record, "resolved" keeps pending ones.
-
-    Decisions are kept on purpose: they are a separate security control, not history.
-    """
-    incidents = _read("incidents.json", [])
-    if scope == "all":
-        left: List[Dict[str, Any]] = []
-    else:
-        left = [i for i in incidents if i.get("status") == "pending"]
-    removed = len(incidents) - len(left)
-    _write("incidents.json", left)
-    return {"status": "ok", "removed": removed, "left": len(left)}
-
-
 def _find_incident(incidents, incident_id):
     if not incident_id:
         return None
@@ -429,9 +369,7 @@ def _quarantine(findings: List[detectors.Finding]) -> List[Dict[str, Any]]:
         vault = None
     for f in findings:
         item = {**f.public(), "fingerprint": fingerprint(f.value)}
-        # A protected file path is not a secret: never quarantine it into the vault, or the
-        # vault starts "matching" the path as a leaked credential on the next scan.
-        if vault is not None and f.group != "system_file":
+        if vault is not None:
             try:
                 item["token"] = vault.put_unique(f.value, LABEL_RU.get(f.label, "УчетныеДанные"),
                                                          fingerprint(f.value), f.title)

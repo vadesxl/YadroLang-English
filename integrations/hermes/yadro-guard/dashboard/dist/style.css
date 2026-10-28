@@ -123,157 +123,62 @@ select.yg-input { appearance: auto; }
 .yg-grid.live > .yg-card.grow > .yg-list { flex: 1 1 auto; }
 .yg-grid.live > .yg-card.grow .yg-dim:only-child { margin: auto; }
 
-/* Masked secret + hold-to-show eye: one fixed-height monospace strip, no layout shift. */
+/* Masked secret + hold-to-show eye (Fixed 28px height, zero layout shift) */
 .yg-reveal {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  min-height: 34px;
-  padding: 0 4px 0 0;
+  min-height: 28px;
+  height: 28px;
   box-sizing: border-box;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: border-color 0.15s ease, background 0.15s ease;
-  overflow: hidden;
-}
-.yg-reveal.yg-reveal-on {
-  align-items: flex-start;
-  background: rgba(56, 189, 248, 0.10);
-  border-color: rgba(56, 189, 248, 0.4);
+  vertical-align: middle;
 }
 .yg-reveal-val {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0 4px 0 10px;
-  line-height: 32px;
-  color: #f1f5f9;
-  font-size: 12px;
+  padding: 0 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--yg-accent) 8%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11.5px;
   white-space: nowrap;
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 220px;
+  min-height: 28px;
+  line-height: 28px;
+  box-sizing: border-box;
+  display: inline-block;
   user-select: none;
 }
 .yg-reveal.yg-reveal-on .yg-reveal-val {
-  padding: 7px 6px 7px 10px;
-  line-height: 16px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-all;
-  text-overflow: clip;
-  max-height: 170px;
-  overflow-y: auto;
-  color: #38bdf8;
+  background: color-mix(in srgb, var(--yg-bad) 14%, transparent);
+  color: var(--color-foreground, #e8ebf2);
   user-select: all;
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 .yg-reveal-btn {
-  flex: 0 0 26px;
-  width: 26px;
-  height: 26px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 5px;
-  color: #e2e8f0;
-  font-size: 13px;
+  background: transparent;
+  border: 1px solid var(--yg-border);
+  border-radius: 4px;
+  color: var(--yg-accent);
+  font-size: 11px;
   line-height: 1;
-  padding: 0;
+  padding: 4px 8px;
+  min-height: 26px;
   cursor: pointer;
   user-select: none;
   touch-action: none;
   box-sizing: border-box;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: all 0.15s ease;
 }
 .yg-reveal-btn:hover, .yg-reveal-btn:focus-visible {
   border-color: var(--yg-accent);
   outline: none;
-  background: rgba(56, 189, 248, 0.16);
+  background: rgba(56, 189, 248, 0.12);
 }
 .yg-reveal.yg-reveal-on .yg-reveal-btn {
   background: var(--yg-accent);
-  border-color: var(--yg-accent);
   color: #000;
 }
-/* Copy slot is always reserved, so revealing never shifts the neighbouring columns. */
-.yg-reveal-copy {
-  flex: 0 0 28px;
-  width: 28px;
-  height: 26px;
-  padding: 0 !important;
-  font-size: 11px !important;
-  font-weight: 700;
-  line-height: 1;
-  box-sizing: border-box;
-}
-.yg-reveal-copy.copied { color: #4ade80; border-color: rgba(74, 222, 128, 0.45); }
-
-/* Local file path: shown in full, it is not a secret and has no eye button. */
-.yg-pathbox {
-  display: block;
-  width: 100%;
-  height: 34px;
-  line-height: 16px;
-  padding: 2px 10px;
-  box-sizing: border-box;
-  border-radius: 6px;
-  border: 1px solid rgba(251, 191, 36, 0.35);
-  background: rgba(251, 191, 36, 0.08);
-  color: #fbbf24;
-  font-size: 11.5px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-all;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-}
-
-/* The single destructive-action style used by every delete/clear/stop button.
-   Outline by default, solid red only while the second click is armed. */
-.yg-btn.danger {
-  background: transparent;
-  background-image: none;
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.45);
-  box-shadow: none;
-  text-shadow: none;
-  min-width: 150px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.yg-btn.danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.14);
-  border-color: #ef4444;
-  color: #fecaca;
-}
-.yg-btn.danger.armed {
-  background: #dc2626;
-  border-color: #ef4444;
-  color: #fff;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
-}
-.yg-row-btn {
-  min-width: 150px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.yg-btn.danger.icon {
-  min-width: 0;
-  width: 28px;
-  height: 26px;
-  padding: 0;
-  font-size: 12px;
-  letter-spacing: 0;
-}
-.yg-btn.danger.armed.icon { color: #fff; }
 
 /* Zero-layout-shift secret and signature container */
 .yg-secret-value-row {
@@ -338,17 +243,8 @@ select.yg-input { appearance: auto; }
   transform: translateY(-1.5px);
 }
 .yg-inc-queue.active-stage {
-  border: 2px solid #38bdf8 !important;
+  border-color: #38bdf8 !important;
   box-shadow: 0 0 24px rgba(56, 189, 248, 0.35) !important;
-  background: color-mix(in srgb, #38bdf8 7%, transparent) !important;
-}
-.yg-inc-queue.active-stage::before {
-  content: "";
-  position: absolute;
-  left: -2px; top: 10px; bottom: 10px;
-  width: 3px;
-  border-radius: 3px;
-  background: #38bdf8;
 }
 
 
@@ -980,35 +876,4 @@ select.yg-input { appearance: auto; }
   color: #fff;
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
 }
-
-/* ===== AgentOrb — процедурный SVG-индикатор вместо 596 КБ Lottie ===== */
-.yg-agent-orb{width:125px;height:125px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 16px rgba(56,189,248,0.4))}
-.yg-agent-orb .orb-ring{position:absolute;border-radius:50%;border:2.5px solid #4ade80;animation:orbBreathe 3s ease-in-out infinite}
-.yg-agent-orb .orb-ring.outer{width:110px;height:110px;animation-delay:0s}
-.yg-agent-orb .orb-ring.inner{width:74px;height:74px;animation-delay:0.35s}
-.yg-agent-orb .orb-core{position:absolute;width:48px;height:48px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.9) 0%,rgba(74,222,128,0.3) 70%,transparent 100%);animation:orbBreathe 3s ease-in-out infinite;animation-delay:0.2s}
-@keyframes orbBreathe{0%,100%{transform:scale(0.94);opacity:0.6}50%{transform:scale(1.06);opacity:1}}
-.yg-agent-orb.orb-scan .orb-ring.outer{border-color:#38bdf8;animation:none;box-shadow:0 0 14px rgba(56,189,248,0.4)}
-.yg-agent-orb.orb-scan .orb-ring.inner{border-color:rgba(56,189,248,0.3);animation:none}
-.yg-agent-orb.orb-scan .orb-core{width:16px;height:16px;border-radius:50%;background:#38bdf8;box-shadow:0 0 18px rgba(56,189,248,1);animation:none}
-.yg-agent-orb.orb-scan .orb-sweep{position:absolute;width:108px;height:108px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(56,189,248,0.45) 30deg,transparent 65deg);animation:orbSweep 2.4s linear infinite}
-@keyframes orbSweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.yg-agent-orb.orb-alert .orb-ring.outer{border-color:#ef4444;animation:orbAlertPulse 1.05s ease-in-out infinite}
-.yg-agent-orb.orb-alert .orb-ring.inner{border-color:rgba(239,68,68,0.35);animation:none}
-.yg-agent-orb.orb-alert .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
-.yg-agent-orb.orb-alert .orb-ex{font-size:36px;font-weight:900;color:#fff;animation:orbAlertPulse 1.05s ease-in-out infinite;text-shadow:0 0 14px rgba(248,113,113,1)}
-@keyframes orbAlertPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 6px rgba(248,113,113,0.6))}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(248,113,113,1))}}
-.yg-agent-orb.orb-vault .orb-ring.outer{border-color:#fbbf24;animation:orbBreathe 2.2s ease-in-out infinite;box-shadow:0 0 16px rgba(251,191,36,0.5)}
-.yg-agent-orb.orb-vault .orb-ring.inner{border-color:rgba(251,191,36,0.3);animation:none}
-.yg-agent-orb.orb-vault .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
-.yg-agent-orb.orb-offline .orb-ring.outer,.yg-agent-orb.orb-offline .orb-ring.inner{border-color:#475569;animation:none;opacity:0.4}
-.yg-agent-orb.orb-offline .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
-.yg-agent-orb.orb-offline .orb-x{font-size:34px;color:#475569;opacity:0.5}
-.yg-agent-orb.orb-thinking .orb-ring.outer{border-color:#818cf8;animation:orbBreathe 1.8s ease-in-out infinite;box-shadow:0 0 14px rgba(129,140,248,0.5)}
-.yg-agent-orb.orb-thinking .orb-ring.inner{border-color:rgba(129,140,248,0.3);animation:none}
-.yg-agent-orb.orb-thinking .orb-core{background:radial-gradient(circle,rgba(129,140,248,0.9) 0%,rgba(129,140,248,0.3) 70%,transparent 100%);animation:orbBreathe 1.8s ease-in-out infinite;animation-delay:0.2s}
-.yg-agent-orb.orb-success .orb-ring.outer{border-color:#4ade80;animation:orbBreathe 2.5s ease-in-out infinite;box-shadow:0 0 16px rgba(74,222,128,0.5)}
-.yg-agent-orb.orb-success .orb-ring.inner{border-color:rgba(74,222,128,0.3);animation:none}
-.yg-agent-orb.orb-success .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
-.yg-agent-orb.orb-success .orb-check{font-size:34px;color:#4ade80;animation:orbBreathe 2.5s ease-in-out infinite}
 

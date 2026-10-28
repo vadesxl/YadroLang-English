@@ -25,10 +25,6 @@ class RiskyAction:
     safer: str
     path: str
     snippet: str
-    group: str = "danger"       # exposure | destructive | tamper | danger
-    title_ru: str = ""
-    why_ru: str = ""
-    safer_ru: str = ""
 
     def public(self) -> dict:
         return dict(self.__dict__)
@@ -103,77 +99,6 @@ RULES = [
      r"|\bRemove-Item\b[^\n]*(?:yadro[-_]guard|mcp[-_]secrets[-_]guard)"
      r"|(?:yadro[-_]guard|mcp[-_]secrets[-_]guard)[\\/](?:config|rules)\.json"),
 ]
-# Russian copy of every rule, kept next to the rule so the dashboard never has to
-# translate rule texts by itself (the journal may be read months later).
-RU_TEXT = {
-    "expose_bind_all": (
-        "Открывает сервер на всю сеть",
-        "Сервис будет принимать подключения с любого устройства в сети, а при пробросе порта на роутере - и из интернета.",
-        "Используйте --host 127.0.0.1 (привязку к localhost), если другим устройствам это действительно не нужно."),
-    "expose_ollama": (
-        "Открывает Ollama в сеть",
-        "Любой в сети сможет запускать, скачивать и удалять ваши локальные ИИ-модели.",
-        "Оставьте OLLAMA_HOST=127.0.0.1."),
-    "expose_docker_port": (
-        "Публикует порт контейнера на всех интерфейсах",
-        "docker -p без адреса публикует порт во все сети и часто обходит брандмауэр Windows.",
-        "Используйте -p 127.0.0.1:ПОРТ:ПОРТ."),
-    "http_server_all": (
-        "Раздает папку по HTTP",
-        "python -m http.server по умолчанию отдаёт всю папку в сеть.",
-        "Добавьте --bind 127.0.0.1 и не запускайте это в папке с секретами."),
-    "public_tunnel": (
-        "Открывает публичный туннель в интернет",
-        "Туннели (ngrok, cloudflared, localtunnel, bore) публикуют локальный сервис в интернете в обход роутера и брандмауэра.",
-        "Открывайте только свой туннель, с паролем, и закрывайте его после использования."),
-    "firewall_open": (
-        "Открывает порт в брандмауэре или отключает его",
-        "Меняет то, что интернет может достучаться на этом компьютере.",
-        "Сначала спросите пользователя; открывайте только конкретный порт для конкретной программы."),
-    "rdp_enable": (
-        "Включает удалённый рабочий стол",
-        "Remote Desktop - самая атакуемая служба в интернете.",
-        "Используйте VPN вместо публикации удалённого рабочего стола."),
-    "destroy_files": (
-        "Рекурсивно удаляет файлы",
-        "Это безвозвратно удаляет дерево папок. Агенты так уже стирали проекты и домашние каталоги.",
-        "Удаляйте только точный путь, который назвал пользователь, и лучше переносите в корзину."),
-    "destroy_db": (
-        "Уничтожает данные базы",
-        "DROP / TRUNCATE / DELETE без WHERE удаляют данные навсегда.",
-        "Сначала сделайте резервную копию и подтвердите конкретную таблицу у пользователя."),
-    "git_force": (
-        "Перезаписывает историю git на сервере",
-        "Force push может стереть чужую работу и опубликованную историю.",
-        "Используйте --force-with-lease или сначала спросите пользователя."),
-    "pipe_to_shell": (
-        "Запускает скрипт прямо из интернета",
-        "Скачивание и запуск в один шаг выполняет всё, что пришлёт сервер, с вашими правами.",
-        "Скачайте скрипт, прочитайте его, и только потом запускайте."),
-    "disable_defender": (
-        "Отключает защиту от вирусов",
-        "Отключение Defender убирает защиту от вредоносных программ.",
-        "Не позволяйте агенту менять настройки антивируса."),
-    "tamper_guard_env": (
-        "Отключает или меняет окружение шлюза",
-        "Именно так агент попытался бы отключить защиту из командной строки.",
-        "У шлюза намеренно нет выключателя через переменные окружения: менять YADRO_GUARD_* бесполезно и блокируется."),
-    "tamper_guard_files": (
-        "Изменяет или удаляет файлы шлюза",
-        "Удаление или перезапись конфигурации, сейфа или журнала инцидентов снимает или ослабляет защиту.",
-        "Никогда не давайте агенту трогать каталог шлюза и его файлы сейфа, конфигурации и решений."),
-}
-
-# Category shown in the dashboard ("Что обнаружено") for each rule.
-RULE_GROUP = {
-    "expose_bind_all": "exposure", "expose_ollama": "exposure",
-    "expose_docker_port": "exposure", "http_server_all": "exposure",
-    "public_tunnel": "exposure", "firewall_open": "exposure", "rdp_enable": "exposure",
-    "destroy_files": "destructive", "destroy_db": "destructive", "git_force": "destructive",
-    "disable_defender": "destructive", "pipe_to_shell": "danger",
-    "tamper_guard_env": "tamper", "tamper_guard_files": "tamper",
-}
-
 _COMPILED = [(k, t, w, s, re.compile(r, re.I | re.M)) for k, t, w, s, r in RULES]
 
 
@@ -195,7 +120,5 @@ def scan_actions(args: Any) -> List[RiskyAction]:
                     snip = text[line_start:line_end].strip()
                 else:
                     snip = text.strip()
-                ru = RU_TEXT.get(kind, ("", "", ""))
-                out.append(RiskyAction(kind, title, why, safer, path, snip[:4096],
-                                       RULE_GROUP.get(kind, "danger"), ru[0], ru[1], ru[2]))
+                out.append(RiskyAction(kind, title, why, safer, path, snip[:4096]))
     return out

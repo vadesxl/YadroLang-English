@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 
 # SHA-256 of core runtime modules — tampered files trigger fail-closed block.
 _EXPECTED_HASHES = {
-    "src/runtime/policy.py":      "1ac32e3ea640d962ee08af4992d1fdc292f015f58d6d28baedddc30a8f6e7b31",
-    "src/runtime/detectors.py":   "292df366f10f49fcc061b088e933c3df3fc066f78b3fb3acb6a1ad6523bf2999",
-    "src/runtime/actions.py":    "d6b95d5344c49b3e1beae0e094a1892b993c85f1fe11cc0f54490368bb483bc7",
-    "src/runtime/aim_detect.py": "4a15e4a6ee460649934bb460f4aa0b61ae293f6af5ecf629b99bef2a51be10a0",
+    "src/runtime/policy.py":      "e622af7cfe095ad8c69f624da215d2bd884e5f522572003e0ba31b05e1bd2527",
+    "src/runtime/detectors.py":   "487c974c016352ac2c0e4b72079584b990caf202f2b8d70aa8b18dac2e11e0bf",
+    "src/runtime/actions.py":    "bd82b5a6942f7b4d1072117e2c121cf504422d5749989f1515d859db834b1c54",
+    "src/runtime/aim_detect.py": "6782fd03b83c69769ac83305b0682b09ef95cf10cc65b37563b867a36bd02afd",
 }
 
 def _check_integrity() -> str | None:
@@ -90,6 +90,19 @@ _load_error = ""
 # references to sensitive local files (see runtime.detectors.scan_sensitive_paths).
 # Everything NOT listed here is scanned (unknown tools are guarded by default).
 _SKIP_TOOLS = frozenset({"list_dir", "todo_write", "clarify"})
+
+
+def _load_policy():
+    global _policy, _load_error
+    if _policy is not None:
+        return _policy
+    try:
+        from .engine_loader import load_policy
+        _policy = load_policy()
+    except Exception as exc:  # pragma: no cover - reported via fail-closed message
+        _load_error = f"{type(exc).__name__}: {exc}"[:200]
+        logger.error("yadro-guard: cannot load runtime policy: %s", _load_error)
+    return _policy
 
 
 def _on_pre_tool_call(tool_name: str = "", args: Any = None, **ctx: Any) -> Optional[dict]:
