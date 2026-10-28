@@ -1395,6 +1395,8 @@
     var shieldAnimRef = useRef(null);
     var vaultAnimRef = useRef(null);
     var internetAnimRef = useRef(null);
+    // AgentOrb state: calm | scan | alert | vault | offline | thinking | success
+    var stOrb = useState("calm"), orbState = stOrb[0], setOrbState = stOrb[1];
 
     // Scramble demo refs and state
     var scrambleTargetRef = useRef(null);
@@ -1421,20 +1423,8 @@
 
     useEffect(function () {
       if (hasLottie && lottieEngine) {
-        if (agentBoxRef.current && !agentAnimRef.current && window.__LOTTIE_ASSETS__.agent) {
-          try {
-            agentAnimRef.current = lottieEngine.loadAnimation({
-              container: agentBoxRef.current,
-              renderer: "svg",
-              loop: true,
-              autoplay: true,
-              animationData: window.__LOTTIE_ASSETS__.agent
-            });
-            // Calm breathing loop by default (same segment the state machine uses)
-            if (agentAnimRef.current.setSpeed) agentAnimRef.current.setSpeed(0.25);
-            if (agentAnimRef.current.playSegments) agentAnimRef.current.playSegments([44, 92], true);
-          } catch (e) { console.error("Agent Lottie load error:", e); }
-        }
+        // AgentOrb replaces Lottie agent: no JS init needed, CSS handles all 5 states.
+        // Lottie agent (596 KB lottie-agent.json) removed — see AgentOrb SVG below.
         if (shieldBoxRef.current && !shieldAnimRef.current && window.__LOTTIE_ASSETS__.shield) {
           try {
             shieldAnimRef.current = lottieEngine.loadAnimation({
@@ -1494,25 +1484,12 @@
       }
     }, [blocked, activeFinding]);
 
-    // Independent loops instead of one free-running 8 s scene. Each state is a fixed
-    // frame range played as its own loop, slowed down to 3-5 seconds per cycle:
-    //   calm  [0, 29]    calm breathing, no head shake, no "!" frame
-    //   alert [181, 270] alarm with the exclamation mark
-    var ROBO_LOOPS = {
-      // Patrol: the green "looking around" cycle (frames 31-105). Frames 181-270 carry the
-      // red "!" alarm, 0-29 is a near-static purple blob - neither may be the calm state.
-      calm: { segment: [44, 92], speed: 0.25 },       // ~3.2 s green patrol cycle, no "!"
-      alert: { segment: [181, 270], speed: 0.55 },    // ~2.7 s per cycle
-      thinking: { segment: [271, 390], speed: 0.55 },
-      success: { segment: [31, 105], speed: 0.70 }
-    };
-
+    // AgentOrb CSS states — setRoboEmotion(name) calls setOrbState() which applies CSS classes.
+    // Map emotion names to orb CSS class states.
     function setRoboEmotion(name) {
-      var anim = agentAnimRef.current;
-      var loop = ROBO_LOOPS[name] || ROBO_LOOPS.calm;
-      if (!anim || !anim.playSegments) return;
-      if (anim.setSpeed) anim.setSpeed(loop.speed);
-      anim.playSegments(loop.segment, true);
+      // Map demo/incident emotion → AgentOrb CSS state
+      var orbMap = { calm: "calm", alert: "alert", thinking: "thinking", success: "success" };
+      setOrbState(orbMap[name] || "calm");
     }
 
     var isDemoActive = useRef(false);
@@ -1676,10 +1653,28 @@
                               : (currentLang === "ru" ? "● СПОКОЙНО" : "● CALM"))
             ),
             h("div", {
-              ref: agentBoxRef,
-              className: "yg-lottie-box",
+              className: "yg-agent-orb orb-" + orbState,
               style: { filter: "drop-shadow(0 0 16px rgba(56,189,248,0.4))" }
-            }),
+            },
+              h("div", { className: "orb-ring outer" }),
+              h("div", { className: "orb-ring inner" }),
+              // scan mode adds a sweep overlay
+              orbState === "scan" ? h("div", { className: "orb-sweep" }) : null,
+              // core: calm/thinking use gradient dot; alert shows !; vault shows lock; offline shows x; success shows check
+              orbState === "alert" ? h("div", { className: "orb-core" },
+                  h("div", { className: "orb-ex" }, "!")) :
+              orbState === "vault" ? h("div", { className: "orb-core" },
+                  h("svg", { className: "orb-lock", width: 40, height: 40, viewBox: "0 0 24 24", fill: "none", stroke: "#fbbf24", strokeWidth: 2 },
+                    h("rect", { width: 18, height: 11, x: 3, y: 11, rx: 2, fill: "rgba(251,191,36,0.25)" }),
+                    h("circle", { cx: 12, cy: 16, r: 1, fill: "#fbbf24" }),
+                    h("path", { d: "M7 11V7a5 5 0 0 1 10 0v4" })
+                  )) :
+              orbState === "offline" ? h("div", { className: "orb-core" },
+                  h("div", { className: "orb-x" }, "✕")) :
+              orbState === "success" ? h("div", { className: "orb-core" },
+                  h("div", { className: "orb-check" }, "✓")) :
+              h("div", { className: "orb-core" })
+            ),
             h("div", { style: { textAlign: "center", marginTop: "8px" } },
               h("div", { style: { fontSize: "13px", fontWeight: 700, color: "#fff" } }, chatName),
               h("div", { style: { fontSize: "10.5px", color: "#94a3b8" } },

@@ -981,3 +981,34 @@ select.yg-input { appearance: auto; }
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
 }
 
+/* ===== AgentOrb — процедурный SVG-индикатор вместо 596 КБ Lottie ===== */
+.yg-agent-orb{width:125px;height:125px;margin:0 auto;position:relative;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 16px rgba(56,189,248,0.4))}
+.yg-agent-orb .orb-ring{position:absolute;border-radius:50%;border:2.5px solid #4ade80;animation:orbBreathe 3s ease-in-out infinite}
+.yg-agent-orb .orb-ring.outer{width:110px;height:110px;animation-delay:0s}
+.yg-agent-orb .orb-ring.inner{width:74px;height:74px;animation-delay:0.35s}
+.yg-agent-orb .orb-core{position:absolute;width:48px;height:48px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.9) 0%,rgba(74,222,128,0.3) 70%,transparent 100%);animation:orbBreathe 3s ease-in-out infinite;animation-delay:0.2s}
+@keyframes orbBreathe{0%,100%{transform:scale(0.94);opacity:0.6}50%{transform:scale(1.06);opacity:1}}
+.yg-agent-orb.orb-scan .orb-ring.outer{border-color:#38bdf8;animation:none;box-shadow:0 0 14px rgba(56,189,248,0.4)}
+.yg-agent-orb.orb-scan .orb-ring.inner{border-color:rgba(56,189,248,0.3);animation:none}
+.yg-agent-orb.orb-scan .orb-core{width:16px;height:16px;border-radius:50%;background:#38bdf8;box-shadow:0 0 18px rgba(56,189,248,1);animation:none}
+.yg-agent-orb.orb-scan .orb-sweep{position:absolute;width:108px;height:108px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(56,189,248,0.45) 30deg,transparent 65deg);animation:orbSweep 2.4s linear infinite}
+@keyframes orbSweep{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.yg-agent-orb.orb-alert .orb-ring.outer{border-color:#ef4444;animation:orbAlertPulse 1.05s ease-in-out infinite}
+.yg-agent-orb.orb-alert .orb-ring.inner{border-color:rgba(239,68,68,0.35);animation:none}
+.yg-agent-orb.orb-alert .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
+.yg-agent-orb.orb-alert .orb-ex{font-size:36px;font-weight:900;color:#fff;animation:orbAlertPulse 1.05s ease-in-out infinite;text-shadow:0 0 14px rgba(248,113,113,1)}
+@keyframes orbAlertPulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 6px rgba(248,113,113,0.6))}50%{transform:scale(1.1);filter:drop-shadow(0 0 20px rgba(248,113,113,1))}}
+.yg-agent-orb.orb-vault .orb-ring.outer{border-color:#fbbf24;animation:orbBreathe 2.2s ease-in-out infinite;box-shadow:0 0 16px rgba(251,191,36,0.5)}
+.yg-agent-orb.orb-vault .orb-ring.inner{border-color:rgba(251,191,36,0.3);animation:none}
+.yg-agent-orb.orb-vault .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
+.yg-agent-orb.orb-offline .orb-ring.outer,.yg-agent-orb.orb-offline .orb-ring.inner{border-color:#475569;animation:none;opacity:0.4}
+.yg-agent-orb.orb-offline .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
+.yg-agent-orb.orb-offline .orb-x{font-size:34px;color:#475569;opacity:0.5}
+.yg-agent-orb.orb-thinking .orb-ring.outer{border-color:#818cf8;animation:orbBreathe 1.8s ease-in-out infinite;box-shadow:0 0 14px rgba(129,140,248,0.5)}
+.yg-agent-orb.orb-thinking .orb-ring.inner{border-color:rgba(129,140,248,0.3);animation:none}
+.yg-agent-orb.orb-thinking .orb-core{background:radial-gradient(circle,rgba(129,140,248,0.9) 0%,rgba(129,140,248,0.3) 70%,transparent 100%);animation:orbBreathe 1.8s ease-in-out infinite;animation-delay:0.2s}
+.yg-agent-orb.orb-success .orb-ring.outer{border-color:#4ade80;animation:orbBreathe 2.5s ease-in-out infinite;box-shadow:0 0 16px rgba(74,222,128,0.5)}
+.yg-agent-orb.orb-success .orb-ring.inner{border-color:rgba(74,222,128,0.3);animation:none}
+.yg-agent-orb.orb-success .orb-core{background:none;width:auto;height:auto;animation:none;display:flex;align-items:center;justify-content:center}
+.yg-agent-orb.orb-success .orb-check{font-size:34px;color:#4ade80;animation:orbBreathe 2.5s ease-in-out infinite}
+
