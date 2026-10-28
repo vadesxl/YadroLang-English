@@ -119,7 +119,10 @@ _RULES = [
 ]
 _COMPILED = [(k, l, t, re.compile(r), c) for k, l, t, r, c in _RULES]
 
-_CARD = re.compile(r"(?<![\d-])\d(?:[ -]?\d){12,18}(?![\d-])")
+# Card numbers need card context or grouping: a bare digit run in a filename or a
+# timestamp ("2026102618464896") passes Luhn often enough to produce false blocks.
+_CARD = re.compile(r"(?<![\w/\\#.\-])\d(?:[ -]?\d){12,18}(?![\w/\\#.\-])")
+_CARD_WORDS = re.compile(r"(?i)(?:card|visa|mastercard|maestro|amex|american express|\bmir\b|\bpan\b|cvv|cvc|плат[её]ж|карт[аыуе]?)")
 _IBAN = re.compile(r"\b[A-Z]{2}\d{2}(?: ?[A-Z0-9]{4}){2,7}(?: ?[A-Z0-9]{1,4})?\b")
 _ASSIGN = re.compile(
     r"(?i)(?:password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|auth|bearer|private[_-]?key|client[_-]?secret)"
@@ -224,7 +227,11 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
             add(Finding(kind, label, title, m.start(g), m.end(g), m.group(g), conf, path))
     for m in _CARD.finditer(text):
         digits = re.sub(r"\D", "", m.group(0))
-        if 13 <= len(digits) <= 19 and luhn_ok(digits) and len(set(digits)) > 1:
+        if not (13 <= len(digits) <= 19 and luhn_ok(digits) and len(set(digits)) > 1):
+            continue
+        grouped = (" " in m.group(0) or "-" in m.group(0))
+        near = text[max(0, m.start() - 32):m.end() + 32]
+        if grouped or _CARD_WORDS.search(near):
             add(Finding("card_number", "Financial", "Payment card number", m.start(), m.end(), m.group(0), "high", path))
     for m in _IBAN.finditer(text):
         if iban_ok(m.group(0)):

@@ -63,6 +63,31 @@ def _write(name: str, data) -> None:
     os.replace(tmp, p)
 
 
+def set_mode(mode: str, paused_until: int = 0) -> Dict[str, Any]:
+    """Persist the guard mode where check() reads it.
+
+    The dashboard used to write its own config.json in the plugin folder, while the hook
+    read this one - so "audit/monitor" never reached the runtime and leaks kept blocking.
+    """
+    if mode not in ("active", "paused", "monitor", "disabled"):
+        return {"status": "error", "message": "Unknown mode."}
+    cfg = _read("config.json", {})
+    cfg["guard_mode"] = mode
+    cfg["paused_until"] = int(paused_until or 0)
+    _write("config.json", cfg)
+    return {"status": "ok", "mode": mode, "paused_until": cfg["paused_until"]}
+
+
+def current_mode() -> Dict[str, Any]:
+    """The runtime's real mode: what the hook will use for the next tool call."""
+    cfg = _read("config.json", {})
+    mode = cfg.get("guard_mode", "active")
+    paused_until = int(cfg.get("paused_until", 0) or 0)
+    if mode == "paused" and paused_until and int(time.time()) >= paused_until:
+        mode = "active"
+    return {"mode": mode, "paused_until": paused_until if mode == "paused" else 0}
+
+
 def fingerprint(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 

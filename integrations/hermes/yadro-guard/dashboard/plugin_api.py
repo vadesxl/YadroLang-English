@@ -566,6 +566,17 @@ async def clear_incidents(body: "IncidentOpBody") -> Dict[str, Any]:
         return _error(f"Could not clear incidents: {e}")
 
 
+def _sync_engine(mode: str, paused_until: int = 0) -> None:
+    """Mirror the UI mode into the runtime config the hook actually reads."""
+    pol = _policy()
+    if pol is None:
+        return
+    try:
+        pol.set_mode(mode, paused_until)
+    except Exception:
+        pass
+
+
 class ConfigUpdateBody(BaseModel):
     lang: str = ""
     arena_mode: str = ""
@@ -599,6 +610,7 @@ async def update_config(body: "ConfigUpdateBody") -> Dict[str, Any]:
         CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         return _error(f"Could not save config: {e}")
+    _sync_engine(cfg.get("guard_mode", "active"), cfg.get("paused_until", 0))
     return {"status": "ok", "config": cfg}
 
 
@@ -610,8 +622,17 @@ class GuardModeBody(BaseModel):
 @router.get("/guard/status")
 async def guard_status() -> Dict[str, Any]:
     cfg = _config()
-    mode = cfg.get("guard_mode", "active")
-    paused_until = cfg.get("paused_until", 0)
+    # The runtime is the source of truth: the UI used to show "audit" while the hook
+    # still blocked, because the two read different config.json files.
+    state = None
+    pol = _policy()
+    if pol is not None:
+        try:
+            state = pol.current_mode()
+        except Exception:
+            state = None
+    mode = state["mode"] if state else cfg.get("guard_mode", "active")
+    paused_until = state["paused_until"] if state else cfg.get("paused_until", 0)
     now = int(time.time())
     rem = max(0, paused_until - now) if paused_until else 0
     if mode == "paused" and rem <= 0:
@@ -642,6 +663,7 @@ async def guard_mode(body: "GuardModeBody") -> Dict[str, Any]:
         CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         return _error(f"Could not save config: {e}")
+    _sync_engine(mode, cfg.get("paused_until", 0))
     rem = max(0, cfg["paused_until"] - now) if cfg["paused_until"] else 0
     return {
         "status": "ok",
