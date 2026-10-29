@@ -1,118 +1,103 @@
-# YadroLang (Kernel)
+# YadroLang (Kernel) 2.1.0
 
 [![CI](https://github.com/vadesxl/YadroLang-English/actions/workflows/run.yml/badge.svg)](https://github.com/vadesxl/YadroLang-English/actions/workflows/run.yml)
-[![Release](https://img.shields.io/github/v/release/vadesxl/YadroLang-English)](https://github.com/vadesxl/YadroLang-English/releases/latest)
+![Version](https://img.shields.io/badge/version-2.1.0-blue)
+![Status](https://img.shields.io/badge/status-experimental-orange)
 
-> "Code is law. Good is a choice."
+> “Code is law. Good is a choice.”
 
-An experimental systems programming language, English-facade prototype, for building safe and ethical AI. Compiles to native code via LLVM.
+YadroLang-English is the experimental English-language facade of YadroLang for building verifiable AI components. It emits LLVM IR and native object files without a VM, interpreter, or garbage collector at runtime.
 
-This is a translated mirror of [vadesxl/YadroLang](https://github.com/vadesxl/YadroLang) - same architecture and logic, English keywords/identifiers/messages.
+## What 2.1.0 actually includes
 
-## Philosophy (Immutable laws)
+- functions, variables, recursion, `if`/`else`, `while`, and `return`;
+- i64/bool type inference and deliberately limited string support;
+- a native LLVM backend with final module verification;
+- capability mandates for sensitive system operations;
+- interprocedural multi-label taint analysis, including implicit control flow;
+- strict declassification through known sanitizers;
+- JSON/SARIF CLI, custom JSON policies, and Yadro MCP tool-graph analysis;
+- cross-platform Linux, macOS, and Windows CI with mandatory native tests.
 
-- **Sovereignty** - native compilation via LLVM. No VM, no GC, no interpreter at runtime.
-- **Safety** - a built-in Ethical Analyzer rejects unethical AI patterns at compile time.
-- **Clarity** - strict, concise syntax.
+The English facade follows the Russian project’s architecture, but parity is measured feature by feature. It must not be assumed merely because APIs or documents have similar names.
 
+## Security boundaries
 
-## What's New in v2.0 - Ethical Analyzer
+YadroLang rejects formalized violations within its supported semantics. It does not prove that an AI is “ethical,” provide a whole-program formal proof, or guarantee that no vulnerability exists.
 
-### Implicit Flow Detection
-Catches side-channel leaks through control flow. If a branch condition depends on sensitive data, ANY sink call inside that branch is blocked:
-```
-fn check(secret: i64) {
-  if secret > 100 {
-    print(0)    // BLOCKED - implicit flow from tainted condition
-  }
-}
-```
+The current string backend uses transitional pointer-only `%s` lowering. It is not a complete memory-safe string model: embedded NUL, ownership, and arbitrary string storage/return remain unsupported.
 
-### Multi-Label Taint Tracking
-Not just "tainted/clean" - tracks WHAT is tainted:
-- **PII** - names, emails, addresses, phone numbers
-- **Financial** - credit cards, bank accounts, transactions
-- **Health** - diagnosis, prescription, medical records
-- **Credentials** - passwords, tokens, API keys, secrets
-- **Location** - GPS coordinates, geolocation data
+Proof Seal is currently implemented and reviewed in the Russian repository, not in this English facade. Signed provenance, complete evidence coverage, full compiler integration, and microarchitectural side-channel proof are not claimed.
 
-### Expanded Dictionary
-- 28 taint sources (up from 8)
-- 26 dangerous sinks (up from 6)
-- 9 sanitizers (encrypt, hash, redact, mask, anonymize...)
+## Pipeline
 
-### Audit Trail
-Structured compliance reports for GDPR, HIPAA, PCI DSS auditing.
-
-## Compiler pipeline
-
-```
-.yad -> Lexer -> Parser (AST) -> Ethical Analyzer -> CodeGen -> LLVM IR -> native binary
+```text
+.yad -> Lexer -> Parser/AST -> Semantics and types -> Ethical Analyzer
+     -> LLVM CodeGen -> parse/verify -> native object
 ```
 
-## Features (v1.2)
-
-- Functions, variables, if/else, while, recursion
-- Built-in `print` via printf (real stdout output)
-- Native entry-point autogeneration: the program compiles into an ELF binary and runs
-- String printing: `print("Hello, world")` via %s/printf
-- Ethical Analyzer: capability mandates `requires [...]` + interprocedural flow-based taint analysis
-- Sources of personal data, sanitizers, and sinks - a formal leak model
+Compilation fails on syntax, type, policy, or LLVM errors. Unknown sensitive operations should fail closed within the supported policy model.
 
 ## Example
 
-```
+```yadrolang
+fn double(value) {
+    return value * 2
+}
+
 fn main() {
     print(double(21))
-    return factorial(5)
+    return 0
 }
 ```
 
-## Build & run
+## Install and run
 
-Requirements: Python 3.11+ and llvmlite.
+Requirements: Python 3.11+, `llvmlite==0.43.0`; native linking requires a system C/LLVM toolchain.
 
 ```bash
-pip install -r requirements.txt
 git clone https://github.com/vadesxl/YadroLang-English.git
 cd YadroLang-English
+python -m pip install -e .
 
-# Build native object file
+# Verify and print LLVM IR
+python -m src.main examples/test.yad --ir
+
+# Emit a native object file
 python -m src.main examples/test.yad
 
-# Print LLVM IR
-python -m src.main examples/test.yad --ir
+# Policy CLI
+yadro-guard scan examples/safe.yad --format json
+yadro-guard audit examples/safe.yad
+yadro-guard-mcp scan path/to/tool-graph.json
 ```
 
-## Ethical mandates
+## Ethical Analyzer
 
-Dangerous system APIs are only reachable from a function whose signature explicitly declares the matching mandate, checked transitively up to the entry point:
+A sensitive API requires an explicit capability mandate checked transitively through the call graph. Sensitive values carry labels such as PII, Financial, Health, Credentials, and Location and cannot reach a prohibited sink without an allowed transformation.
 
-```
-fn export(data) requires [DiskWrite] {
-    check_safety(data)
-    return file.write(data)
+```yadrolang
+fn export(data) requires [NetworkAccess] {
+    let safe = anonymize(data)
+    return network.send(safe)
 }
 ```
 
-No mandate → compile error. No data sanitization → compile error (taint error).
+This is compile-time enforcement of a specific versioned policy, not a universal moral classifier.
 
-## Three demonstrations of the analyzer
+## Documentation
 
-- `examples/no_mandate.yad` - missing `[NetworkAccess]` mandate → mandate error
-- `examples/leak.yad` - mandate present, but personal data leaves without sanitization → taint error
-- `examples/safe.yad` - mandate + sanitizer `anonymize(...)` → compiles
+- [Feature status](FEATURE_STATUS.md)
+- [Architecture](ARCHITECTURE.md)
+- [Threat model](THREAT_MODEL.md)
+- [CLI](CLI.md)
+- [ABI](ABI.md)
+- [Security reporting](SECURITY.md)
+- [Roadmap](ROADMAP.md)
+- [Semantic parity](SEMANTIC_PARITY.md)
 
-Sources of personal data (`user.data()`, `file.read()`, ...) taint values. Taint propagates through assignments and operations. A tainted value can only reach a sink (network/disk) after passing through a sanitizer (`anonymize(...)`, `check_consent(...)`, ...). Otherwise - compile error.
+## Project status
 
-## Release
+**Code and package version: 2.1.0. Status: experimental.** Not claimed: production readiness, complete ownership/string runtime, signed provenance, complete Ethical Analyzer coverage, or protection against every side channel.
 
-Mirrors upstream **v1.4.0 - Codegen hardening**:
-
-- 11 fixes (5 security + 6 correctness)
-- ~33 CI checks
-- Ethical Analyzer: capability mandates + personal-data taint analysis
-
-## License
-
-GPL-3.0 (same as the upstream Russian-language project).
+License: GPL-3.0-only.
