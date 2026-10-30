@@ -620,16 +620,20 @@ class GuardModeBody(BaseModel):
 @router.get("/guard/status")
 async def guard_status() -> Dict[str, Any]:
     cfg = _config()
-    mode = cfg.get("guard_mode", "active")
-    paused_until = cfg.get("paused_until", 0)
+    pol = _policy()
+    if pol is not None and hasattr(pol, "current_mode"):
+        mode, paused_until = await asyncio.to_thread(pol.current_mode)
+    else:
+        mode = cfg.get("guard_mode", "active")
+        paused_until = cfg.get("paused_until", 0)
     now = int(time.time())
-    rem = max(0, paused_until - now) if paused_until else 0
-    if mode == "paused" and rem <= 0:
+    rem = max(0, int(paused_until) - now) if paused_until else 0
+    if mode in ("paused", "pause_5m", "pause_15m") and rem <= 0:
         mode = "active"
     return {
         "status": "ok",
         "mode": mode,
-        "paused_until": paused_until,
+        "paused_until": int(paused_until or 0),
         "remaining_seconds": rem,
         "fail_closed": cfg.get("fail_closed", True)
     }
@@ -639,25 +643,74 @@ async def guard_status() -> Dict[str, Any]:
 async def guard_mode(body: "GuardModeBody") -> Dict[str, Any]:
     cfg = _config()
     mode = getattr(body, "mode", "active")
-    if mode not in ("active", "paused", "disabled", "monitor"):
+    valid = ("active", "full_protection", "paused", "pause_5m", "pause_15m", "disabled", "monitor")
+    if mode not in valid:
         return _error("Unknown mode.")
     now = int(time.time())
-    if mode == "paused":
-        mins = getattr(body, "duration_minutes", 5) or 5
-        cfg["paused_until"] = now + (mins * 60)
-    else:
-        cfg["paused_until"] = 0
-    cfg["guard_mode"] = mode
+    mins = int(getattr(body, "duration_minutes", 0) or 0)
+    pol = _policy()
+    if pol is not None and hasattr(pol, "set_mode"):
+        try:
+            effective, paused_until = await asyncio.to_thread(pol.set_mode, mode, mins)
+        except Exception as e:
+            return _error(f"Could not set mode: {e}")
+    else:  # fallback if runtime policy not reachable: persist to plugin config
+        if mode in ("paused", "pause_5m", "pause_15m"):
+            dur = {"pause_5m": 5, "pause_15m": 15}.get(mode, 0) or mins or 5
+            cfg["paused_until"] = now + dur * 60
+            if cfg.get("guard_mode") not in ("paused", "pause_5m", "pause_15m"):
+                cfg["prev_mode"] = cfg.get("guard_mode", "active")
+        else:
+            cfg["paused_until"] = 0
+            cfg.pop("prev_mode", None)
+        cfg["guard_mode"] = mode
+        effective, paused_until = mode, cfg["paused_until"]
+        try:
+            CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception as e:
+            return _error(f"Could not save config: {e}")
+    rem = max(0, int(paused_until or 0) - now) if paused_until else 0
+    if effective in ("paused", "pause_5m", "pause_15m") and rem <= 0:
+        effective = "active"
+    return {
+        "status": "ok",
+        "mode": effective,
+        "paused_until": int(paused_until or 0),
+        "remaining_seconds": rem,
+        "fail_closed": cfg.get("fail_closed", True)
+    }
+
+
+@router.post("/incidents/bypass")
+async def bypass_incidents(body: "IncidentOpBody") -> Dict[str, Any]:
+    """Resolve every pending incident to 'bypassed' at once."""
+    pol = _policy()
+    if pol is None:
+        return _error("mcp-secrets-guard is not set up yet.")
+    n = await asyncio.to_thread(pol.bypass_pending)
+    return {"status": "ok", "bypassed": n}
+
+
+@router.post("/guard/kill")
+async def kill_switch(body: "IncidentOpBody") -> Dict[str, Any]:
+    """Emergency KILL-SWITCH: set full bypass (disabled) AND clear the pending queue."""
+    pol = _policy()
+    now = int(time.time())
+    cfg = _config()
+    cfg["guard_mode"] = "disabled"
+    cfg["paused_until"] = 0
+    cfg.pop("prev_mode", None)
     try:
         CONFIG_FILE.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception as e:
         return _error(f"Could not save config: {e}")
-    rem = max(0, cfg["paused_until"] - now) if cfg["paused_until"] else 0
-    return {
-        "status": "ok",
-        "mode": mode,
-        "paused_until": cfg["paused_until"],
-        "remaining_seconds": rem,
-        "fail_closed": cfg.get("fail_closed", True)
-    }
+    if pol is not None and hasattr(pol, "set_mode"):
+        try:
+            await asyncio.to_thread(pol.set_mode, "disabled")
+        except Exception:
+            pass
+    n = 0
+    if pol is not None and hasattr(pol, "bypass_pending"):
+        n = await asyncio.to_thread(pol.bypass_pending)
+    return {"status": "ok", "mode": "disabled", "bypassed": n, "remaining_seconds": 0}
 

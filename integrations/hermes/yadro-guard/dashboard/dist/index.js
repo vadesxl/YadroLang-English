@@ -304,6 +304,41 @@
     });
   }
 
+  function DangerButton(p) {
+    // Two-step (no window.confirm) destructive button. First click arms it,
+    // second click (within the timeout) confirms and calls p.onConfirm.
+    const st = React.useState(false), armed = st[0], setArmed = st[1];
+    const armRef = React.useRef(null);
+    function disarm() { setArmed(false); if (armRef.current) { clearTimeout(armRef.current); armRef.current = null; } }
+    function onClick() {
+      if (!armed) {
+        setArmed(true);
+        armRef.current = setTimeout(disarm, 4000);
+        return;
+      }
+      disarm();
+      if (p.onConfirm) p.onConfirm();
+    }
+    var dangerCss = "yg-kill" + (armed ? " armed" : "");
+    return h("button", {
+      type: "button",
+      className: (p.className || "yg-btn") + " " + dangerCss,
+      title: p.confirmPrompt || p.label,
+      onClick: onClick,
+      onBlur: disarm,
+      style: Object.assign({
+        background: armed ? "#dc2626" : "#7f1d1d",
+        borderColor: armed ? "#ef4444" : "#b91c1c",
+        color: "#fff",
+        fontWeight: 800,
+        padding: "4px 12px",
+        fontSize: "11px",
+        borderRadius: "6px",
+        boxShadow: armed ? "0 0 14px rgba(239,68,68,0.6)" : "0 0 8px rgba(239,68,68,0.25)"
+      }, p.style || {})
+    }, armed ? (p.confirmYes || "CONFIRM") : (p.label || "DANGER"));
+  }
+
   function ago(ts) {
     if (!ts) return "";
     const s = Math.max(0, Math.floor(Date.now() / 1000 - ts));
@@ -365,10 +400,10 @@
 
   function getStatusText(status) {
     if (currentLang === "ru") {
-      var ru = { pending: "Ожидает решения", quarantined: "Заблокировано", blocked: "Заблокировано", allowed: "Разрешено", protected: "Защищено" };
+      var ru = { pending: "Ожидает решения", quarantined: "Заблокировано", blocked: "Заблокировано", allowed: "Разрешено", protected: "Защищено", audited: "АУДИТ (ПРОПУЩЕНО)", bypassed: "ПРОПУЩЕНО (BYPASS)" };
       return ru[status] || status;
     }
-    var en = { pending: "Pending decision", quarantined: "Blocked, secret quarantined", blocked: "Blocked", allowed: "Allowed once", protected: "Protected & sent" };
+    var en = { pending: "Pending decision", quarantined: "Blocked, secret quarantined", blocked: "Blocked", allowed: "Allowed once", protected: "Protected & sent", audited: "AUDIT (PASSED)", bypassed: "SKIPPED (BYPASS)" };
     return en[status] || status;
   }
 
@@ -1753,6 +1788,25 @@
         // =========================================================================
         // DIRECT INCIDENT COMMAND & DECISION CENTER
         // =========================================================================
+        pendingCount > 0 ? h("div", { style: { marginBottom: "10px", display: "flex", justifyContent: "flex-end", gap: 8 } },
+          h(DangerButton, {
+            label: currentLang === "ru" ? "Пропустить все ожидающие" : "Skip all pending",
+            confirmYes: currentLang === "ru" ? "ПРОПУСТИТЬ ВСЕ" : "SKIP ALL",
+            confirmPrompt: currentLang === "ru" ? "Пропустить все ожидающие решения и продолжить выполнение?" : "Skip all pending decisions and continue?",
+            className: "yg-kill",
+            onConfirm: function () {
+              post("/incidents/bypass", {}).then(function (r) {
+                if (r && r.status === "ok") {
+                  setToastBusy("");
+                  setToastNote(currentLang === "ru"
+                    ? ("Пропущено ожидающих: " + (r.bypassed || 0))
+                    : ("Skipped pending: " + (r.bypassed || 0)));
+                  refresh();
+                }
+              }).catch(function () {});
+            }
+          })
+        ) : null,
         pendingCount > 0 && activeIncident ? h(IncidentCard, {
           inc: activeIncident,
           isFocal: true,
@@ -1765,7 +1819,7 @@
                 h("span", { style: { color: "#4ade80", fontSize: "18px" } }, "✓"),
                 h("div", null,
                   h("div", { style: { fontSize: "12.5px", fontWeight: 800, color: "#f8fafc" } },
-                    (p.guardMode === "paused" || p.guardMode === "disabled")
+                    (p.guardMode === "paused" || p.guardMode === "pause_5m" || p.guardMode === "pause_15m" || p.guardMode === "disabled")
                       ? (currentLang === "ru" ? "ШЛЮЗ НА ПАУЗЕ (РЕЖИМ ОБХОДА)" : "GATEWAY PAUSED (BYPASS)")
                       : (currentLang === "ru" ? "ШЛЮЗ АКТИВЕН · ВЕСЬ ИСХОДЯЩИЙ ТРАФИК ЗАЩИЩЁН" : "GATEWAY ACTIVE · ALL EGRESS PROTECTED")),
                   h("div", { style: { fontSize: "11px", color: "#94a3b8" } },
@@ -1836,8 +1890,14 @@
         h("div", { className: "yg-card", style: { flex: 1, padding: 8 } },
           h("div", { className: "yg-dim yg-small", style: { textTransform: "uppercase", letterSpacing: ".1em" } },
             currentLang === "ru" ? "Политика перехвата" : "Inspection Policy"),
-          h("div", { className: "yg-big", style: { marginTop: 4, color: "#3ec46d" } },
-            currentLang === "ru" ? "Строгий Fail-closed" : "Strict Fail-closed"),
+          h("div", { className: "yg-big", style: { marginTop: 4, color: p.guardMode === "monitor" ? "#a855f7" : p.guardMode === "disabled" || p.guardMode === "paused" || p.guardMode === "pause_5m" || p.guardMode === "pause_15m" ? "#f59e0b" : "#3ec46d" } },
+            p.guardMode === "monitor"
+              ? (currentLang === "ru" ? "Аудит (не блокирует)" : "Audit (no block)")
+              : (p.guardMode === "disabled"
+                  ? (currentLang === "ru" ? "Полный обход" : "Full bypass")
+                  : (p.guardMode === "paused" || p.guardMode === "pause_5m" || p.guardMode === "pause_15m"
+                      ? (currentLang === "ru" ? "Пауза" : "Paused")
+                      : (currentLang === "ru" ? "Строгий Fail-closed" : "Strict Fail-closed")))),
           h("div", { className: "yg-dim yg-small", style: { marginTop: 3 } },
             currentLang === "ru" ? "Сейф с DPAPI шифрованием." : "Vault secured with DPAPI.")
         )
@@ -1941,11 +2001,11 @@
     }
 
     return h(React.Fragment, null,
-      (p.guardMode === "paused" || p.guardMode === "disabled") ? h("div", { className: "yg-pause-banner" },
+      (p.guardMode === "paused" || p.guardMode === "pause_5m" || p.guardMode === "pause_15m" || p.guardMode === "disabled") ? h("div", { className: "yg-pause-banner" },
         h("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
           h("span", { style: { fontSize: "16px" } }, "⚠️"),
           h("div", null,
-            h("b", null, p.guardMode === "paused"
+            h("b", null, (p.guardMode === "paused" || p.guardMode === "pause_5m" || p.guardMode === "pause_15m")
               ? (currentLang === "ru" ? ("Защита приостановлена (осталось " + fmtPauseTime(p.pauseRemaining || 0) + ")") : ("Protection paused (" + fmtPauseTime(p.pauseRemaining || 0) + " left)"))
               : (currentLang === "ru" ? "Защита выключена (Режим полного обхода)" : "Protection disabled (Bypass mode)")),
             h("div", { style: { fontSize: "11px", color: "rgba(253, 230, 138, 0.85)" } },
@@ -2784,10 +2844,11 @@
       setGuardMode(newMode);
       try { localStorage.setItem("msg_guard_mode", newMode); } catch (e) {}
       var pu = 0;
-      if (newMode === "paused") {
-        pu = Date.now() + (durationMins || 5) * 60 * 1000;
+      if (newMode === "paused" || newMode === "pause_5m" || newMode === "pause_15m") {
+        var mins = durationMins || (newMode === "pause_5m" ? 5 : newMode === "pause_15m" ? 15 : 5);
+        pu = Date.now() + mins * 60 * 1000;
         setPausedUntil(pu);
-        setPauseRemaining((durationMins || 5) * 60);
+        setPauseRemaining(mins * 60);
         try { localStorage.setItem("msg_guard_pause_until", String(pu)); } catch (e) {}
       } else {
         setPausedUntil(0);
@@ -2985,6 +3046,29 @@
         ),
         // Master Protection Mode Switch & Quick Controls
         h("div", { style: { display: "inline-flex", alignItems: "center", gap: 8 } },
+          h(DangerButton, {
+            label: currentLang === "ru" ? "⚡ KILL-SWITCH (DEV BYPASS)" : "⚡ KILL-SWITCH (DEV BYPASS)",
+            confirmYes: currentLang === "ru" ? "ТОЧНО ОТКЛЮЧИТЬ" : "CONFIRM DISABLE",
+            confirmPrompt: currentLang === "ru" ? "Отключить защиту и пропустить все ожидающие вызовы?" : "Disable guard and skip all pending calls?",
+            className: "yg-kill",
+            onConfirm: function () {
+              post("/guard/kill", {}).then(function (r) {
+                if (r && r.status === "ok") {
+                  setGuardMode("disabled");
+                  try { localStorage.setItem("msg_guard_mode", "disabled"); } catch (e) {}
+                  setPausedUntil(0); setPauseRemaining(0);
+                  try { localStorage.removeItem("msg_guard_pause_until"); } catch (e) {}
+                  if (r.bypassed) {
+                    setToastBusy("");
+                    setToastNote(currentLang === "ru"
+                      ? ("KILL-SWITCH: пропущено ожидающих — " + r.bypassed)
+                      : ("KILL-SWITCH: skipped pending — " + r.bypassed));
+                  }
+                  refresh();
+                }
+              }).catch(function () {});
+            }
+          }),
           h("button", {
             type: "button",
             className: "yg-btn ghost yg-refresh-btn",
@@ -3039,7 +3123,7 @@
             title: currentLang === "ru" ? "Управление режимом защиты" : "Protection mode control"
           },
             h("span", { className: "yg-master-dot" }),
-            guardMode === "paused"
+            guardMode === "paused" || guardMode === "pause_5m" || guardMode === "pause_15m"
               ? (currentLang === "ru" ? ("⏸ Пауза (" + fmtRemaining(pauseRemaining) + ") ▾") : ("⏸ Paused (" + fmtRemaining(pauseRemaining) + ") ▾"))
               : guardMode === "disabled"
                 ? (currentLang === "ru" ? "○ Выключена ▾" : "○ Disabled ▾")
@@ -3062,7 +3146,7 @@
             h("button", {
               type: "button",
               className: "yg-master-item",
-              onClick: function () { changeGuardMode("paused", 5); }
+              onClick: function () { changeGuardMode("pause_5m", 5); }
             },
               h("div", { className: "yg-master-item-title", style: { color: "#f59e0b" } },
                 "⏸ " + (currentLang === "ru" ? "Приостановить на 5 минут" : "Pause for 5 minutes")),
@@ -3071,7 +3155,7 @@
             h("button", {
               type: "button",
               className: "yg-master-item",
-              onClick: function () { changeGuardMode("paused", 15); }
+              onClick: function () { changeGuardMode("pause_15m", 15); }
             },
               h("div", { className: "yg-master-item-title", style: { color: "#f59e0b" } },
                 "⏸ " + (currentLang === "ru" ? "Приостановить на 15 минут" : "Pause for 15 minutes")),

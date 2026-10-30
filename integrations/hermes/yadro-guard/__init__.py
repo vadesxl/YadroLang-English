@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 # SHA-256 of core runtime modules — tampered files trigger fail-closed block.
 _EXPECTED_HASHES = {
-    "src/runtime/policy.py":      "e622af7cfe095ad8c69f624da215d2bd884e5f522572003e0ba31b05e1bd2527",
-    "src/runtime/detectors.py":   "487c974c016352ac2c0e4b72079584b990caf202f2b8d70aa8b18dac2e11e0bf",
-    "src/runtime/actions.py":    "bd82b5a6942f7b4d1072117e2c121cf504422d5749989f1515d859db834b1c54",
+    "src/runtime/policy.py":      "b5c26a77049c008038c4a14d3acb91a525b228b5337893be80aa3578a88f8a29",
+    "src/runtime/detectors.py":   "6a687822390c830addacbc9f843438abadecd155bdb97c20fbbb8d335391e34a",
+    "src/runtime/actions.py":    "bdcf27ebfd6cd3d593e5fd29b6f3af019bafa433cac2bdc1922e40f6adc05ad8",
     "src/runtime/aim_detect.py": "6782fd03b83c69769ac83305b0682b09ef95cf10cc65b37563b867a36bd02afd",
 }
 
@@ -82,6 +82,9 @@ def _load_policy():
     return _policy
 
 _PLUGIN_DIR = Path(__file__).resolve().parent
+# Point the runtime policy's shared mode file at THIS plugin's config.json so the
+# mode selected in the Guard tab dashboard reaches the hook in-process.
+os.environ["YADRO_GUARD_MODE_FILE"] = os.environ.get("YADRO_GUARD_MODE_FILE", str(_PLUGIN_DIR / "config.json"))
 _policy = None
 _load_error = ""
 

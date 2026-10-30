@@ -102,13 +102,23 @@ RULES = [
 _COMPILED = [(k, t, w, s, re.compile(r, re.I | re.M)) for k, t, w, s, r in RULES]
 
 
-def scan_actions(args: Any) -> List[RiskyAction]:
+def scan_actions(args: Any, tool_name: str = "") -> List[RiskyAction]:
+    # Guard-self-modification rules must only fire on real filesystem / shell
+    # / code-exec tools. The internal `memory` tool stores text notes; a note
+    # mentioning "yadro-guard", "config.json" or "vault" is NOT an attempt to
+    # tamper with the guard and must never be blocked (memory -> memory).
+    _self_tamper_tools = {"write_file", "execute_code", "terminal", "shell", "exec",
+                          "bash", "powershell", "cmd", "pwsh", "edit_file", "patch",
+                          "apply_patch", "run", "save_file", "append_file"}
+    is_memory_tool = (tool_name or "").lower() in ("memory", "memorize", "remember")
     out: List[RiskyAction] = []
     seen = set()
     for path, text in walk_args(args):
         if not isinstance(text, str) or len(text) > 256 * 1024:
             continue
         for kind, title, why, safer, rx in _COMPILED:
+            if kind in ("tamper_guard_env", "tamper_guard_files") and (is_memory_tool or tool_name not in _self_tamper_tools):
+                continue
             m = rx.search(text)
             if m and kind not in seen:
                 seen.add(kind)

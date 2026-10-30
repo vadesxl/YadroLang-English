@@ -63,6 +63,100 @@ def _write(name: str, data) -> None:
     os.replace(tmp, p)
 
 
+# ---- Shared guard-mode state -------------------------------------------------
+# The dashboard persists guard_mode / paused_until into the plugin's config.json.
+# The runtime hook must read the SAME file or the mode selected in the UI never
+# reaches check(). The plugin __init__ sets YADRO_GUARD_MODE_FILE to that path.
+_MODE_FILE = os.environ.get("YADRO_GUARD_MODE_FILE") or str(home() / "config.json")
+
+# Modes that pause and must auto-return (to the previous mode) on expiry.
+_PAUSE_MODES = ("paused", "pause_5m", "pause_15m")
+_PAUSE_MINUTES = {"pause_5m": 5, "pause_15m": 15}
+# "active" and "full_protection" are synonyms for full fail-closed protection.
+_FULL_PROTECTION = ("active", "full_protection")
+
+
+def _mode_cfg() -> Dict[str, Any]:
+    try:
+        p = Path(_MODE_FILE)
+        if not p.exists():
+            return {}
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _write_mode_cfg(cfg: Dict[str, Any]) -> None:
+    try:
+        p = Path(_MODE_FILE)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        tmp = p.with_suffix(p.suffix + ".tmp")
+        tmp.write_text(json.dumps(cfg, ensure_ascii=False, indent=2), encoding="utf-8")
+        os.replace(tmp, p)
+    except OSError:
+        pass
+
+
+def current_mode():
+    """Return (effective_mode, paused_until). Resolves pause expiry: once the
+    timer runs out, mode auto-returns to the previously active mode (or
+    full_protection) and that is persisted back to the shared config."""
+    cfg = _mode_cfg()
+    mode = cfg.get("guard_mode", "active")
+    if mode not in _PAUSE_MODES:
+        return mode, int(cfg.get("paused_until", 0) or 0)
+    now = int(time.time())
+    until = int(cfg.get("paused_until", 0) or 0)
+    if until and now < until:
+        return mode, until
+    # expired: auto-return to the previous mode
+    prev = cfg.get("prev_mode", "active")
+    if prev in _PAUSE_MODES:
+        prev = "active"
+    cfg["guard_mode"] = prev
+    cfg["paused_until"] = 0
+    cfg.pop("prev_mode", None)
+    _write_mode_cfg(cfg)
+    return prev, 0
+
+
+def set_mode(mode: str, duration_minutes: int = 0):
+    """Persist a guard mode to the shared config (used by the dashboard, tests).
+    Pause modes remember the current mode so they auto-return on expiry."""
+    cfg = _mode_cfg()
+    now = int(time.time())
+    current, _ = current_mode()
+    if mode in _PAUSE_MODES:
+        mins = _PAUSE_MINUTES.get(mode, 0) or (int(duration_minutes) if duration_minutes else 5)
+        if current not in _PAUSE_MODES and current != "disabled":
+            cfg["prev_mode"] = current
+        cfg["paused_until"] = now + max(1, mins) * 60
+    else:
+        cfg.pop("prev_mode", None)
+        cfg["paused_until"] = 0
+    cfg["guard_mode"] = mode
+    _write_mode_cfg(cfg)
+    return current_mode()
+
+
+def bypass_pending():
+    """Move every pending incident to 'bypassed' (ПРОПУЩЕНО / BYPASS) so the
+    blocked queue clears at once. Used by the KILL-SWITCH and the
+    'Пропустить все ожидающие' button. Returns the number bypassed."""
+    incidents = _read("incidents.json", [])
+    n = 0
+    for inc in incidents:
+        if inc.get("status") == "pending":
+            inc["status"] = "bypassed"
+            inc["decided_at"] = int(time.time())
+            inc.setdefault("events", []).append({"at": int(time.time()),
+                                                 "what": "bypassed (skip pending)"})
+            n += 1
+    if n:
+        _write("incidents.json", incidents)
+    return n
+
+
 def fingerprint(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
@@ -144,24 +238,22 @@ def _risk_key(tool_name: str, risks) -> str:
 
 def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """The pre_tool_call decision. Returns None (allow) or a Hermes directive dict."""
-    cfg = _read("config.json", {})
-    mode = cfg.get("guard_mode", "active")
+    mode, paused_until = current_mode()
     now = int(time.time())
     if mode == "disabled":
         return None
-    if mode == "paused" and now < cfg.get("paused_until", 0):
+    if mode in _PAUSE_MODES and paused_until and now < paused_until:
         return None
     from . import actions
     findings = detectors.scan_args(args, _known_secrets())
-    risks = actions.scan_actions(args)
+    risks = actions.scan_actions(args, tool_name)
     if not findings and not risks:
         return None
     dest = _destination_key(tool_name, args)
     if mode == "monitor":
-        # Audit mode: record the event for review but do not block the agent
+        # Audit mode: record the incident (as audited / passed) but never block.
         key = action_key(tool_name, findings, dest) if findings else _risk_key(tool_name, risks)
-        inc = _new_incident(tool_name, args, findings, key, context or {}, risks)
-        inc["status"] = "audited"
+        _new_incident(tool_name, args, findings, key, context or {}, risks, status="audited")
         return None
     key = action_key(tool_name, findings, dest) if findings else _risk_key(tool_name, risks)
     if findings and risks:
@@ -219,7 +311,7 @@ def _lookup_hermes_chat_title(session_id: str) -> Optional[str]:
     return None
 
 
-def _new_incident(tool_name, args, findings, key, ctx, risks=()) -> Dict[str, Any]:
+def _new_incident(tool_name, args, findings, key, ctx, risks=(), status: str = "pending") -> Dict[str, Any]:
     incidents = _read("incidents.json", [])
     for inc in incidents:                      # same pending action: don't spam duplicates
         if inc["key"] == key and inc["status"] == "pending":
@@ -250,7 +342,7 @@ def _new_incident(tool_name, args, findings, key, ctx, risks=()) -> Dict[str, An
             scrubbed = scrubbed[:f.start] + f.preview + scrubbed[f.end:]
         command_str = scrubbed[:4096]
 
-    inc = {"id": "MSG-" + secrets.token_hex(3).upper(), "key": key, "status": "pending",
+    inc = {"id": "MSG-" + secrets.token_hex(3).upper(), "key": key, "status": status,
            "at": int(time.time()), "last_at": int(time.time()), "attempts": 1,
            "tool": tool_name, "destination": _scrub(_destination(tool_name, args)),
            "command": command_str,
@@ -259,7 +351,7 @@ def _new_incident(tool_name, args, findings, key, ctx, risks=()) -> Dict[str, An
            "findings": _quarantine(findings),
            "risks": [_risk_public(r) for r in risks],
            "kind": "secret" if findings else "action",
-           "events": [{"at": int(time.time()), "what": "blocked before execution"}]}
+           "events": [{"at": int(time.time()), "what": "blocked before execution" if status == "pending" else "audited (passed in monitor mode)"}]}
     incidents.insert(0, inc)
     _write("incidents.json", incidents[:MAX_INCIDENTS])
     return inc

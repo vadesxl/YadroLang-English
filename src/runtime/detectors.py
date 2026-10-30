@@ -132,6 +132,35 @@ _SENSITIVE_FILE = re.compile(
 )
 
 
+def _looks_like_datetime(match: str, surrounding: str = "") -> bool:
+    """Reject card-detector matches that are really dates/timestamps in filenames,
+    e.g. 'Снимок экрана 2026-02-25 133236.png', '2026-02-25 133236',
+    '20260225133236'. A payment card is 13-19 digits whose first digits form an
+    IIN (2/3/4/5/6), never a 4-digit year. So a match whose digits parse as a
+    real YYYY-MM-DD (or with time) is a false positive, regardless of Luhn.
+    """
+    digits = re.sub(r"\D", "", match or "")
+    if not (8 <= len(digits) <= 15):
+        return False
+    # YYYYMMDD prefix must be a plausible calendar date in 1900-2099.
+    try:
+        y = int(digits[0:4]); m = int(digits[4:6]); d = int(digits[6:8])
+    except ValueError:
+        return False
+    if not (1900 <= y <= 2099 and 1 <= m <= 12 and 1 <= d <= 31):
+        return False
+    candidate = digits[:14]
+    # Accept if the year/month/day is delimited (2026-02-25 ...) OR the whole
+    # digit run is a plain YYYYMMDD[HHMMSS] timestamp.
+    import calendar as _cal
+    import datetime as _dt
+    try:
+        _dt.date(y, m, d)
+    except ValueError:
+        return False
+    return True
+
+
 def _is_sensitive_path(path: str, text: str = "") -> bool:
     """True if a path/pattern resolves to a likely sensitive file (or the guard's own state)."""
     if not isinstance(path, str) or not path:
@@ -209,7 +238,7 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
             add(Finding(kind, label, title, m.start(g), m.end(g), m.group(g), conf, path))
     for m in _CARD.finditer(text):
         digits = re.sub(r"\D", "", m.group(0))
-        if 13 <= len(digits) <= 19 and luhn_ok(digits) and len(set(digits)) > 1:
+        if 13 <= len(digits) <= 19 and luhn_ok(digits) and len(set(digits)) > 1 and not _looks_like_datetime(m.group(0), text):
             add(Finding("card_number", "Financial", "Payment card number", m.start(), m.end(), m.group(0), "high", path))
     for m in _IBAN.finditer(text):
         if iban_ok(m.group(0)):

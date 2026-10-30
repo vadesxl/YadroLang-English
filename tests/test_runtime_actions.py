@@ -58,6 +58,18 @@ class DangerousActionsTests(unittest.TestCase):
         self.assertEqual(["firewall_open"], kinds("netsh advfirewall set allprofiles state off"))
         self.assertEqual(["disable_defender"], kinds("Set-MpPreference -DisableRealtimeMonitoring $true"))
 
+    def test_memory_note_about_guard_is_not_tamper(self):
+        # memory -> memory: writing a NOTE that mentions yadro-guard / config.json
+        # is not an attempt to modify the guard's files; must never be blocked.
+        note = "Настройки yadro-guard в config.json и vault.json лежат в %LOCALAPPDATA%. Запомни: не удалять."
+        self.assertEqual([], [r.kind for r in actions.scan_actions({"memory": note}, "memory")])
+        # a real write to the guard dir still trips tamper_guard_files
+        self.assertIn("tamper_guard_files",
+                      [r.kind for r in actions.scan_actions({"command": "rm -f C:\\Users\\me\\yadro-guard\\config.json"},
+                                                            "shell")])
+        # but a plain (non-fs) other tool that merely mentions the path is not tamper
+        self.assertEqual([], [r.kind for r in actions.scan_actions({"value": "yadro-guard\\config.json"}, "read_file")])
+
 
 class ActionPolicyTests(unittest.TestCase):
     def setUp(self):
