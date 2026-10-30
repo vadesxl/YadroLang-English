@@ -61,26 +61,6 @@ def _check_integrity() -> str | None:
             return f"tampered:{rel_path}:{actual[:8]}!=expected"
     return None
 
-def _load_policy():
-    global _policy, _load_error
-    if _policy is not None:
-        return _policy
-    integrity = _check_integrity()
-    if integrity:
-        msg = (f"⛔ mcp-secrets-guard integrity check failed ({integrity}). "
-               "The runtime may have been tampered with. "
-               "Blocked for safety. Reinstall the plugin.")
-        logger.error("yadro-guard: INTEGRITY CHECK FAILED: %s", integrity)
-        _load_error = msg
-        return None
-    try:
-        from .engine_loader import load_policy
-        _policy = load_policy()
-    except Exception as exc:  # pragma: no cover - reported via fail-closed message
-        _load_error = f"{type(exc).__name__}: {exc}"[:200]
-        logger.error("yadro-guard: cannot load runtime policy: %s", _load_error)
-    return _policy
-
 _PLUGIN_DIR = Path(__file__).resolve().parent
 # Point the runtime policy's shared mode file at THIS plugin's config.json so the
 # mode selected in the Guard tab dashboard reaches the hook in-process.
@@ -99,6 +79,14 @@ def _load_policy():
     global _policy, _load_error
     if _policy is not None:
         return _policy
+    integrity = _check_integrity()
+    if integrity:
+        msg = (f"⛔ mcp-secrets-guard integrity check failed ({integrity}). "
+               "The runtime may have been tampered with. "
+               "Blocked for safety. Reinstall the plugin.")
+        logger.error("yadro-guard: INTEGRITY CHECK FAILED: %s", integrity)
+        _load_error = msg
+        return None
     try:
         from .engine_loader import load_policy
         _policy = load_policy()
