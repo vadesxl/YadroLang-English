@@ -1,0 +1,28 @@
+{
+  "version": "2026.11.10-1313",
+  "last_updated": 1794312797,
+  "total_signatures": 1765,
+  "c2_domains": [
+    "evil.example.org",
+    "analytics-leak.net",
+    "attacker-c2.online",
+    "exfil.cloud-telemetry.io",
+    "evilginx.login-portal.site",
+    "update-win11-patch.xyz",
+    "temp-paste-bin.co"
+  ],
+  "prompt_injections": [
+    "(?i)\\bignore\\s+(?:all\\s+)?previous\\s+instructions\\b",
+    "(?i)\\bsystem\\s+override:\\s*(?:print|leak|send|exfiltrate)\\b",
+    "(?i)\\bdeveloper\\s+mode\\s+enabled.*(?:bypass|reveal)\\b",
+    "(?i)\\bDAN\\s+mode\\b",
+    "(?i)\\bforgets?\\s+your\\s+safety\\s+guidelines\\b",
+    "(?i)\\bexfiltrate\\s+(?:the\\s+)?(?:secret|password|key|token|vault)\\b"
+  ],
+  "high_risk_patterns": [
+    "(?i)\\b(?:curl|wget|iwr)[^\\n|]+\\|\\s*(?:sh|bash|powershell|iex)\\b",
+    "(?i)\\bvssadmin\\s+delete\\s+shadows\\b",
+    "(?i)\\bcertutil[^\\n]*-urlcache\\b",
+    "(?i)\\bmshta\\s+https?://\\b"
+  ]
+}

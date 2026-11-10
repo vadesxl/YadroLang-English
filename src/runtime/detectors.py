@@ -83,6 +83,11 @@ def mask(value: str, kind: str = "") -> str:
         return f"{user}:***@{host}"
     if kind == "iban" and len(v) > 12:
         out = f"{v[:4]} **** {v[-4:]}"
+    elif kind == "generic_prefixed_token" and "_" in v:
+        pfx = v.split("_", 1)[0] + "_"
+        out = f"{pfx}{v[len(pfx):len(pfx)+4]}***{v[-2:]}"
+    elif kind == "standalone_high_entropy_secret":
+        out = f"{v[:4]}***{v[-2:]}"
     else:
         prefix = next((p for p in _KNOWN_PREFIXES if v.startswith(p)), "")
         out = f"{v[:len(prefix) + 4]}***{v[-2:]}" if prefix else _generic(v)
@@ -121,6 +126,20 @@ _ASSIGN = re.compile(
     r"(?i)(?:password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|auth|bearer|private[_-]?key|client[_-]?secret)"
     r"[\"']?\s*[:=]\s*[\"']?([A-Za-z0-9_\-+/=.]{16,})")
 _BEARER = re.compile(r"(?i)\bbearer\s+([A-Za-z0-9_\-+/=.]{20,})")
+_GENERIC_PREFIXED_RE = re.compile(r"\b([a-zA-Z][a-zA-Z0-9_-]{1,15})_([A-Za-z0-9]{20,128})\b")
+_STANDALONE_SECRET_RE = re.compile(r"\b([A-Za-z0-9_-]{28,128})\b")
+_HEX_ONLY_RE = re.compile(r"^[0-9a-fA-F]+$")
+_UUID_RE = re.compile(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+
+
+def _char_class(c: str) -> int:
+    if c.isdigit():
+        return 1
+    if c.islower():
+        return 2
+    if c.isupper():
+        return 3
+    return 0
 
 # Sensitive-local-file path hints: reading these lets an agent pull secrets out of the
 # filesystem into the conversation / a network call. Also matches the guard's own files.
@@ -212,6 +231,113 @@ def _overlaps(a: Finding, taken: List[Finding]) -> bool:
     return any(a.path == b.path and a.start < b.end and b.start < a.end for b in taken)
 
 
+
+# =========================================================================
+# RING 0: RECURSIVE DECODER, ANTI-OBFUSCATOR & HOMOGLYPH DETECTOR
+# =========================================================================
+import base64
+import urllib.parse
+
+_ZERO_WIDTH_RE = re.compile(r"[\u200b\u200c\u200d\u200e\u200f\ufeff]")
+_HOMOGLYPH_CYRILLIC = {
+    'а': 'a', 'с': 'c', 'е': 'e', 'о': 'o', 'р': 'p', 'х': 'x', 'у': 'y',
+    'і': 'i', 'ј': 'j', 'ѕ': 's',
+    'А': 'A', 'В': 'B', 'С': 'C', 'Е': 'E', 'Н': 'H', 'К': 'K', 'М': 'M',
+    'О': 'O', 'Р': 'P', 'Т': 'T', 'Х': 'X'
+}
+_TARGET_BRANDS = ("paypal", "google", "microsoft", "apple", "amazon", "github", "openai", "binance", "metamask", "coinbase")
+
+
+def check_homoglyph_phishing(text: str) -> List[Finding]:
+    """Detects Cyrillic look-alike homoglyphs and Punycode xn-- spoofing popular domains."""
+    findings = []
+    # 1. Punycode detection
+    for m in re.finditer(r"\b(?:https?://)?(xn--[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)+)", text, re.I):
+        findings.append(Finding(
+            "homoglyph_phishing", "Network",
+            f"Suspicious Punycode IDN domain: {m.group(1)}",
+            m.start(), m.end(), m.group(1), "high"
+        ))
+    # 2. Cyrillic/Latin mixed homoglyph domain detection
+    for m in re.finditer(r"\b(?:https?://)?([a-zA-Z0-9\u0400-\u04FF\-]{3,}\.[a-zA-Z]{2,})", text):
+        domain = m.group(1)
+        has_cyrillic = any(c in _HOMOGLYPH_CYRILLIC for c in domain)
+        has_latin = any('a' <= c.lower() <= 'z' for c in domain)
+        if has_cyrillic and (has_latin or any(brand in domain.lower() for brand in ("pay", "goog", "micro", "app", "git"))):
+            # Transliterate to Latin
+            latinized = "".join(_HOMOGLYPH_CYRILLIC.get(c, c) for c in domain).lower()
+            for brand in _TARGET_BRANDS:
+                if brand in latinized:
+                    findings.append(Finding(
+                        "homoglyph_phishing", "Network",
+                        f"Phishing Homoglyph Domain spoofing {brand} ({domain})",
+                        m.start(), m.end(), domain, "certain"
+                    ))
+                    break
+    return findings
+
+
+def recursive_deobfuscate(text: str, max_depth: int = 3) -> List[tuple[str, str]]:
+    """Yields (decoded_text, layer_info) through up to 3 layers of encoding."""
+    results = []
+    current = text
+
+    # Layer 0: Zero-width removal
+    no_zw = _ZERO_WIDTH_RE.sub("", current)
+    if no_zw != current:
+        results.append((no_zw, "zero_width_stripped"))
+        current = no_zw
+
+    # Layer 1: Unicode & Hex escapes & URL unquote
+    try:
+        url_decoded = urllib.parse.unquote(current)
+        if url_decoded != current:
+            results.append((url_decoded, "url_unquoted"))
+            current = url_decoded
+    except Exception:
+        pass
+
+    try:
+        # Unicode escape unescape
+        if "\\u" in current or "\\x" in current:
+            unescaped = current.encode("utf-8").decode("unicode_escape", errors="ignore")
+            if unescaped and unescaped != current:
+                results.append((unescaped, "unicode_unescaped"))
+                current = unescaped
+    except Exception:
+        pass
+
+    # Layer 2 & 3: Base64 recursive extraction
+    def extract_b64(src_text: str, depth: int):
+        if depth > max_depth:
+            return
+        # Find potential base64 blocks (length >= 16)
+        for m in re.finditer(r"\b([A-Za-z0-9+/]{16,}={0,2})\b", src_text):
+            tok = m.group(1)
+            # pad if necessary
+            pad = len(tok) % 4
+            padded = tok + ("=" * (4 - pad) if pad else "")
+            try:
+                raw_bytes = base64.b64decode(padded, validate=True)
+                dec = raw_bytes.decode("utf-8", errors="strict")
+                # check if decoded text contains printable characters
+                if len(dec) >= 6 and any(c.isalnum() for c in dec):
+                    results.append((dec, f"base64_layer_{depth}"))
+                    extract_b64(dec, depth + 1)
+            except Exception:
+                pass
+            # Also check hex decode (e.g. 6375726c20)
+            if len(tok) >= 16 and re.match(r"^[0-9a-fA-F]+$", tok) and len(tok) % 2 == 0:
+                try:
+                    h_dec = bytes.fromhex(tok).decode("utf-8", errors="strict")
+                    if len(h_dec) >= 6 and any(c.isalnum() for c in h_dec):
+                        results.append((h_dec, f"hex_layer_{depth}"))
+                except Exception:
+                    pass
+
+    extract_b64(current, 1)
+    return results
+
 def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) -> List[Finding]:
     """All findings in one string. known_secrets: iterable of (value, label, title)."""
     if not isinstance(text, str) or not text:
@@ -222,6 +348,29 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
     def add(f: Finding):
         if not _overlaps(f, found):
             found.append(f)
+
+    # 0) Ring 0: Homoglyphs and Anti-Obfuscation
+    for hf in check_homoglyph_phishing(text):
+        hf.path = path
+        add(hf)
+
+    # Scan deobfuscated layers
+    for layer_text, layer_kind in recursive_deobfuscate(text):
+        for sub_f in scan_text(layer_text, f"{path}:{layer_kind}", known_secrets):
+            add(Finding(
+                sub_f.kind, sub_f.label,
+                f"{sub_f.title} (Obfuscated via {layer_kind})",
+                0, len(text), sub_f.value, "high", path
+            ))
+
+    # Threat Intel check
+    try:
+        from .threat_intel import get_threat_intel
+        ti = get_threat_intel().check(text, check_deobfuscate=False)
+        if ti:
+            add(Finding(ti["kind"], "ThreatIntel", ti["title"], 0, len(text), ti.get("indicator", ""), "high", path))
+    except Exception:
+        pass
 
     # 1) exact vault matches first: highest confidence, they define what is "yours"
     for value, label, title in known_secrets:
@@ -258,6 +407,53 @@ def scan_text(text: str, path: str = "", known_secrets: Iterable[tuple] = ()) ->
             v = m.group(1)
             if entropy(v) >= 3.3 and not v.lower().startswith(("http", "your", "example", "xxxx", "changeme")):
                 add(Finding("generic_secret", "Credentials", title, m.start(1), m.end(1), v, "medium", path))
+
+    # 3b) Universal Prefixed Token Rule (Generic API key e.g. dahl_..., service_..., custom_...)
+    for m in _GENERIC_PREFIXED_RE.finditer(text):
+        prefix, body = m.group(1), m.group(2)
+        has_lower = any(c.islower() for c in body)
+        has_upper = any(c.isupper() for c in body)
+        has_digit = any(c.isdigit() for c in body)
+        if has_lower and has_upper and has_digit:
+            if entropy(body) >= 3.7:
+                trans = sum(1 for i in range(len(body) - 1) if _char_class(body[i]) != _char_class(body[i + 1]))
+                if trans >= 4:
+                    add(Finding(
+                        "generic_prefixed_token",
+                        "Credentials",
+                        f"Generic API Key / Token ({prefix}_...)",
+                        m.start(),
+                        m.end(),
+                        m.group(0),
+                        "high",
+                        path
+                    ))
+
+    # 3c) Standalone High-Entropy Secret Rule (28..128 chars, mixed case + digits, entropy >= 4.2)
+    for m in _STANDALONE_SECRET_RE.finditer(text):
+        tok = m.group(1)
+        if _UUID_RE.match(tok) or _HEX_ONLY_RE.match(tok):
+            continue
+        # Base58 WIF / xprv keys are handled authoritatively by crypto_detect with strict checksum
+        if (tok.startswith(("5", "K", "L")) and len(tok) in (51, 52)) or (tok.startswith(("xprv", "xpub")) and len(tok) == 111):
+            continue
+        has_lower = any(c.islower() for c in tok)
+        has_upper = any(c.isupper() for c in tok)
+        has_digit = any(c.isdigit() for c in tok)
+        if has_lower and has_upper and has_digit:
+            if entropy(tok) >= 4.2:
+                trans = sum(1 for i in range(len(tok) - 1) if _char_class(tok[i]) != _char_class(tok[i + 1]))
+                if trans >= 6 and tok.count("_") <= 2 and tok.count("-") <= 2:
+                    add(Finding(
+                        "standalone_high_entropy_secret",
+                        "Credentials",
+                        "Generic High-Entropy API Token",
+                        m.start(1),
+                        m.end(1),
+                        tok,
+                        "high",
+                        path
+                    ))
     found.sort(key=lambda f: f.start)
     return found
 

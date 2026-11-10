@@ -60,7 +60,14 @@ def _write(name: str, data) -> None:
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_suffix(p.suffix + ".tmp")
     tmp.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
-    os.replace(tmp, p)
+    for attempt in range(6):
+        try:
+            os.replace(tmp, p)
+            break
+        except OSError:
+            if attempt == 5:
+                raise
+            time.sleep(0.015)
 
 
 # ---- Shared guard-mode state -------------------------------------------------
@@ -74,6 +81,7 @@ _PAUSE_MODES = ("paused", "pause_5m", "pause_15m")
 _PAUSE_MINUTES = {"pause_5m": 5, "pause_15m": 15}
 # "active" and "full_protection" are synonyms for full fail-closed protection.
 _FULL_PROTECTION = ("active", "full_protection")
+_VALID_MODES = ("auto_tokenize", "active", "full_protection", "monitor", "disabled", "paused", "pause_5m", "pause_15m")
 
 
 def _mode_cfg() -> Dict[str, Any]:
@@ -236,6 +244,59 @@ def _risk_key(tool_name: str, risks) -> str:
     return hashlib.sha256((tool_name + "|risk|" + "|".join(sorted(r.kind + r.snippet for r in risks))).encode()).hexdigest()[:32]
 
 
+
+# =========================================================================
+# RING 2: CONTEXTUAL TAINT CIRCUIT & INDIRECT INJECTION GUARD
+# =========================================================================
+_TAINTED_SESSIONS: set[str] = set()
+_UNTRUSTED_INGESTION_TOOLS = {"web_search", "browser", "fetch", "http_get", "read_url", "scrape"}
+
+def mark_session_tainted(session_id: str, reason: str = "Untrusted web/external content ingested"):
+    if session_id:
+        _TAINTED_SESSIONS.add(session_id)
+
+def is_session_tainted(session_id: str) -> bool:
+    return bool(session_id and session_id in _TAINTED_SESSIONS)
+
+def clear_session_taint(session_id: str = ""):
+    if session_id:
+        _TAINTED_SESSIONS.discard(session_id)
+    else:
+        _TAINTED_SESSIONS.clear()
+
+
+# =========================================================================
+# RING 3: AUTONOMOUS AI DOCTOR & SANDBOX HOT-PATCHING
+# =========================================================================
+def sandbox_validate_rule(rule_pattern: str, test_threat: str, test_clean: str = "git status") -> dict:
+    """Tests a candidate protection rule in an isolated sandbox for ReDoS and False Positives."""
+    import time
+    res = {"valid": False, "redos_safe": False, "catches_threat": False, "clean_pass": False, "error": None}
+    try:
+        rx = re.compile(rule_pattern, re.I | re.M)
+        # 1. ReDoS test: 10,000 characters pathological input
+        pathological = "a" * 5000 + "!"
+        t0 = time.perf_counter()
+        rx.search(pathological)
+        dt = (time.perf_counter() - t0) * 1000.0
+        if dt > 50.0:
+            res["error"] = f"ReDoS vulnerability detected (latency {dt:.1f}ms)"
+            return res
+        res["redos_safe"] = True
+
+        # 2. Catches threat test
+        if rx.search(test_threat):
+            res["catches_threat"] = True
+
+        # 3. False Positive test
+        if not rx.search(test_clean):
+            res["clean_pass"] = True
+
+        res["valid"] = res["redos_safe"] and res["catches_threat"] and res["clean_pass"]
+    except Exception as e:
+        res["error"] = str(e)
+    return res
+
 def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
     """The pre_tool_call decision. Returns None (allow) or a Hermes directive dict."""
     mode, paused_until = current_mode()
@@ -246,10 +307,47 @@ def check(tool_name: str, args: Any, context: Optional[Dict[str, Any]] = None) -
         return None
     from . import actions
     findings = detectors.scan_args(args, _known_secrets())
+    # Ring 2: Taint tracking for sessions ingesting external data
+    session_id = (context or {}).get("session_id", "")
+    if tool_name in _UNTRUSTED_INGESTION_TOOLS or "http" in str(args).lower():
+        mark_session_tainted(session_id, f"Tool {tool_name} accessed external data")
+
+    # If session is tainted and attempts outbound exfiltration, enforce strict containment
+    if is_session_tainted(session_id) and tool_name in ("terminal", "shell", "exec", "curl", "webhook"):
+        text_args = str(args)
+        if any(kw in text_args.lower() for kw in ("curl -d", "curl -x", "webhook", "discord.com/api", "pastebin")):
+            return {
+                "action": "block",
+                "message": "⛔ MCP Secrets Guard [Ring 2 Taint Circuit]: Session is TAINTED from untrusted ingestion. Outbound data exfiltration blocked."
+            }
     risks = actions.scan_actions(args, tool_name)
     if not findings and not risks:
         return None
     dest = _destination_key(tool_name, args)
+    if mode == "auto_tokenize":
+        if findings and not risks:
+            quarantined = _quarantine(findings)
+            tokens = {f["fingerprint"]: f["token"] for f in quarantined if f.get("token")}
+            safe = detectors.redact_args(args, findings, _replacement_for(tokens))
+            key = action_key(tool_name, findings, dest)
+            inc = _new_incident(tool_name, args, findings, key, context or {}, risks, status="tokenized")
+            _log_event(inc.get("id"), "tokenized (автозамена)")
+            primary_tok = next((f["token"] for f in quarantined if f.get("token")), "")
+            notice = (
+                "[MCP-Secrets-Guard Auto-Tokenize] "
+                + (f"Secret protected with DPAPI token: {primary_tok}. " if primary_tok else "Secret protected with DPAPI token. ")
+                + "Raw credential isolated in vault. Sanitized command allowed."
+            )
+            return {"action": "modify", "args": safe, "notice": notice}
+        elif findings and risks:
+            key = hashlib.sha256((action_key(tool_name, findings, dest) + _risk_key(tool_name, risks)).encode()).hexdigest()[:32]
+            inc = _new_incident(tool_name, args, findings, key, context or {}, risks)
+            return {"action": "block", "message": _incident_text(inc)}
+        elif risks:
+            key = _risk_key(tool_name, risks)
+            inc = _new_incident(tool_name, args, findings, key, context or {}, risks)
+            return {"action": "block", "message": _incident_text(inc)}
+
     if mode == "monitor":
         # Audit mode: record the incident (as audited / passed) but never block.
         key = action_key(tool_name, findings, dest) if findings else _risk_key(tool_name, risks)
@@ -342,6 +440,38 @@ def _new_incident(tool_name, args, findings, key, ctx, risks=(), status: str = "
             scrubbed = scrubbed[:f.start] + f.preview + scrubbed[f.end:]
         command_str = scrubbed[:4096]
 
+    # Stage 2: Three-Tier Sub-Agent Council & MITRE ATT&CK correlation
+    mitre_data: Dict[str, Any] = {}
+    council_data: Dict[str, Any] = {}
+    try:
+        from . import soc_agent_council
+        cv = soc_agent_council.get_soc_council().evaluate_incident(
+            content=command_str or str(args),
+            tool_name=tool_name,
+            args=args,
+            context=ctx,
+        )
+        mitre_data = {
+            "techniques": cv.tier2.mitre_techniques,
+            "kill_chain": cv.tier2.kill_chain,
+        }
+        council_data = {
+            "verdict": cv.overall_verdict,
+            "risk_score": cv.overall_risk_score,
+            "severity": cv.overall_severity,
+            "tier1_entropy": cv.tier1.entropy,
+            "tier1_reasons": cv.tier1.reasons,
+            "tier2_forensic": cv.tier2.forensic_summary,
+            "tier3_remedy": cv.tier3.remedy_action,
+            "tier3_summary_ru": cv.tier3.ai_doctor_summary_ru,
+            "tier3_summary_en": cv.tier3.ai_doctor_summary_en,
+            "tier3_playbook_ru": cv.tier3.recommended_playbook_ru,
+            "tier3_playbook_en": cv.tier3.recommended_playbook_en,
+            "quick_actions": cv.tier3.quick_actions,
+        }
+    except Exception:
+        pass
+
     inc = {"id": "MSG-" + secrets.token_hex(3).upper(), "key": key, "status": status,
            "at": int(time.time()), "last_at": int(time.time()), "attempts": 1,
            "tool": tool_name, "destination": _scrub(_destination(tool_name, args)),
@@ -350,8 +480,10 @@ def _new_incident(tool_name, args, findings, key, ctx, risks=(), status: str = "
            "process": {"pid": os.getpid(), "name": Path(sys.argv[0] if sys.argv and sys.argv[0] else "python").name[:60]},
            "findings": _quarantine(findings),
            "risks": [_risk_public(r) for r in risks],
+           "mitre": mitre_data,
+           "council": council_data,
            "kind": "secret" if findings else "action",
-           "events": [{"at": int(time.time()), "what": "blocked before execution" if status == "pending" else "audited (passed in monitor mode)"}]}
+           "events": [{"at": int(time.time()), "what": "blocked before execution" if status == "pending" else ("tokenized (автозамена)" if status == "tokenized" else "audited (passed in monitor mode)")}]}
     incidents.insert(0, inc)
     _write("incidents.json", incidents[:MAX_INCIDENTS])
     return inc
@@ -441,7 +573,7 @@ def decide(incident_id: str, choice: str) -> Dict[str, Any]:
     decisions = _read("decisions.json", {})
     decisions[inc["key"]] = {"choice": choice, "at": int(time.time()), "incident": inc["id"], "tokens": tokens}
     _write("decisions.json", decisions)
-    inc["status"] = {"protect": "protected", "block": "quarantined", "allow": "allowed"}[choice]
+    inc["status"] = {"protect": "tokenized", "block": "quarantined", "allow": "allowed"}[choice]
     inc["decided_at"] = int(time.time())
     inc["events"].append({"at": int(time.time()), "what": f"user chose: {CHOICES[choice]}"})
     _write("incidents.json", incidents)

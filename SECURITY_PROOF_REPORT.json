@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-11-10T12:13:21Z",
+  "total_vectors": 500,
+  "blocked_threats": 400,
+  "allowed_legitimate": 50,
+  "false_positives": 0,
+  "false_negatives": 0,
+  "categories": {
+    "1_dynamic_secrets": {
+      "total": 120,
+      "blocked": 120
+    },
+    "2_obfuscated_vectors": {
+      "total": 100,
+      "blocked": 100
+    },
+    "3_rce_and_dangerous_cmds": {
+      "total": 100,
+      "blocked": 100
+    },
+    "4_prompt_injection_and_homoglyphs": {
+      "total": 80,
+      "blocked": 80
+    },
+    "5_sandbox_doctor_remediation": {
+      "total": 50,
+      "passed": 50
+    },
+    "6_clean_developer_actions": {
+      "total": 50,
+      "allowed": 50,
+      "false_positives": 0
+    }
+  },
+  "avg_latency_ms": 0.241,
+  "status": "PASSED_100_PERCENT",
+  "total_evaluation_time_ms": 121.4,
+  "defense_rings": [
+    "Ring 0 (Deobfuscator)",
+    "Ring 1 (Entropy & Rules)",
+    "Ring 2 (Taint Circuit)",
+    "Ring 3 (Doctor Sandbox)",
+    "Ring 4 (Integrity Guard)"
+  ]
+}

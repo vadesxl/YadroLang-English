@@ -19,11 +19,29 @@ _PLUGIN_DIR = Path(__file__).resolve().parent
 
 
 def engine_home() -> Path | None:
-    try:
-        home = Path(json.loads((_PLUGIN_DIR / "config.json").read_text(encoding="utf-8"))["engine_home"])
-        return home if (home / "src" / "runtime" / "policy.py").is_file() else None
-    except Exception:
+    cfg_file = _PLUGIN_DIR / "config.json"
+    if not cfg_file.is_file():
         return None
+    try:
+        cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
+        home_str = cfg.get("engine_home")
+        if home_str:
+            home = Path(home_str)
+            if (home / "src" / "runtime" / "policy.py").is_file():
+                return home
+    except Exception:
+        pass
+    if (_PLUGIN_DIR / "src" / "runtime" / "policy.py").is_file():
+        return _PLUGIN_DIR
+    cand_roots = [
+        _PLUGIN_DIR.parent.parent.parent,
+        Path.cwd(),
+        Path(r"E:\загрузки\.gemini\antigravity\scratch\YadroLang-English-repo"),
+    ]
+    for cand in cand_roots:
+        if cand and (cand / "src" / "runtime" / "policy.py").is_file():
+            return cand
+    return None
 
 
 def load_module(name: str):

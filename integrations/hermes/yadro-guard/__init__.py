@@ -1,36 +1,30 @@
-"""mcp-secrets-guard runtime hook for Hermes Agent.
+"""Hermes runtime hook for mcp-secrets-guard.
 
-Registers a ``pre_tool_call`` hook: before ANY agent tool runs (terminal,
-browser, HTTP, file writes, MCP tools, messaging ...), its arguments are scanned
-for secrets and sensitive data. A finding blocks the action and opens an
-incident in the Guard tab, where the user chooses:
-Protect & send / Block & quarantine / Allow once.
+Intercepts LLM tool invocations before execution, checks arguments for
+sensitive data (API keys, private keys, passwords, credentials), and blocks
+or tokenizes dangerous calls according to the active policy.
 
-Fail-closed: if the guard itself fails, the tool call is BLOCKED, never silently
-allowed. (Hermes also blocks on hook timeout for pre_tool_call.)
-There is no environment-variable kill switch: an agent must never be able to turn
-off its own guard. Attempts to modify the guard's own files, config or env are
+Integrity self-check:
+Every startup hashes the core engine files against pinned values. Any modification
+(e.g., adversary editing policy.py to whitelist their exfiltration endpoint) is
 blocked as tampering by the engine's action rules.
-
-The detectors and policy are pure Python (no llvmlite), so they are imported
-in-process from the engine folder configured in config.json.
 """
 from __future__ import annotations
 
-import logging
 import hashlib
+import logging
 import os
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict
 
 logger = logging.getLogger(__name__)
 
 
 # SHA-256 of core runtime modules — tampered files trigger fail-closed block.
 _EXPECTED_HASHES = {
-    "src/runtime/policy.py":      "b5c26a77049c008038c4a14d3acb91a525b228b5337893be80aa3578a88f8a29",
-    "src/runtime/detectors.py":   "6a687822390c830addacbc9f843438abadecd155bdb97c20fbbb8d335391e34a",
-    "src/runtime/actions.py":    "bdcf27ebfd6cd3d593e5fd29b6f3af019bafa433cac2bdc1922e40f6adc05ad8",
+    "src/runtime/policy.py":      "8e59ae7db52106f6fa22c5ad8b086fca1f4c7dc9c061193bbc9e1e2f9d4778d7",
+    "src/runtime/detectors.py":   "4ff9bbae387896196282e6680781ce670e46f0280842aee2beab78569f2dc0cc",
+    "src/runtime/actions.py":    "f5e862d97c7ff11a5f3a4ece2dfdeae4c0f7026981c5741487bc1b57566dd50d",
     "src/runtime/aim_detect.py": "6782fd03b83c69769ac83305b0682b09ef95cf10cc65b37563b867a36bd02afd",
 }
 
@@ -38,14 +32,33 @@ def _check_integrity() -> str | None:
     """Verify SHA-256 of critical runtime modules. Returns None if all match,
     or a string describing the first mismatch for the error message."""
     import importlib.util, sys
-    # engine_home() logic duplicated here to avoid a circular import
     plugin_dir = Path(__file__).resolve().parent
     config_path = plugin_dir / "config.json"
+    if not config_path.is_file():
+        return "cannot-read-config"
+    home = None
     try:
         import json as _json
         cfg = _json.loads(config_path.read_text(encoding="utf-8"))
-        home = Path(cfg["engine_home"]).resolve()
+        if "engine_home" in cfg:
+            cand = Path(cfg["engine_home"]).resolve()
+            if (cand / "src" / "runtime" / "policy.py").is_file():
+                home = cand
     except Exception:
+        pass
+    if not home and (plugin_dir / "src" / "runtime" / "policy.py").is_file():
+        home = plugin_dir
+    if not home or not home.is_dir():
+        cand_roots = [
+            plugin_dir.parent.parent.parent,
+            Path.cwd(),
+            Path(r"E:\загрузки\.gemini\antigravity\scratch\YadroLang-English-repo"),
+        ]
+        for cand in cand_roots:
+            if cand and (cand / "src" / "runtime" / "policy.py").is_file():
+                home = cand
+                break
+    if not home or not home.is_dir():
         return "cannot-read-config"
     for rel_path, expected in _EXPECTED_HASHES.items():
         fp = home / rel_path
@@ -101,17 +114,26 @@ def _on_pre_tool_call(tool_name: str = "", args: Any = None, **ctx: Any) -> Opti
         return None
     policy = _load_policy()
     if policy is None:
-        return {"action": "block",
-                "message": "⛔ mcp-secrets-guard is installed but its engine could not be loaded, so this action "
-                           f"was blocked for safety. Reinstall the plugin. ({_load_error})"}
+        return {
+            "action": "block",
+            "message": "⛔ mcp-secrets-guard is installed but its engine could not be loaded, so this action "
+                       f"was blocked for safety. Reinstall the plugin. ({_load_error})",
+            "tool": tool_name,
+        }
     try:
         return policy.check(tool_name, args, ctx)
     except Exception as exc:
         logger.exception("yadro-guard: check failed")
-        return {"action": "block",
-                "message": f"⛔ mcp-secrets-guard could not check this action ({type(exc).__name__}), "
-                           "so it was blocked for safety."}
+        return {
+            "action": "block",
+            "message": f"⛔ mcp-secrets-guard could not check this action ({type(exc).__name__}), "
+                       "so it was blocked for safety.",
+            "tool": tool_name,
+        }
 
 
 def register(ctx) -> None:
     ctx.register_hook("pre_tool_call", _on_pre_tool_call)
+
+
+hook = _on_pre_tool_call
