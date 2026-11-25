@@ -2,7 +2,7 @@
 """Sound control-flow joins for Ethical Analyzer v2.1.
 
 PATCH 1-6 (issue #47) - control-flow context (pc_labels). Numbering follows
-compiler_fix_queue.md / issue #47; see docs/patches/patch_4_6_spec.md.
+issue #47; see docs/analysis/reviewed-flow-fixes.md for the later review.
   PATCH 1: print is an output sink (by label flow, not by mandate).
   PATCH 2: assignment under a sensitive condition inherits pc_labels.
   PATCH 3: return under a sensitive condition inherits pc_labels.
@@ -20,6 +20,22 @@ PROGRAM_OUTPUT = frozenset({"print"})
 
 
 class SoundEthicalAnalyzer(EthicalAnalyzer):
+    def check(self, program):
+        audit = super().check(program)
+        entry = self.functions.get("main")
+        # The native wrapper prints numeric entry results after the source body.
+        # Audit-only callers have no inferred type, so keep their check conservative.
+        if entry and getattr(entry, "inferred_return_type", "i64") in {"i64", "bool"}:
+            labels = self.return_summary["main"].fixed
+            if labels:
+                detail = ", ".join(sorted(labels))
+                self.audit_trail.append(AuditEntry("entry-return", detail, [], "print",
+                                                   entry.string, "BLOCKED"))
+                raise EthicalError(
+                    f"Data leak (line {entry.string}): {detail} data reaches the native entry output.",
+                    "YADRO-E2301")
+        return audit
+
     def _is_sink(self, name):
         # print is a sink for the label flow, but requires no mandate (PATCH 1).
         return name in SINKS or name in PROGRAM_OUTPUT
@@ -94,16 +110,22 @@ class SoundEthicalAnalyzer(EthicalAnalyzer):
         return returned
 
     def _compute_summaries(self):
-        # PATCH 5: initialize the pc component first (all False), then the base summaries.
-        # The order matters: super() calls our _body_leaks -> _expression_leaks, which
-        # reads self.pc_summary (otherwise AttributeError). All-False is the correct base
-        # context: no pc effect. After super() the {False, True} lattice reaches a fixpoint.
+        # Return, argument-leak and caller-PC summaries depend on one another.
+        # Revisit all three when any component changes, including transitive helpers.
         self.pc_summary = {name: False for name in self.functions}
         super()._compute_summaries()
         for _ in range(self.MAX_FIXPOINT_ROUNDS):
             changed = False
             for name, function in self.functions.items():
+                returned = self._summarize_returns(function)
+                leaking = self._summarize_leaks(function)
                 effect = self._body_leaks(function.body, {}, {"__PC__"})
+                if returned != self.return_summary[name]:
+                    self.return_summary[name] = returned
+                    changed = True
+                if leaking != self.leak_summary[name]:
+                    self.leak_summary[name] = leaking
+                    changed = True
                 if effect != self.pc_summary[name]:
                     self.pc_summary[name] = effect
                     changed = True
@@ -136,6 +158,9 @@ class SoundEthicalAnalyzer(EthicalAnalyzer):
 
                 if self._body_leaks(statement.else_branch, self._copy_env(env), child_pc):
                     return True
+                env = self._join_env(
+                    self._flow_body(statement.then_branch, env, child_pc),
+                    self._flow_body(statement.else_branch, env, child_pc))
             elif isinstance(statement, While):
                 loop_env, loop_pc = self._flow_loop(
                     statement.body, statement.condition, env, pc_labels)

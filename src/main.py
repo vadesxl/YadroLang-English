@@ -5,7 +5,8 @@ from llvmlite import binding as llvm
 from src.lexer import Lexer,LexerError
 from src.syntax import Parser,ParserError,Call,NumberLit,Binary
 from src.ethics import EthicalAnalyzer,EthicalError,SINKS,SOURCES,SANITIZERS
-from src.typesys import TypeChecker,TypeCheckError
+from src.typesys import TypeCheckError
+from src.typesound import SoundTypeChecker as TypeChecker
 from src.codegen import Codegen,CodegenError
 TOOL_TIMEOUT=30
 class EntryPointError(Exception):pass

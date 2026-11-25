@@ -265,7 +265,8 @@ class Patch5PCAwareSummaryTests(BehavioralTestBase):
             "  let s = env.secret()\n"
             "  let k = 0\n"
             "  if s { k = helper() }\n"
-            "  return k\n"
+            # Returning k would print a secret-dependent value in the native wrapper.
+            "  return 0\n"
             "}"
         )
         self._compiles(code, "[control] PATCH 5 / clean helper under a condition")
@@ -411,8 +412,3 @@ class Patch6PCAndLoopFixpointTests(BehavioralTestBase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
-
-
-

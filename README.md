@@ -117,6 +117,14 @@ python -m src.guard_cli mcp scan path/to/yadro-manifest.json --format json
 
 This is static analysis of declared graph metadata. It does not import every vendor's MCP configuration, observe live tool behavior, or replace runtime authorization.
 
+## Reviewed flow and return checks
+
+The preserved return-path fixes are now applied in `main`: helpers must return on every path, and this check runs before LLVM backend creation. The entry function retains its documented implicit zero return.
+
+The existing control-flow patches 1-6 now also join branch exits in helper leak summaries and converge return, parameter-leak, and caller-PC summaries together. Sensitive numeric results of `main()` are rejected before LLVM IR because the native wrapper prints them after the source body. This closes an output path not represented by a source-level `print` call.
+
+See [reviewed-flow-fixes.md](docs/analysis/reviewed-flow-fixes.md) for behavioral regressions and analysis limits. These are subsequent `main` changes; the existing v2.1.0 release tag remains an earlier source snapshot.
+
 ## Proof Seal development
 
 [Yadro Proof Seal](PROOF_SEAL.md) is a staged evidence format intended to connect a versioned policy contract to LLVM and native artifacts. Consult [Implementation status](PROOF_SEAL_IMPLEMENTATION.md) for the phase inventory and integration work.
