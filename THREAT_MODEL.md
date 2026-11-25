@@ -12,6 +12,8 @@ An attacker may craft source, identifiers, deep expressions, recursive calls, ma
 ## In scope
 Explicit and control-flow leaks, confused deputy paths, excessive agency, malformed input, policy tampering through unsupported symbols, compiler crashes, deterministic termination, and cross-platform behavior.
 
+Source-level `print` and sensitive numeric entry results are checked before LLVM IR. Branch and loop labels feed jointly converging interprocedural summaries. Details and regressions: [reviewed-flow-fixes.md](docs/analysis/reviewed-flow-fixes.md).
+
 ## Out of scope
 Microarchitectural side channels, malicious LLVM/toolchains, runtime compromise after compilation, semantic correctness of external sanitizer implementations, and general import of arbitrary vendor MCP formats.
 

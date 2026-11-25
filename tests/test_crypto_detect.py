@@ -85,7 +85,8 @@ class CryptoDetectorTests(unittest.TestCase):
         from pathlib import Path
         tmp = Path(tempfile.mkdtemp()) / "bip39_english.txt"
         shutil.copy(C._WORDLIST_FILE, tmp)
-        tmp.write_bytes(tmp.read_bytes().replace(b"\n", b"\r\n"))
+        # Start from LF even when the checkout already uses CRLF; avoid CRCRLF.
+        tmp.write_bytes(tmp.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
         with mock.patch.object(C, "_WORDLIST_FILE", tmp):
             words, _ = C._load_wordlist()
         self.assertEqual(2048, len(words))
